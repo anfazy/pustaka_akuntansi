@@ -20,6 +20,7 @@ class Book extends Model
         'penerbit',
         'tahun_terbit',
         'isbn',
+        'sinopsis',
         'stok',
         'cover',
     ];
@@ -43,5 +44,13 @@ class Book extends Model
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class);
+    }
+
+    /**
+     * Get all active loan records (dipinjam or terlambat) for this book.
+     */
+    public function activeLoans(): HasMany
+    {
+        return $this->hasMany(Loan::class)->whereIn('status', ['dipinjam', 'terlambat']);
     }
 }
