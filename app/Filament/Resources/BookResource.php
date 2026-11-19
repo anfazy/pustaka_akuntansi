@@ -53,264 +53,285 @@ class BookResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('category_id')
-                    ->label('Kategori')
-                    ->relationship('category', 'nama')
-                    ->searchable()
-                    ->preload()
-                    ->live()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('nama')
-                            ->label('Nama Kategori')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug($state ?? '')))
-                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
+                Forms\Components\Section::make('Klasifikasi & Identitas Buku')
+                    ->description('Pilih kategori buku, kode koleksi (bila non-ISBN), judul, dan penulis.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('category_id')
+                                    ->label('Kategori')
+                                    ->relationship('category', 'nama')
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nama')
+                                            ->label('Nama Kategori')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug($state ?? '')))
+                                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
 
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(Category::class, 'slug'),
-                    ])
-                    ->createOptionAction(function (Forms\Components\Actions\Action $action) {
-                        return $action
-                            ->modalHeading('Tambah Kategori Baru')
-                            ->modalSubmitActionLabel('Simpan Kategori')
-                            ->modalWidth('md');
-                    })
-                    ->createOptionUsing(function (array $data): int {
-                        if (empty($data['slug']) && ! empty($data['nama'])) {
-                            $data['slug'] = Str::slug($data['nama']);
-                        }
-                        $baseSlug = $data['slug'] ?: 'kategori';
-                        $slug = $baseSlug;
-                        $counter = 1;
-                        while (Category::where('slug', $slug)->exists()) {
-                            $slug = "{$baseSlug}-{$counter}";
-                            $counter++;
-                        }
-                        $data['slug'] = $slug;
-
-                        $category = Category::create($data);
-
-                        return $category->id;
-                    })
-                    ->required(),
-
-                Forms\Components\TextInput::make('book_code')
-                    ->label('Kode Buku')
-                    ->helperText('Contoh: TA-2026-001 atau PKL-2026-012 (Wajib untuk TA/Skripsi, Proposal TA/PKL dan Laporan PKL).')
-                    ->maxLength(50)
-                    ->unique(table: Book::class, column: 'book_code', ignoreRecord: true)
-                    ->required(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')))
-                    ->visible(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')) || filled($get('book_code')))
-                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? strtoupper(trim($state)) : null),
-
-                Forms\Components\TextInput::make('judul')
-                    ->label('Judul Buku')
-                    ->required()
-                    ->maxLength(255)
-                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
-
-                Forms\Components\TextInput::make('penulis')
-                    ->label('Penulis')
-                    ->required()
-                    ->maxLength(255)
-                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
-
-                Forms\Components\TextInput::make('penerbit')
-                    ->label('Penerbit')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('tahun_terbit')
-                    ->label('Tahun Terbit')
-                    ->numeric()
-                    ->minValue(1900)
-                    ->maxValue(date('Y'))
-                    ->required(),
-
-                Forms\Components\TextInput::make('isbn')
-                    ->label('ISBN')
-                    ->helperText('Nomor ISBN standar internasional (hanya untuk buku umum).')
-                    ->maxLength(20)
-                    ->nullable()
-                    ->visible(fn (Forms\Get $get): bool => ! self::isNonIsbnCategory($get('category_id')))
-                    ->unique(
-                        table: Book::class,
-                        column: 'isbn',
-                        ignoreRecord: true,
-                        modifyRuleUsing: fn (\Illuminate\Validation\Rules\Unique $rule) => $rule->whereNotNull('isbn')
-                    )
-                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null)
-                    ->live(onBlur: true)
-                    ->suffixAction(
-                        Forms\Components\Actions\Action::make('searchIsbn')
-                            ->icon('heroicon-m-magnifying-glass')
-                            ->tooltip('Cari data buku berdasarkan ISBN')
-                            ->action(function (Forms\Get $get, Forms\Set $set, ?string $state) {
-                                $isbn = trim((string) ($state ?? $get('isbn')));
-
-                                if (blank($isbn)) {
-                                    Notification::make()
-                                        ->title('ISBN Masih Kosong')
-                                        ->body('Silakan ketik nomor ISBN terlebih dahulu sebelum mencari.')
-                                        ->warning()
-                                        ->send();
-
-                                    return;
-                                }
-
-                                $cleanIsbn = preg_replace('/[^0-9X]/i', '', $isbn);
-
-                                if (empty($cleanIsbn)) {
-                                    Notification::make()
-                                        ->title('Format ISBN Tidak Valid')
-                                        ->body('Nomor ISBN hanya boleh mengandung angka dan huruf X.')
-                                        ->warning()
-                                        ->send();
-
-                                    return;
-                                }
-
-                                $title = null;
-                                $authors = null;
-                                $publisher = null;
-                                $publishedYear = null;
-                                $description = null;
-
-                                // 1. Google Books API
-                                try {
-                                    $googleResponse = Http::withoutVerifying()
-                                        ->connectTimeout(8)
-                                        ->timeout(15)
-                                        ->get('https://www.googleapis.com/books/v1/volumes', [
-                                            'q' => 'isbn:' . $cleanIsbn,
-                                        ]);
-
-                                    if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
-                                        $volumeInfo = $googleResponse->json('items.0.volumeInfo', []);
-
-                                        $title = $volumeInfo['title'] ?? null;
-                                        if (! empty($volumeInfo['subtitle'])) {
-                                            $title .= ': ' . $volumeInfo['subtitle'];
+                                        Forms\Components\TextInput::make('slug')
+                                            ->label('Slug')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(Category::class, 'slug'),
+                                    ])
+                                    ->createOptionAction(function ($action) {
+                                        return $action
+                                            ->modalHeading('Tambah Kategori Baru')
+                                            ->modalSubmitActionLabel('Simpan Kategori')
+                                            ->modalWidth('md');
+                                    })
+                                    ->createOptionUsing(function (array $data): int {
+                                        if (empty($data['slug']) && ! empty($data['nama'])) {
+                                            $data['slug'] = Str::slug($data['nama']);
                                         }
-
-                                        if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
-                                            $authors = implode(', ', $volumeInfo['authors']);
+                                        $baseSlug = $data['slug'] ?: 'kategori';
+                                        $slug = $baseSlug;
+                                        $counter = 1;
+                                        while (Category::where('slug', $slug)->exists()) {
+                                            $slug = "{$baseSlug}-{$counter}";
+                                            $counter++;
                                         }
+                                        $data['slug'] = $slug;
 
-                                        $publisher = $volumeInfo['publisher'] ?? null;
+                                        $category = Category::create($data);
 
-                                        if (! empty($volumeInfo['publishedDate']) && preg_match('/\b\d{4}\b/', (string) $volumeInfo['publishedDate'], $matches)) {
-                                            $publishedYear = (int) $matches[0];
-                                        }
+                                        return $category->id;
+                                    })
+                                    ->required(),
 
-                                        $description = $volumeInfo['description'] ?? null;
-                                    }
-                                } catch (\Throwable $e) {
-                                    // Abaikan jika Google Books timeout, lanjut ke Open Library
-                                }
+                                Forms\Components\TextInput::make('book_code')
+                                    ->label('Kode Buku')
+                                    ->helperText('Contoh: TA-2026-001 atau PKL-2026-012 (Wajib untuk TA/Skripsi, Proposal TA/PKL dan Laporan PKL).')
+                                    ->maxLength(50)
+                                    ->unique(table: Book::class, column: 'book_code', ignoreRecord: true)
+                                    ->required(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')))
+                                    ->visible(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')) || filled($get('book_code')))
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? strtoupper(trim($state)) : null),
 
-                                // 2. Fallback ke Open Library API
-                                if (empty($title) || empty($authors) || empty($publisher) || empty($publishedYear) || empty($description)) {
-                                    try {
-                                        $openLibraryResponse = Http::withoutVerifying()
-                                            ->connectTimeout(8)
-                                            ->timeout(15)
-                                            ->get('https://openlibrary.org/api/books', [
-                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
-                                                'format' => 'json',
-                                                'jscmd' => 'data',
-                                            ]);
+                                Forms\Components\TextInput::make('judul')
+                                    ->label('Judul Buku')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
 
-                                        if ($openLibraryResponse->successful()) {
-                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
-                                            if (! empty($bookData)) {
-                                                $title = $title ?? ($bookData['title'] ?? null);
+                                Forms\Components\TextInput::make('penulis')
+                                    ->label('Penulis')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
+                            ]),
+                    ]),
 
-                                                if (empty($authors) && ! empty($bookData['authors']) && is_array($bookData['authors'])) {
-                                                    $authors = collect($bookData['authors'])->pluck('name')->filter()->implode(', ');
+                Forms\Components\Section::make('Detail Terbit & Identitas ISBN')
+                    ->description('Informasi penerbit, tahun terbit, dan pencarian data otomatis lewat ISBN.')
+                    ->schema([
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('penerbit')
+                                    ->label('Penerbit')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                Forms\Components\TextInput::make('tahun_terbit')
+                                    ->label('Tahun Terbit')
+                                    ->numeric()
+                                    ->minValue(1900)
+                                    ->maxValue(date('Y'))
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('isbn')
+                                    ->label('ISBN')
+                                    ->helperText('Nomor ISBN standar internasional (hanya untuk buku umum).')
+                                    ->maxLength(20)
+                                    ->nullable()
+                                    ->visible(fn (Forms\Get $get): bool => ! self::isNonIsbnCategory($get('category_id')))
+                                    ->unique(
+                                        table: Book::class,
+                                        column: 'isbn',
+                                        ignoreRecord: true,
+                                        modifyRuleUsing: fn (\Illuminate\Validation\Rules\Unique $rule) => $rule->whereNotNull('isbn')
+                                    )
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null)
+                                    ->live(onBlur: true)
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('searchIsbn')
+                                            ->icon('heroicon-m-magnifying-glass')
+                                            ->tooltip('Cari data buku berdasarkan ISBN')
+                                            ->action(function (Forms\Get $get, Forms\Set $set, ?string $state) {
+                                                $isbn = trim((string) ($state ?? $get('isbn')));
+
+                                                if (blank($isbn)) {
+                                                    Notification::make()
+                                                        ->title('ISBN Masih Kosong')
+                                                        ->body('Silakan ketik nomor ISBN terlebih dahulu sebelum mencari.')
+                                                        ->warning()
+                                                        ->send();
+
+                                                    return;
                                                 }
 
-                                                if (empty($publisher) && ! empty($bookData['publishers']) && is_array($bookData['publishers'])) {
-                                                    $publisher = collect($bookData['publishers'])->pluck('name')->filter()->implode(', ');
+                                                $cleanIsbn = preg_replace('/[^0-9X]/i', '', $isbn);
+
+                                                if (empty($cleanIsbn)) {
+                                                    Notification::make()
+                                                        ->title('Format ISBN Tidak Valid')
+                                                        ->body('Nomor ISBN hanya boleh mengandung angka dan huruf X.')
+                                                        ->warning()
+                                                        ->send();
+
+                                                    return;
                                                 }
 
-                                                if (empty($publishedYear) && ! empty($bookData['publish_date']) && preg_match('/\b\d{4}\b/', (string) $bookData['publish_date'], $matches)) {
-                                                    $publishedYear = (int) $matches[0];
-                                                }
+                                                $title = null;
+                                                $authors = null;
+                                                $publisher = null;
+                                                $publishedYear = null;
+                                                $description = null;
 
-                                                if (empty($description)) {
-                                                    $rawDesc = $bookData['notes'] ?? $bookData['subtitle'] ?? null;
-                                                    if (is_array($rawDesc) && isset($rawDesc['value'])) {
-                                                        $rawDesc = $rawDesc['value'];
+                                                // 1. Google Books API
+                                                try {
+                                                    $googleResponse = Http::withoutVerifying()
+                                                        ->connectTimeout(8)
+                                                        ->timeout(15)
+                                                        ->get('https://www.googleapis.com/books/v1/volumes', [
+                                                            'q' => 'isbn:' . $cleanIsbn,
+                                                        ]);
+
+                                                    if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
+                                                        $volumeInfo = $googleResponse->json('items.0.volumeInfo', []);
+
+                                                        $title = $volumeInfo['title'] ?? null;
+                                                        if (! empty($volumeInfo['subtitle'])) {
+                                                            $title .= ': ' . $volumeInfo['subtitle'];
+                                                        }
+
+                                                        if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
+                                                            $authors = implode(', ', $volumeInfo['authors']);
+                                                        }
+
+                                                        $publisher = $volumeInfo['publisher'] ?? null;
+
+                                                        if (! empty($volumeInfo['publishedDate']) && preg_match('/\b\d{4}\b/', (string) $volumeInfo['publishedDate'], $matches)) {
+                                                            $publishedYear = (int) $matches[0];
+                                                        }
+
+                                                        $description = $volumeInfo['description'] ?? null;
                                                     }
-                                                    if (is_string($rawDesc)) {
-                                                        $description = $rawDesc;
+                                                } catch (\Throwable $e) {
+                                                    // Abaikan jika Google Books timeout, lanjut ke Open Library
+                                                }
+
+                                                // 2. Fallback ke Open Library API
+                                                if (empty($title) || empty($authors) || empty($publisher) || empty($publishedYear) || empty($description)) {
+                                                    try {
+                                                        $openLibraryResponse = Http::withoutVerifying()
+                                                            ->connectTimeout(8)
+                                                            ->timeout(15)
+                                                            ->get('https://openlibrary.org/api/books', [
+                                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
+                                                                'format' => 'json',
+                                                                'jscmd' => 'data',
+                                                            ]);
+
+                                                        if ($openLibraryResponse->successful()) {
+                                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
+                                                            if (! empty($bookData)) {
+                                                                $title = $title ?? ($bookData['title'] ?? null);
+
+                                                                if (empty($authors) && ! empty($bookData['authors']) && is_array($bookData['authors'])) {
+                                                                    $authors = collect($bookData['authors'])->pluck('name')->filter()->implode(', ');
+                                                                }
+
+                                                                if (empty($publisher) && ! empty($bookData['publishers']) && is_array($bookData['publishers'])) {
+                                                                    $publisher = collect($bookData['publishers'])->pluck('name')->filter()->implode(', ');
+                                                                }
+
+                                                                if (empty($publishedYear) && ! empty($bookData['publish_date']) && preg_match('/\b\d{4}\b/', (string) $bookData['publish_date'], $matches)) {
+                                                                    $publishedYear = (int) $matches[0];
+                                                                }
+
+                                                                if (empty($description)) {
+                                                                    $rawDesc = $bookData['notes'] ?? $bookData['subtitle'] ?? null;
+                                                                    if (is_array($rawDesc) && isset($rawDesc['value'])) {
+                                                                        $rawDesc = $rawDesc['value'];
+                                                                    }
+                                                                    if (is_string($rawDesc)) {
+                                                                        $description = $rawDesc;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    } catch (\Throwable $e) {
+                                                        // Abaikan timeout Open Library agar tidak memunculkan error merah
                                                     }
                                                 }
-                                            }
-                                        }
-                                    } catch (\Throwable $e) {
-                                        // Abaikan timeout Open Library agar tidak memunculkan error merah
-                                    }
-                                }
 
-                                if (empty($title) && empty($authors) && empty($publisher)) {
-                                    Notification::make()
-                                        ->title('Data ISBN Tidak Ditemukan')
-                                        ->body("Data untuk ISBN {$isbn} tidak tersedia di server atau koneksi sedang lambat. Silakan isi manual.")
-                                        ->warning()
-                                        ->send();
+                                                if (empty($title) && empty($authors) && empty($publisher)) {
+                                                    Notification::make()
+                                                        ->title('Data ISBN Tidak Ditemukan')
+                                                        ->body("Data untuk ISBN {$isbn} tidak tersedia di server atau koneksi sedang lambat. Silakan isi manual.")
+                                                        ->warning()
+                                                        ->send();
 
-                                    return;
-                                }
+                                                    return;
+                                                }
 
-                                if ($title) {
-                                    $set('judul', ucwords(strtolower(trim($title))));
-                                }
-                                if ($authors) {
-                                    $set('penulis', ucwords(strtolower(trim($authors))));
-                                }
-                                if ($publisher) {
-                                    $set('penerbit', trim($publisher));
-                                }
-                                if ($publishedYear) {
-                                    $set('tahun_terbit', $publishedYear);
-                                }
-                                if ($description) {
-                                    $set('sinopsis', trim(strip_tags($description)));
-                                }
+                                                if ($title) {
+                                                    $set('judul', ucwords(strtolower(trim($title))));
+                                                }
+                                                if ($authors) {
+                                                    $set('penulis', ucwords(strtolower(trim($authors))));
+                                                }
+                                                if ($publisher) {
+                                                    $set('penerbit', trim($publisher));
+                                                }
+                                                if ($publishedYear) {
+                                                    $set('tahun_terbit', $publishedYear);
+                                                }
+                                                if ($description) {
+                                                    $set('sinopsis', trim(strip_tags($description)));
+                                                }
 
-                                Notification::make()
-                                    ->title('Data Buku Berhasil Ditemukan')
-                                    ->body("Informasi buku '{$title}' berhasil dimuat otomatis.")
-                                    ->success()
-                                    ->send();
-                            })
-                    ),
+                                                Notification::make()
+                                                    ->title('Data Buku Berhasil Ditemukan')
+                                                    ->body("Informasi buku '{$title}' berhasil dimuat otomatis.")
+                                                    ->success()
+                                                    ->send();
+                                            })
+                                    ),
+                            ]),
+                    ]),
 
-                Forms\Components\TextInput::make('stok')
-                    ->label('Stok Tersedia')
-                    ->numeric()
-                    ->default(0)
-                    ->minValue(0)
-                    ->required(),
+                Forms\Components\Section::make('Stok, Cover & Sinopsis')
+                    ->description('Atur stok tersedia, gambar cover, dan sinopsis atau abstrak.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('stok')
+                                    ->label('Stok Tersedia')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->minValue(0)
+                                    ->required(),
 
-                Forms\Components\FileUpload::make('cover')
-                    ->label('Cover Buku')
-                    ->image()
-                    ->directory('covers')
-                    ->disk('public'),
+                                Forms\Components\FileUpload::make('cover')
+                                    ->label('Cover Buku')
+                                    ->image()
+                                    ->directory('covers')
+                                    ->disk('public'),
+                            ]),
 
-                Forms\Components\Textarea::make('sinopsis')
-                    ->label('Sinopsis / Abstrak')
-                    ->placeholder('Tulis ringkasan isi buku atau abstrak Tugas Akhir/Skripsi di sini...')
-                    ->rows(4)
-                    ->columnSpanFull(),
+                        Forms\Components\Textarea::make('sinopsis')
+                            ->label('Sinopsis / Abstrak')
+                            ->placeholder('Tulis ringkasan isi buku atau abstrak Tugas Akhir/Skripsi di sini...')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -351,6 +372,7 @@ class BookResource extends Resource
                                         Infolists\Components\TextEntry::make('stok')
                                             ->label('Stok Tersedia')
                                             ->badge()
+                                            ->formatStateUsing(fn (int $state): string => $state > 0 ? "Tersedia ({$state})" : 'Habis (0)')
                                             ->color(fn (int $state): string => $state > 0 ? 'success' : 'danger'),
                                         Infolists\Components\TextEntry::make('active_loans_count')
                                             ->state(fn (Book $record): int => $record->activeLoans()->count())
@@ -374,7 +396,9 @@ class BookResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
                     ->disk('public')
-                    ->label('Cover'),
+                    ->label('Cover')
+                    ->square()
+                    ->size(48),
                 Tables\Columns\TextColumn::make('book_code')
                     ->label('Kode Buku')
                     ->searchable()
@@ -396,6 +420,7 @@ class BookResource extends Resource
                 Tables\Columns\TextColumn::make('stok')
                     ->label('Stok')
                     ->badge()
+                    ->formatStateUsing(fn (int $state): string => $state > 0 ? "Tersedia ({$state})" : 'Habis (0)')
                     ->color(fn (int $state): string => $state > 0 ? 'success' : 'danger')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('active_loans_count')

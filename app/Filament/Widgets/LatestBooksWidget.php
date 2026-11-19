@@ -13,29 +13,48 @@ class LatestBooksWidget extends BaseWidget
 
     protected static ?int $sort = 3;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                Book::query()->latest()->limit(5)
+                Book::query()
+                    ->with('category')
+                    ->latest()
+                    ->limit(5)
             )
+            ->paginated(false)
             ->columns([
+                Tables\Columns\TextColumn::make('book_code')
+                    ->label('Kode Buku')
+                    ->placeholder('-')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('judul')
                     ->label('Judul Buku')
                     ->weight('bold')
-                    ->searchable(),
+                    ->searchable()
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('category.nama')
                     ->label('Kategori')
                     ->badge()
                     ->color('info'),
                 Tables\Columns\TextColumn::make('penulis')
-                    ->label('Penulis'),
+                    ->label('Penulis')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('stok')
                     ->label('Stok')
                     ->badge()
                     ->color(fn (int $state): string => $state > 0 ? 'success' : 'danger'),
+            ])
+            ->recordUrl(fn (Book $record): string => route('filament.admin.resources.books.edit', ['record' => $record]))
+            ->actions([
+                Tables\Actions\Action::make('edit')
+                    ->label('Detail / Edit')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->url(fn (Book $record): string => route('filament.admin.resources.books.edit', ['record' => $record]))
+                    ->size('xs')
+                    ->color('gray'),
             ])
             ->emptyStateHeading('Belum ada koleksi buku')
             ->emptyStateDescription('Klik tombol di bawah untuk mulai menambahkan buku.')
