@@ -59,7 +59,7 @@ class Loan extends Model
             }
         });
 
-        // 1. Saat transaksi baru dibuat: stok berkurang HANYA jika langsung dipinjam/terlambat (bukan booked)
+        // 1. Saat transaksi baru dibuat: stok berkurang HANYA jika langsung dipinjam/terlambat (bukan booked/dibatalkan)
         static::created(function (Loan $loan): void {
             if (in_array($loan->status, ['dipinjam', 'terlambat'])) {
                 if ($loan->book && $loan->book->stok > 0) {
@@ -132,7 +132,7 @@ class Loan extends Model
     public function calculateOverdueWeekdays(?Carbon $returnDate = null): int
     {
         $due = $this->jatuh_tempo;
-        if (! $due || $this->status === 'booked') {
+        if (! $due || in_array($this->status, ['booked', 'dibatalkan'])) {
             return 0;
         }
 
@@ -178,7 +178,7 @@ class Loan extends Model
 
     public function isOverdue(): bool
     {
-        if (in_array($this->status, ['dikembalikan', 'booked'])) {
+        if (in_array($this->status, ['dikembalikan', 'booked', 'dibatalkan'])) {
             return false;
         }
 
