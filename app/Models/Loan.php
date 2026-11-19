@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class Loan extends Model
 {
@@ -14,13 +15,16 @@ class Loan extends Model
     use HasFactory;
 
     protected $fillable = [
+        'booking_code',
         'book_id',
+        'anggota_id',
         'member_id',
         'member_nim',
         'card_type',
         'tanggal_pinjam',
         'tanggal_kembali',
         'status',
+        'is_extended',
         'fine_amount',
         'is_lost',
     ];
@@ -28,20 +32,34 @@ class Loan extends Model
     protected $casts = [
         'tanggal_pinjam' => 'date',
         'tanggal_kembali' => 'date',
+        'is_extended' => 'boolean',
         'fine_amount' => 'integer',
         'is_lost' => 'boolean',
     ];
 
     protected static function booted(): void
     {
-        // Otomatis sinkronkan member_nim dari member jika kosong
-        static::saving(function (Loan $loan): void {
-            if (empty($loan->member_nim) && $loan->member_id) {
-                $loan->member_nim = $loan->member?->nis_nip ?? Member::find($loan->member_id)?->nis_nip;
+        // Generate kode booking AKT-XXXX & sinkronkan NIM dari tabel anggotas
+        static::creating(function (Loan $loan): void {
+            if (empty($loan->booking_code)) {
+                do {
+                    $code = 'AKT-' . strtoupper(Str::random(4));
+                } while (static::where('booking_code', $code)->exists());
+
+                $loan->booking_code = $code;
             }
         });
 
-        // 1. Saat transaksi peminjaman baru dibuat: stok berkurang jika status dipinjam/terlambat
+        static::saving(function (Loan $loan): void {
+            if ($loan->anggota_id) {
+                $anggota = $loan->anggota ?? Anggota::find($loan->anggota_id);
+                if ($anggota && empty($loan->member_nim)) {
+                    $loan->member_nim = $anggota->nim_no_anggota;
+                }
+            }
+        });
+
+        // 1. Saat transaksi baru dibuat: stok berkurang HANYA jika langsung dipinjam/terlambat (bukan booked)
         static::created(function (Loan $loan): void {
             if (in_array($loan->status, ['dipinjam', 'terlambat'])) {
                 if ($loan->book && $loan->book->stok > 0) {
@@ -59,8 +77,7 @@ class Loan extends Model
             $nowReturned = $newStatus === 'dikembalikan';
             $nowBorrowed = in_array($newStatus, ['dipinjam', 'terlambat']);
 
-            // Jika status berubah dari dipinjam -> dikembalikan:
-            // Stok HANYA ditambah jika buku TIDAK hilang (is_lost = false)
+            // Dari dipinjam -> dikembalikan: tambah stok jika tidak hilang
             if ($wasBorrowed && $nowReturned) {
                 if (! $loan->is_lost) {
                     $loan->book?->increment('stok');
@@ -70,7 +87,7 @@ class Loan extends Model
                     $loan->tanggal_kembali = now()->toDateString();
                 }
             }
-            // Jika status diubah kembali dari dikembalikan -> dipinjam: stok berkurang lagi (jika sebelumnya tidak hilang)
+            // Dari booked / dikembalikan -> dipinjam: kurangi stok
             elseif (! $wasBorrowed && $nowBorrowed) {
                 if (! $loan->getOriginal('is_lost') && $loan->book && $loan->book->stok > 0) {
                     $loan->book->decrement('stok');
@@ -89,7 +106,7 @@ class Loan extends Model
             }
         });
 
-        // 3. Jika data peminjaman yang masih aktif dihapus: kembalikan stok buku jika tidak hilang
+        // 3. Jika data peminjaman aktif dihapus: kembalikan stok buku jika tidak hilang
         static::deleted(function (Loan $loan): void {
             if (in_array($loan->status, ['dipinjam', 'terlambat']) && ! $loan->is_lost) {
                 $loan->book?->increment('stok');
@@ -98,9 +115,7 @@ class Loan extends Model
     }
 
     /**
-     * Hitung tanggal jatuh tempo otomatis menggunakan addWeekdays (mengabaikan Sabtu & Minggu).
-     * - TA / Skripsi: 14 hari kerja.
-     * - Buku Umum & Proposal TA / PKL / Laporan PKL: 7 hari kerja.
+     * Hitung tanggal jatuh tempo otomatis (hari kerja + tambahan 7 hari kerja jika diperpanjang).
      */
     public function getJatuhTempoAttribute(): ?Carbon
     {
@@ -108,18 +123,16 @@ class Loan extends Model
             return null;
         }
 
-        $duration = $this->book?->getLoanDurationWeekdays() ?? 7;
+        $baseDuration = $this->book?->getLoanDurationWeekdays() ?? 7;
+        $extraDuration = $this->is_extended ? 7 : 0;
 
-        return $this->tanggal_pinjam->copy()->addWeekdays($duration);
+        return $this->tanggal_pinjam->copy()->addWeekdays($baseDuration + $extraDuration);
     }
 
-    /**
-     * Hitung jumlah hari kerja keterlambatan setelah tanggal jatuh tempo.
-     */
     public function calculateOverdueWeekdays(?Carbon $returnDate = null): int
     {
         $due = $this->jatuh_tempo;
-        if (! $due) {
+        if (! $due || $this->status === 'booked') {
             return 0;
         }
 
@@ -142,11 +155,6 @@ class Loan extends Model
         return $overdueWeekdays;
     }
 
-    /**
-     * Hitung estimasi denda keterlambatan:
-     * - TA / Skripsi: Rp 300 / hari kerja.
-     * - Non-TA / Umum & Proposal / Laporan PKL: Rp 200 / hari kerja.
-     */
     public function calculateLateFine(?Carbon $returnDate = null): int
     {
         $weekdays = $this->calculateOverdueWeekdays($returnDate);
@@ -159,11 +167,6 @@ class Loan extends Model
         return $weekdays * $rate;
     }
 
-    /**
-     * Nominal denda jika buku hilang:
-     * - TA/Skripsi & Proposal/Laporan PKL: Rp 200.000.
-     * - Buku Umum: 0 (mengganti fisik buku atau seharga buku).
-     */
     public function calculateLostFine(): int
     {
         if (in_array($this->book?->collection_type, ['ta_skripsi', 'proposal_laporan_pkl'])) {
@@ -173,12 +176,9 @@ class Loan extends Model
         return 0;
     }
 
-    /**
-     * Cek apakah peminjaman saat ini telah melewati jatuh tempo.
-     */
     public function isOverdue(): bool
     {
-        if ($this->status === 'dikembalikan') {
+        if (in_array($this->status, ['dikembalikan', 'booked'])) {
             return false;
         }
 
@@ -191,19 +191,13 @@ class Loan extends Model
         return $due ? today()->gt($due->startOfDay()) : false;
     }
 
-    /**
-     * Get the book that is being loaned.
-     */
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
     }
 
-    /**
-     * Get the member who borrowed the book.
-     */
-    public function member(): BelongsTo
+    public function anggota(): BelongsTo
     {
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Anggota::class);
     }
 }
