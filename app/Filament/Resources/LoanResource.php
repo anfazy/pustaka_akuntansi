@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 
@@ -534,6 +535,61 @@ class LoanResource extends Resource
                         'terlambat' => 'Terlambat',
                         'dibatalkan' => 'Dibatalkan',
                     ]),
+
+                Tables\Filters\SelectFilter::make('peringatan_wa')
+                    ->label('Filter Pengingat WA')
+                    ->options([
+                        'jatuh_tempo_hari_ini' => 'Jatuh Tempo Hari Ini (Hari-H)',
+                        'sudah_terlambat' => 'Sudah Lewat Jatuh Tempo (Terlambat)',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+                        if (! $value) {
+                            return $query;
+                        }
+
+                        $activeIds = Loan::whereIn('status', ['dipinjam', 'terlambat'])
+                            ->where('is_lost', false)
+                            ->get()
+                            ->filter(function (Loan $loan) use ($value): bool {
+                                if (! $loan->jatuh_tempo) {
+                                    return false;
+                                }
+
+                                return match ($value) {
+                                    'jatuh_tempo_hari_ini' => $loan->jatuh_tempo->isToday(),
+                                    'sudah_terlambat' => $loan->isOverdue(),
+                                    default => false,
+                                };
+                            })
+                            ->pluck('id');
+
+                        return $query->whereIn('id', $activeIds);
+                    }),
+
+                Tables\Filters\SelectFilter::make('periode_denda')
+                    ->label('Laporan Keuangan Denda')
+                    ->options([
+                        'hari_ini' => 'Denda Hari Ini (' . now()->format('d M Y') . ')',
+                        'minggu_ini' => 'Denda Minggu Ini',
+                        'bulan_ini' => 'Denda Bulan Ini (' . now()->translatedFormat('F Y') . ')',
+                        'tahun_ini' => 'Denda Tahun Ini (' . now()->year . ')',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'hari_ini' => $query->where('fine_amount', '>', 0)
+                                ->whereDate('tanggal_kembali', today()),
+                            'minggu_ini' => $query->where('fine_amount', '>', 0)
+                                ->whereBetween('tanggal_kembali', [now()->startOfWeek(), now()->endOfWeek()]),
+                            'bulan_ini' => $query->where('fine_amount', '>', 0)
+                                ->whereMonth('tanggal_kembali', now()->month)
+                                ->whereYear('tanggal_kembali', now()->year),
+                            'tahun_ini' => $query->where('fine_amount', '>', 0)
+                                ->whereYear('tanggal_kembali', now()->year),
+                            default => $query,
+                        };
+                    }),
+
                 Tables\Filters\TernaryFilter::make('is_lost')
                     ->label('Status Kehilangan')
                     ->placeholder('Semua')
@@ -596,7 +652,81 @@ class LoanResource extends Resource
                             ->send();
                     }),
 
-                // 3. Tombol Perpanjang (+7 Hari Kerja)
+                // 3. Tombol Notifikasi WhatsApp (Rapi per baris & akurat cek Hari-H / Terlambat)
+                Tables\Actions\Action::make('ingatkanWa')
+                    ->label(function (Loan $record): string {
+                        $jatuhTempo = $record->jatuh_tempo?->copy()->startOfDay();
+                        $isTerlambat = $jatuhTempo && today()->gt($jatuhTempo) && $record->calculateOverdueWeekdays(today()) > 0;
+
+                        if ($isTerlambat) {
+                            return 'WA Terlambat';
+                        }
+                        if ($jatuhTempo && $jatuhTempo->isToday()) {
+                            return 'WA Hari-H';
+                        }
+
+                        return 'Ingatkan WA';
+                    })
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->color(function (Loan $record): string {
+                        $jatuhTempo = $record->jatuh_tempo?->copy()->startOfDay();
+                        $isTerlambat = $jatuhTempo && today()->gt($jatuhTempo) && $record->calculateOverdueWeekdays(today()) > 0;
+
+                        if ($isTerlambat) {
+                            return 'danger';
+                        }
+                        if ($jatuhTempo && $jatuhTempo->isToday()) {
+                            return 'warning';
+                        }
+
+                        return 'success';
+                    })
+                    ->visible(fn (Loan $record): bool => in_array($record->status, ['dipinjam', 'terlambat']) && ! $record->is_lost && filled($record->anggota?->no_hp))
+                    ->url(function (Loan $record): string {
+                        $phone = preg_replace('/[^0-9]/', '', $record->anggota->no_hp);
+                        if (str_starts_with($phone, '0')) {
+                            $phone = '62' . substr($phone, 1);
+                        }
+
+                        $nama = $record->anggota->nama;
+                        $kodeBooking = $record->booking_code ?? '-';
+                        $judulBuku = $record->book?->judul ?? 'Buku Perpustakaan';
+                        $jatuhTempoCarbon = $record->jatuh_tempo?->copy()->startOfDay();
+                        $jatuhTempoTeks = $jatuhTempoCarbon
+                            ? $jatuhTempoCarbon->locale('id')->translatedFormat('l, d F Y')
+                            : '-';
+
+                        $hariTelat = $jatuhTempoCarbon ? $record->calculateOverdueWeekdays(today()) : 0;
+                        $isTerlambat = $jatuhTempoCarbon && today()->gt($jatuhTempoCarbon) && $hariTelat > 0;
+                        $isHariH = $jatuhTempoCarbon && $jatuhTempoCarbon->isToday();
+
+                        if ($isTerlambat) {
+                            $estimasiDenda = number_format($record->calculateLateFine(today()), 0, ',', '.');
+                            $statusBaris = "*TERLAMBAT ({$hariTelat} hari kerja)*";
+                            $catatan = "Estimasi denda sementara: *Rp {$estimasiDenda}*.\nMohon segera mengembalikan buku ke perpustakaan agar denda tidak terus bertambah.";
+                        } elseif ($isHariH) {
+                            $statusBaris = "*JATUH TEMPO HARI INI*";
+                            $catatan = "Batas pengembalian berakhir *hari ini* sebelum jam tutup layanan. Mohon segera dikembalikan agar tidak terkena denda keterlambatan.";
+                        } else {
+                            $sisaHari = $jatuhTempoCarbon ? today()->diffInDays($jatuhTempoCarbon) : 0;
+                            $statusBaris = "Aktif (Sisa {$sisaHari} hari)";
+                            $catatan = "Mohon mengembalikan buku tepat waktu sebelum tanggal jatuh tempo.";
+                        }
+
+                        $pesan = "Halo *{$nama}*,\n\n"
+                            . "Pengingat Peminjaman Buku — *Perpustakaan Pustaka Akuntansi*\n\n"
+                            . "• Kode Booking : *{$kodeBooking}*\n"
+                            . "• Judul Buku : *{$judulBuku}*\n"
+                            . "• Jatuh Tempo : *{$jatuhTempoTeks}*\n"
+                            . "• Status : {$statusBaris}\n\n"
+                            . "{$catatan}\n\n"
+                            . "Terima kasih.";
+
+                        return 'https://wa.me/' . $phone . '?text=' . urlencode($pesan);
+                    })
+                    ->openUrlInNewTab(),
+
+                // 4. Tombol Perpanjang (+7 Hari Kerja)
                 Tables\Actions\Action::make('perpanjangPinjam')
                     ->label('Perpanjang')
                     ->icon('heroicon-o-calendar-days')
@@ -618,7 +748,7 @@ class LoanResource extends Resource
                             ->send();
                     }),
 
-                // 4. Tombol Kembalikan / Selesaikan
+                // 5. Tombol Kembalikan / Selesaikan
                 Tables\Actions\Action::make('kembalikanBuku')
                     ->label('Kembalikan')
                     ->icon('heroicon-o-arrow-uturn-left')
