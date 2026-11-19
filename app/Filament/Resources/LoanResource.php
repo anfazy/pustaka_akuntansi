@@ -54,6 +54,79 @@ class LoanResource extends Resource
     {
         return $form
             ->schema([
+                // Section Pencarian Cepat Kode Booking dari UI User
+                Forms\Components\Section::make('Cek Kode Booking Mahasiswa (Dari UI User)')
+                    ->description('Pilih atau ketik kode booking (AKT-XXXX) yang ditunjukkan mahasiswa agar seluruh data peminjam dan buku terisi otomatis. Kosongkan jika peminjaman langsung di tempat.')
+                    ->schema([
+                        Forms\Components\Select::make('lookup_booking_code')
+                            ->label('Cari Kode Booking (AKT-XXXX)')
+                            ->placeholder('Ketik kode booking, contoh: AKT-8X2P...')
+                            ->options(function () {
+                                return Loan::with(['anggota', 'book'])
+                                    ->whereNotNull('booking_code')
+                                    ->latest()
+                                    ->get()
+                                    ->mapWithKeys(function (Loan $loan) {
+                                        $nama = $loan->anggota?->nama ?? $loan->member_nim;
+                                        $buku = $loan->book?->judul ?? '-';
+                                        $statusLabel = match ($loan->status) {
+                                            'booked' => 'Belum Diambil',
+                                            'dipinjam' => 'Sudah Diambil',
+                                            'dikembalikan' => 'Dikembalikan',
+                                            'dibatalkan' => 'Dibatalkan',
+                                            default => ucfirst($loan->status),
+                                        };
+
+                                        return [$loan->booking_code => "{$loan->booking_code} — {$nama} ({$buku}) [{$statusLabel}]"];
+                                    })
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->live()
+                            ->dehydrated(false)
+                            ->visible(fn (?Loan $record): bool => $record === null)
+                            ->afterStateUpdated(function (Forms\Set $set, ?string $state) {
+                                if (! $state) {
+                                    return;
+                                }
+
+                                $booking = Loan::where('booking_code', trim($state))->first();
+                                if (! $booking) {
+                                    return;
+                                }
+
+                                $set('anggota_id', $booking->anggota_id);
+                                $set('member_nim', $booking->member_nim);
+                                $set('card_type', $booking->card_type ?? 'KTM');
+                                $set('book_id', $booking->book_id);
+                                $set('tanggal_pinjam', $booking->tanggal_pinjam?->toDateString() ?? today()->toDateString());
+                                $set('status', $booking->status === 'booked' ? 'dipinjam' : $booking->status);
+                            }),
+
+                        Forms\Components\Placeholder::make('info_booking_ditemukan')
+                            ->label('Status Kode Booking')
+                            ->visible(fn (Forms\Get $get, ?Loan $record): bool => $record === null && filled($get('lookup_booking_code')))
+                            ->content(function (Forms\Get $get): HtmlString {
+                                $code = $get('lookup_booking_code');
+                                $booking = Loan::where('booking_code', $code)->first();
+
+                                if (! $booking) {
+                                    return new HtmlString('<span class="text-xs text-danger-600">Kode booking tidak ditemukan.</span>');
+                                }
+
+                                $editUrl = static::getUrl('edit', ['record' => $booking]);
+
+                                return new HtmlString("
+                                    <div class='p-3 rounded-xl bg-info-50 dark:bg-info-950/50 ring-1 ring-info-600/20 text-xs text-info-900 dark:text-info-200 space-y-1.5'>
+                                        <div><strong>Data booking {$code} berhasil dimuat otomatis!</strong></div>
+                                        <div>Untuk memproses langsung data booking yang sudah tersimpan ini tanpa membuat duplikat, <a href='{$editUrl}' class='underline font-bold text-primary-600 dark:text-primary-400'>klik di sini untuk membuka & konfirmasi transaksi {$code}</a>.</div>
+                                    </div>
+                                ");
+                            }),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (?Loan $record): bool => $record === null),
+
                 Forms\Components\Section::make('Identitas Peminjam (Anggota & Kartu)')
                     ->description('Cari anggota berdasarkan Nama atau NIM dengan kartu identitas resmi. Maksimal 2 buku aktif per NIM.')
                     ->schema([
@@ -124,7 +197,7 @@ class LoanResource extends Resource
                             ->content(function (Forms\Get $get): HtmlString {
                                 $anggotaId = $get('anggota_id');
                                 if (! $anggotaId) {
-                                    return new HtmlString('<span class="text-xs text-gray-500 dark:text-gray-400 italic">Pilih nama atau NIM anggota terlebih dahulu untuk menampilkan detail lengkap dari database anggota.</span>');
+                                    return new HtmlString('<span class="text-xs text-gray-500 dark:text-gray-400 italic">Pilih nama, NIM, atau kode booking terlebih dahulu untuk menampilkan detail lengkap.</span>');
                                 }
 
                                 $anggota = Anggota::find($anggotaId);
@@ -142,38 +215,38 @@ class LoanResource extends Resource
                                 $alamat = e($anggota->alamat ?: '-');
 
                                 return new HtmlString("
-                                    <div class='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 p-4 rounded-xl bg-gray-50 dark:bg-white/5 ring-1 ring-gray-950/10 dark:ring-white/10 text-sm'>
+                                    <div style='display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px;' class='p-4 rounded-xl bg-gray-50 dark:bg-white/5 ring-1 ring-gray-950/10 dark:ring-white/10 text-sm'>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Nama Lengkap</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$nama}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Nama Lengkap</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$nama}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>NIM / No. Anggota</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$nim}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>NIM / No. Anggota</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$nim}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Kelas</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$kelas}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Kelas</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$kelas}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Program Studi</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$prodi}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Program Studi</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$prodi}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Tahun Angkatan</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$angkatan}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Tahun Angkatan</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$angkatan}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>No. HP / WhatsApp</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$noHp}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>No. HP / WhatsApp</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$noHp}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Email</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white break-all'>{$email}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Email</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white break-all'>{$email}</div>
                                         </div>
                                         <div>
-                                            <div class='text-xs font-medium text-gray-500 dark:text-gray-400'>Alamat</div>
-                                            <div class='mt-0.5 font-semibold text-gray-950 dark:text-white'>{$alamat}</div>
+                                            <div class='text-xs text-gray-500 dark:text-gray-400'>Alamat</div>
+                                            <div class='font-semibold text-gray-950 dark:text-white'>{$alamat}</div>
                                         </div>
                                     </div>
                                 ");
@@ -254,13 +327,30 @@ class LoanResource extends Resource
                                 ");
                             }),
 
-                        Forms\Components\Select::make('status')
-                            ->label('Status Transaksi')
+                        Forms\Components\ToggleButtons::make('status')
+                            ->label('Konfirmasi Status Pengambilan / Transaksi')
+                            ->columnSpanFull()
+                            ->inline()
                             ->options([
-                                'booked' => 'Menunggu Pengambilan (Booking)',
-                                'dipinjam' => 'Dipinjam',
+                                'booked' => 'Belum Diambil (Booking)',
+                                'dipinjam' => 'Sudah Diambil (Dipinjam)',
                                 'dikembalikan' => 'Dikembalikan',
                                 'terlambat' => 'Terlambat',
+                                'dibatalkan' => 'Dibatalkan',
+                            ])
+                            ->colors([
+                                'booked' => 'info',
+                                'dipinjam' => 'warning',
+                                'dikembalikan' => 'success',
+                                'terlambat' => 'danger',
+                                'dibatalkan' => 'gray',
+                            ])
+                            ->icons([
+                                'booked' => 'heroicon-m-ticket',
+                                'dipinjam' => 'heroicon-m-check-badge',
+                                'dikembalikan' => 'heroicon-m-check-circle',
+                                'terlambat' => 'heroicon-m-exclamation-triangle',
+                                'dibatalkan' => 'heroicon-m-x-circle',
                             ])
                             ->default('dipinjam')
                             ->required(),
@@ -338,9 +428,18 @@ class LoanResource extends Resource
 
                 Tables\Columns\TextColumn::make('jatuh_tempo')
                     ->label('Jatuh Tempo')
-                    ->state(fn (Loan $record): ?string => $record->status === 'booked' ? 'Belum Diambil' : $record->jatuh_tempo?->translatedFormat('d M Y'))
+                    ->state(function (Loan $record): ?string {
+                        if ($record->status === 'booked') {
+                            return 'Belum Diambil';
+                        }
+                        if ($record->status === 'dibatalkan') {
+                            return 'Dibatalkan';
+                        }
+
+                        return $record->jatuh_tempo?->translatedFormat('d M Y');
+                    })
                     ->description(function (Loan $record): ?string {
-                        if (in_array($record->status, ['dikembalikan', 'booked']) || ! $record->jatuh_tempo) {
+                        if (in_array($record->status, ['dikembalikan', 'booked', 'dibatalkan']) || ! $record->jatuh_tempo) {
                             return null;
                         }
 
@@ -365,7 +464,10 @@ class LoanResource extends Resource
                             return 'Buku Hilang';
                         }
                         if ($state === 'booked') {
-                            return 'Menunggu Diambil';
+                            return 'Belum Diambil';
+                        }
+                        if ($state === 'dibatalkan') {
+                            return 'Dibatalkan';
                         }
                         if ($state === 'dikembalikan') {
                             return 'Dikembalikan';
@@ -374,7 +476,7 @@ class LoanResource extends Resource
                             return 'Terlambat';
                         }
 
-                        return 'Dipinjam';
+                        return 'Sudah Diambil (Dipinjam)';
                     })
                     ->color(function (string $state, Loan $record): string {
                         if ($record->is_lost) {
@@ -382,6 +484,9 @@ class LoanResource extends Resource
                         }
                         if ($state === 'booked') {
                             return 'info';
+                        }
+                        if ($state === 'dibatalkan') {
+                            return 'gray';
                         }
                         if ($state === 'dikembalikan') {
                             return 'success';
@@ -398,6 +503,9 @@ class LoanResource extends Resource
                         }
                         if ($state === 'booked') {
                             return 'heroicon-m-ticket';
+                        }
+                        if ($state === 'dibatalkan') {
+                            return 'heroicon-m-no-symbol';
                         }
                         if ($state === 'dikembalikan') {
                             return 'heroicon-m-check-circle';
@@ -420,10 +528,11 @@ class LoanResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Filter Status')
                     ->options([
-                        'booked' => 'Menunggu Pengambilan (Booking)',
-                        'dipinjam' => 'Dipinjam',
+                        'booked' => 'Belum Diambil (Booking)',
+                        'dipinjam' => 'Sudah Diambil (Dipinjam)',
                         'dikembalikan' => 'Dikembalikan',
                         'terlambat' => 'Terlambat',
+                        'dibatalkan' => 'Dibatalkan',
                     ]),
                 Tables\Filters\TernaryFilter::make('is_lost')
                     ->label('Status Kehilangan')
@@ -441,7 +550,7 @@ class LoanResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading(fn (Loan $record): string => "Konfirmasi Pengambilan ({$record->booking_code})")
                     ->modalDescription(fn (Loan $record): string => "Pastikan kartu identitas ({$record->card_type}) milik {$record->anggota?->nama} (NIM: {$record->member_nim} • Kelas: " . ($record->anggota?->kelas ?? '-') . ") sudah diserahkan. Stok buku akan otomatis berkurang 1.")
-                    ->modalSubmitActionLabel('Ya, Serahkan Buku')
+                    ->modalSubmitActionLabel('Ya, Sudah Diambil')
                     ->action(function (Loan $record): void {
                         if (($record->book?->stok ?? 0) <= 0) {
                             Notification::make()
@@ -460,12 +569,34 @@ class LoanResource extends Resource
 
                         Notification::make()
                             ->title('Buku Berhasil Diserahkan')
-                            ->body("Kode {$record->booking_code} aktif dipinjam. Jatuh tempo: {$record->jatuh_tempo?->translatedFormat('d M Y')}.")
+                            ->body("Kode {$record->booking_code} statusnya berubah menjadi Sudah Diambil (Dipinjam). Jatuh tempo: {$record->jatuh_tempo?->translatedFormat('d M Y')}.")
                             ->success()
                             ->send();
                     }),
 
-                // 2. Tombol Perpanjang (+7 Hari Kerja)
+                // 2. Tombol Batalkan Booking (Jika Mahasiswa Tidak Jadi Mengambil Buku)
+                Tables\Actions\Action::make('batalkanBooking')
+                    ->label('Batalkan')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn (Loan $record): bool => $record->status === 'booked')
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Loan $record): string => "Batalkan Booking ({$record->booking_code})?")
+                    ->modalDescription(fn (Loan $record): string => "Booking buku '{$record->book?->judul}' atas nama {$record->anggota?->nama} (NIM: {$record->member_nim}) akan dibatalkan dan stok buku tetap utuh.")
+                    ->modalSubmitActionLabel('Ya, Batalkan Booking')
+                    ->action(function (Loan $record): void {
+                        $record->update([
+                            'status' => 'dibatalkan',
+                        ]);
+
+                        Notification::make()
+                            ->title('Booking Dibatalkan')
+                            ->body("Kode booking {$record->booking_code} telah dibatalkan.")
+                            ->warning()
+                            ->send();
+                    }),
+
+                // 3. Tombol Perpanjang (+7 Hari Kerja)
                 Tables\Actions\Action::make('perpanjangPinjam')
                     ->label('Perpanjang')
                     ->icon('heroicon-o-calendar-days')
@@ -487,7 +618,7 @@ class LoanResource extends Resource
                             ->send();
                     }),
 
-                // 3. Tombol Kembalikan / Selesaikan
+                // 4. Tombol Kembalikan / Selesaikan
                 Tables\Actions\Action::make('kembalikanBuku')
                     ->label('Kembalikan')
                     ->icon('heroicon-o-arrow-uturn-left')
