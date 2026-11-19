@@ -15,6 +15,8 @@ class Book extends Model
 
     protected $fillable = [
         'category_id',
+        'collection_type',
+        'book_code',
         'judul',
         'penulis',
         'penerbit',
@@ -29,6 +31,28 @@ class Book extends Model
         'tahun_terbit' => 'integer',
         'stok' => 'integer',
     ];
+
+    /**
+     * Get the human-readable label for the collection type.
+     */
+    public function getCollectionTypeLabelAttribute(): string
+    {
+        return match ($this->collection_type) {
+            'ta_skripsi' => 'Tugas Akhir / Skripsi',
+            'proposal_laporan_pkl' => 'Proposal TA/PKL & Laporan PKL',
+            default => 'Buku Umum',
+        };
+    }
+
+    /**
+     * Standard loan duration in weekdays.
+     * TA / Skripsi: 14 hari kerja.
+     * Non-TA / Umum & Proposal / Laporan PKL: 7 hari kerja.
+     */
+    public function getLoanDurationWeekdays(): int
+    {
+        return $this->collection_type === 'ta_skripsi' ? 14 : 7;
+    }
 
     /**
      * Get the category that this book belongs to.
