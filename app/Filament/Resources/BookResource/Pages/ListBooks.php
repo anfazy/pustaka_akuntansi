@@ -312,12 +312,11 @@ class ListBooks extends ListRecords
                                 if ($categoriesCache->has($kategoriLower)) {
                                     $categoryId = $categoriesCache->get($kategoriLower)->id;
                                 } else {
-                                    $category = Category::whereRaw('LOWER(nama) = ?', [$kategoriLower])
-                                        ->orWhere('slug', Str::slug($kategoriInput))
-                                        ->first();
+                                    $category = Category::whereRaw('LOWER(nama) = ?', [$kategoriLower])->first();
 
                                     if (! $category) {
-                                        $baseSlug = Str::slug($kategoriInput) ?: 'kategori';
+                                        $namaFormatted = ucwords(strtolower($kategoriInput));
+                                        $baseSlug = Str::slug($namaFormatted) ?: 'kategori';
                                         $slug = $baseSlug;
                                         $counter = 1;
                                         while (Category::where('slug', $slug)->exists()) {
@@ -326,7 +325,7 @@ class ListBooks extends ListRecords
                                         }
 
                                         $category = Category::create([
-                                            'nama' => ucwords(strtolower($kategoriInput)),
+                                            'nama' => $namaFormatted,
                                             'slug' => $slug,
                                         ]);
                                     }
@@ -417,6 +416,44 @@ class ListBooks extends ListRecords
                     Notification::make()
                         ->title('Import Koleksi Buku Selesai')
                         ->body("Berhasil memproses {$totalProcessed} buku ({$createdCount} baru, {$updatedCount} diperbarui){$skippedMsg}.")
+                        ->success()
+                        ->send();
+                }),
+
+            Actions\Action::make('createCategory')
+                ->label('New Kategori')
+                ->icon('heroicon-o-tag')
+                ->color('warning')
+                ->modalHeading('Tambah Kategori Baru')
+                ->modalSubmitActionLabel('Simpan Kategori')
+                ->modalWidth('md')
+                ->form([
+                    Forms\Components\TextInput::make('nama')
+                        ->label('Nama Kategori')
+                        ->required()
+                        ->maxLength(255)
+                        ->unique(Category::class, 'nama')
+                        ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
+                ])
+                ->action(function (array $data): void {
+                    $nama = ucwords(strtolower(trim($data['nama'])));
+                    $baseSlug = Str::slug($nama) ?: 'kategori';
+                    $slug = $baseSlug;
+                    $counter = 1;
+
+                    while (Category::where('slug', $slug)->exists()) {
+                        $slug = "{$baseSlug}-{$counter}";
+                        $counter++;
+                    }
+
+                    $category = Category::create([
+                        'nama' => $nama,
+                        'slug' => $slug,
+                    ]);
+
+                    Notification::make()
+                        ->title('Kategori Berhasil Ditambahkan')
+                        ->body("Kategori '{$category->nama}' sudah tersimpan.")
                         ->success()
                         ->send();
                 }),

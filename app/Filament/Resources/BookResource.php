@@ -69,15 +69,8 @@ class BookResource extends Resource
                                             ->label('Nama Kategori')
                                             ->required()
                                             ->maxLength(255)
-                                            ->live(onBlur: true)
-                                            ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', Str::slug($state ?? '')))
+                                            ->unique(Category::class, 'nama')
                                             ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
-
-                                        Forms\Components\TextInput::make('slug')
-                                            ->label('Slug')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->unique(Category::class, 'slug'),
                                     ])
                                     ->createOptionAction(function ($action) {
                                         return $action
@@ -86,19 +79,20 @@ class BookResource extends Resource
                                             ->modalWidth('md');
                                     })
                                     ->createOptionUsing(function (array $data): int {
-                                        if (empty($data['slug']) && ! empty($data['nama'])) {
-                                            $data['slug'] = Str::slug($data['nama']);
-                                        }
-                                        $baseSlug = $data['slug'] ?: 'kategori';
+                                        $nama = ucwords(strtolower(trim($data['nama'])));
+                                        $baseSlug = Str::slug($nama) ?: 'kategori';
                                         $slug = $baseSlug;
                                         $counter = 1;
+
                                         while (Category::where('slug', $slug)->exists()) {
                                             $slug = "{$baseSlug}-{$counter}";
                                             $counter++;
                                         }
-                                        $data['slug'] = $slug;
 
-                                        $category = Category::create($data);
+                                        $category = Category::create([
+                                            'nama' => $nama,
+                                            'slug' => $slug,
+                                        ]);
 
                                         return $category->id;
                                     })
