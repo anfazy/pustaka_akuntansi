@@ -39,16 +39,40 @@ class LoanResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $overdueThreshold = today()->subDays(7)->toDateString();
-
-        $hasOverdue = static::getModel()::where('status', 'terlambat')
-            ->orWhere(function ($query) use ($overdueThreshold) {
-                $query->where('status', 'dipinjam')
-                    ->where('tanggal_pinjam', '<', $overdueThreshold);
-            })
-            ->exists();
+        $hasOverdue = static::getModel()::whereIn('status', ['dipinjam', 'terlambat'])
+            ->where('is_lost', false)
+            ->get()
+            ->contains(fn (Loan $loan): bool => $loan->isOverdue());
 
         return $hasOverdue ? 'danger' : 'warning';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Sinkronisasi otomatis: ubah status 'dipinjam' menjadi 'terlambat' di database jika sudah melewati jatuh tempo
+        static::getModel()::where('status', 'dipinjam')
+            ->where('is_lost', false)
+            ->get()
+            ->each(function (Loan $loan): void {
+                if ($loan->isOverdue()) {
+                    $loan->updateQuietly(['status' => 'terlambat']);
+                }
+            });
+
+        return parent::getEloquentQuery();
+    }
+
+    protected static function getBookCategoryLabel(?Book $book): string
+    {
+        if (! $book) {
+            return '-';
+        }
+
+        $categoryName = $book->category?->nama
+            ?? $book->category?->name
+            ?? $book->category?->judul;
+
+        return filled($categoryName) ? $categoryName : $book->collection_type_label;
     }
 
     public static function form(Form $form): Form
@@ -74,6 +98,7 @@ class LoanResource extends Resource
                                             'booked' => 'Belum Diambil',
                                             'dipinjam' => 'Sudah Diambil',
                                             'dikembalikan' => 'Dikembalikan',
+                                            'terlambat' => 'Terlambat',
                                             'dibatalkan' => 'Dibatalkan',
                                             default => ucfirst($loan->status),
                                         };
@@ -256,7 +281,7 @@ class LoanResource extends Resource
                     ->columns(3),
 
                 Forms\Components\Section::make('Detail Buku, Kode Booking & Masa Peminjaman')
-                    ->description('Batas waktu otomatis dihitung hari kerja (Senin - Jumat): TA/Skripsi 14 hari kerja, Buku Umum & PKL 7 hari kerja.')
+                    ->description('Batas waktu otomatis dihitung hari kerja (Senin - Jumat): TA/Skripsi 14 hari kerja, Non-TA & PKL 7 hari kerja.')
                     ->schema([
                         Forms\Components\TextInput::make('booking_code')
                             ->label('Kode Booking')
@@ -267,12 +292,12 @@ class LoanResource extends Resource
 
                         Forms\Components\Select::make('book_id')
                             ->label('Buku yang Dipinjam')
-                            ->relationship('book', 'judul', fn ($query) => $query->orderBy('judul'))
-                            ->getOptionLabelFromRecordUsing(function ($record) {
+                            ->relationship('book', 'judul', fn ($query) => $query->with('category')->orderBy('judul'))
+                            ->getOptionLabelFromRecordUsing(function (Book $record): string {
                                 $kode = $record->book_code ? "[{$record->book_code}] " : '';
-                                $tipe = $record->collection_type_label;
+                                $kategori = static::getBookCategoryLabel($record);
 
-                                return "{$kode}{$record->judul} ({$tipe} • Sisa Stok: {$record->stok})";
+                                return "{$kode}{$record->judul} ({$kategori} • Sisa Stok: {$record->stok})";
                             })
                             ->searchable(['judul', 'isbn', 'book_code'])
                             ->preload()
@@ -315,15 +340,16 @@ class LoanResource extends Resource
                                     return new HtmlString('<span class="text-xs text-gray-500 dark:text-gray-400 italic">Pilih buku terlebih dahulu untuk melihat tenggat waktu.</span>');
                                 }
 
-                                $book = Book::find($bookId);
+                                $book = Book::with('category')->find($bookId);
                                 $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
                                 $totalDays = $baseDays + ($isExtended ? 7 : 0);
                                 $jatuhTempo = $tglPinjam->copy()->addWeekdays($totalDays);
+                                $kategori = static::getBookCategoryLabel($book);
 
                                 return new HtmlString("
                                     <div class='text-sm text-primary-600 dark:text-primary-400 font-medium'>
-                                        Tenggat: <strong>{$jatuhTempo->translatedFormat('l, d F Y')}</strong>
-                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$totalDays} hari kerja " . ($isExtended ? '(Termasuk perpanjangan +7 hari)' : '') . " &bull; {$book?->collection_type_label}</div>
+                                        Tenggat: <strong>{$jatuhTempo->locale('id')->translatedFormat('l, d F Y')}</strong>
+                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$totalDays} hari kerja " . ($isExtended ? '(Termasuk perpanjangan +7 hari)' : '') . " &bull; Kategori: {$kategori}</div>
                                     </div>
                                 ");
                             }),
@@ -384,6 +410,7 @@ class LoanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['anggota', 'book.category']))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('booking_code')
@@ -414,8 +441,9 @@ class LoanResource extends Resource
                     ->description(function (Loan $record): string {
                         $book = $record->book;
                         $kode = $book?->book_code ? "[{$book->book_code}] " : '';
+                        $kategori = static::getBookCategoryLabel($book);
 
-                        return $kode . ($book?->collection_type_label ?? 'Buku Umum');
+                        return $kode . $kategori;
                     })
                     ->weight('bold')
                     ->searchable(['books.judul', 'books.book_code'])
@@ -437,7 +465,7 @@ class LoanResource extends Resource
                             return 'Dibatalkan';
                         }
 
-                        return $record->jatuh_tempo?->translatedFormat('d M Y');
+                        return $record->jatuh_tempo?->locale('id')->translatedFormat('d M Y');
                     })
                     ->description(function (Loan $record): ?string {
                         if (in_array($record->status, ['dikembalikan', 'booked', 'dibatalkan']) || ! $record->jatuh_tempo) {
@@ -446,14 +474,16 @@ class LoanResource extends Resource
 
                         $extLabel = $record->is_extended ? ' (Diperpanjang)' : '';
                         $overdueDays = $record->calculateOverdueWeekdays(today());
-                        if ($overdueDays > 0) {
-                            return "Lewat {$overdueDays} hari kerja{$extLabel}";
+                        if ($record->isOverdue()) {
+                            return $overdueDays > 0
+                                ? "Lewat {$overdueDays} hari kerja{$extLabel}"
+                                : "Melewati batas waktu{$extLabel}";
                         }
-                        if (today()->equalTo($record->jatuh_tempo->startOfDay())) {
+                        if (today()->equalTo($record->jatuh_tempo->copy()->startOfDay())) {
                             return "Hari ini jatuh tempo{$extLabel}";
                         }
 
-                        return 'Sisa ' . today()->diffInDays($record->jatuh_tempo->startOfDay()) . " hari{$extLabel}";
+                        return 'Sisa ' . today()->diffInDays($record->jatuh_tempo->copy()->startOfDay()) . " hari{$extLabel}";
                     })
                     ->color(fn (Loan $record): ?string => $record->isOverdue() ? 'danger' : 'gray'),
 
@@ -473,7 +503,7 @@ class LoanResource extends Resource
                         if ($state === 'dikembalikan') {
                             return 'Dikembalikan';
                         }
-                        if ($record->isOverdue()) {
+                        if ($record->isOverdue() || $state === 'terlambat') {
                             return 'Terlambat';
                         }
 
@@ -492,7 +522,7 @@ class LoanResource extends Resource
                         if ($state === 'dikembalikan') {
                             return 'success';
                         }
-                        if ($record->isOverdue()) {
+                        if ($record->isOverdue() || $state === 'terlambat') {
                             return 'danger';
                         }
 
@@ -511,7 +541,7 @@ class LoanResource extends Resource
                         if ($state === 'dikembalikan') {
                             return 'heroicon-m-check-circle';
                         }
-                        if ($record->isOverdue()) {
+                        if ($record->isOverdue() || $state === 'terlambat') {
                             return 'heroicon-m-exclamation-triangle';
                         }
 
@@ -557,7 +587,7 @@ class LoanResource extends Resource
                                 }
 
                                 return match ($value) {
-                                    'jatuh_tempo_hari_ini' => $loan->jatuh_tempo->isToday(),
+                                    'jatuh_tempo_hari_ini' => $loan->jatuh_tempo->copy()->startOfDay()->isToday(),
                                     'sudah_terlambat' => $loan->isOverdue(),
                                     default => false,
                                 };
@@ -572,7 +602,7 @@ class LoanResource extends Resource
                     ->options([
                         'hari_ini' => 'Denda Hari Ini (' . now()->format('d M Y') . ')',
                         'minggu_ini' => 'Denda Minggu Ini',
-                        'bulan_ini' => 'Denda Bulan Ini (' . now()->translatedFormat('F Y') . ')',
+                        'bulan_ini' => 'Denda Bulan Ini (' . now()->locale('id')->translatedFormat('F Y') . ')',
                         'tahun_ini' => 'Denda Tahun Ini (' . now()->year . ')',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -625,7 +655,7 @@ class LoanResource extends Resource
 
                         Notification::make()
                             ->title('Buku Berhasil Diserahkan')
-                            ->body("Kode {$record->booking_code} statusnya berubah menjadi Sudah Diambil (Dipinjam). Jatuh tempo: {$record->jatuh_tempo?->translatedFormat('d M Y')}.")
+                            ->body("Kode {$record->booking_code} statusnya berubah menjadi Sudah Diambil (Dipinjam). Jatuh tempo: {$record->jatuh_tempo?->locale('id')->translatedFormat('d M Y')}.")
                             ->success()
                             ->send();
                     }),
@@ -743,7 +773,7 @@ class LoanResource extends Resource
 
                         Notification::make()
                             ->title('Masa Pinjam Diperpanjang')
-                            ->body("Tenggat waktu baru: {$record->fresh()->jatuh_tempo?->translatedFormat('l, d F Y')}.")
+                            ->body("Tenggat waktu baru: {$record->fresh()->jatuh_tempo?->locale('id')->translatedFormat('l, d F Y')}.")
                             ->success()
                             ->send();
                     }),
@@ -764,6 +794,7 @@ class LoanResource extends Resource
                                 $lateFine = $record->calculateLateFine(today());
                                 $kelas = e($record->anggota?->kelas ?? '-');
                                 $noHp = e($record->anggota?->no_hp ?? '-');
+                                $kategori = e(static::getBookCategoryLabel($book));
 
                                 $overdueHtml = $overdueDays > 0
                                     ? "<span class='text-danger-600 dark:text-danger-400 font-bold'>Terlambat {$overdueDays} hari kerja (Denda: Rp " . number_format($lateFine, 0, ',', '.') . ')</span>'
@@ -775,7 +806,7 @@ class LoanResource extends Resource
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Peminjam:</strong> {$record->anggota?->nama} (NIM: {$record->member_nim})</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Kelas & No. HP:</strong> {$kelas} &bull; {$noHp}</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Jaminan Kartu:</strong> {$record->card_type}</div>
-                                        <div><strong class='text-gray-600 dark:text-gray-400'>Koleksi:</strong> {$book?->judul} <span class='text-xs px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300 ring-1 ring-primary-600/20'>{$book?->collection_type_label}</span></div>
+                                        <div><strong class='text-gray-600 dark:text-gray-400'>Koleksi:</strong> {$book?->judul} <span class='text-xs px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300 ring-1 ring-primary-600/20'>{$kategori}</span></div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Tgl Pinjam:</strong> " . ($record->tanggal_pinjam?->format('d M Y') ?? '-') . " &bull; <strong class='text-gray-600 dark:text-gray-400'>Jatuh Tempo:</strong> " . ($due?->format('d M Y') ?? '-') . "</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Status Keterlambatan:</strong> {$overdueHtml}</div>
                                     </div>
