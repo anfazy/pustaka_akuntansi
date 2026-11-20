@@ -115,6 +115,21 @@ class Loan extends Model
     }
 
     /**
+     * Otomatis mengembalikan status 'terlambat' jika sudah melewati tanggal jatuh tempo.
+     */
+    public function getStatusAttribute(?string $value): ?string
+    {
+        if ($value === 'dipinjam' && ! $this->is_lost && $this->jatuh_tempo) {
+            $due = $this->jatuh_tempo->copy()->startOfDay();
+            if (today()->gt($due)) {
+                return 'terlambat';
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Hitung tanggal jatuh tempo otomatis (hari kerja + tambahan 7 hari kerja jika diperpanjang).
      */
     public function getJatuhTempoAttribute(): ?Carbon
@@ -132,7 +147,7 @@ class Loan extends Model
     public function calculateOverdueWeekdays(?Carbon $returnDate = null): int
     {
         $due = $this->jatuh_tempo;
-        if (! $due || in_array($this->status, ['booked', 'dibatalkan'])) {
+        if (! $due || in_array($this->getRawOriginal('status'), ['booked', 'dibatalkan'])) {
             return 0;
         }
 
@@ -178,17 +193,17 @@ class Loan extends Model
 
     public function isOverdue(): bool
     {
-        if (in_array($this->status, ['dikembalikan', 'booked', 'dibatalkan'])) {
+        $rawStatus = $this->getRawOriginal('status');
+        if (in_array($rawStatus, ['dikembalikan', 'booked', 'dibatalkan'])) {
             return false;
         }
 
-        if ($this->status === 'terlambat') {
-            return true;
+        $due = $this->jatuh_tempo;
+        if ($due) {
+            return today()->gt($due->copy()->startOfDay());
         }
 
-        $due = $this->jatuh_tempo;
-
-        return $due ? today()->gt($due->startOfDay()) : false;
+        return $rawStatus === 'terlambat';
     }
 
     public function book(): BelongsTo
