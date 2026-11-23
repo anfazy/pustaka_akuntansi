@@ -134,6 +134,21 @@
     }
 
     /* =========================================================
+       LOGIN PAGE (.fi-simple-layout)
+       ========================================================= */
+    .fi-simple-layout {
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #fefce8 100%) !important;
+        min-height: 100vh !important;
+    }
+
+    .fi-simple-main {
+        background-color: #ffffff !important;
+        border: 1px solid rgba(229, 231, 235, 0.9) !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    /* =========================================================
        MAIN CONTENT: Cards, Tables & Sections
        ========================================================= */
     .fi-layout:not(.fi-simple-layout) {
