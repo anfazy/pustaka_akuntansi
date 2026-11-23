@@ -22,7 +22,7 @@ class LoanResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
-    protected static ?string $navigationLabel = 'Peminjaman & Pengembalian';
+    protected static ?string $navigationLabel = 'Peminjaman & Pengembalian Buku';
 
     protected static ?string $modelLabel = 'Peminjaman';
 
@@ -39,13 +39,7 @@ class LoanResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $hasOverdue = static::getModel()::with('book')
-            ->whereIn('status', ['dipinjam', 'terlambat'])
-            ->where('is_lost', false)
-            ->get()
-            ->contains(fn (Loan $loan): bool => $loan->isOverdue());
-
-        return $hasOverdue ? 'danger' : 'warning';
+        return 'warning';
     }
 
     public static function getEloquentQuery(): Builder

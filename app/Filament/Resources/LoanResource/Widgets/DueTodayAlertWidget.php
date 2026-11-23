@@ -36,12 +36,13 @@ class DueTodayAlertWidget extends Widget
 
     public function getWaUrl(Loan $loan, string $tipe): string
     {
-        $phone = preg_replace('/[^0-9]/', '', $loan->anggota->no_hp);
+        $noHp = $loan->anggota?->no_hp ?? '';
+        $phone = preg_replace('/[^0-9]/', '', $noHp);
         if (str_starts_with($phone, '0')) {
             $phone = '62' . substr($phone, 1);
         }
 
-        $nama = $loan->anggota->nama;
+        $nama = $loan->anggota?->nama ?? $loan->member_nim ?? 'Mahasiswa';
         $kodeBooking = $loan->booking_code ?? '-';
         $judulBuku = $loan->book?->judul ?? 'Buku Perpustakaan';
         $jatuhTempoTeks = $loan->jatuh_tempo

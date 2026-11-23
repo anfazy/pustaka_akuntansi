@@ -24,7 +24,11 @@ class BookResource extends Resource
 
     protected static ?string $navigationLabel = 'Buku';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?string $modelLabel = 'Buku';
+
+    protected static ?string $pluralModelLabel = 'Daftar Buku';
+
+    protected static ?int $navigationSort = 2;
 
     /**
      * Cek apakah kategori yang dipilih termasuk non-ISBN (TA/Skripsi atau Proposal TA/PKL & Laporan PKL)
@@ -54,7 +58,7 @@ class BookResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Klasifikasi & Identitas Buku')
-                    ->description('Pilih kategori buku, kode koleksi (bila non-ISBN), judul, dan penulis.')
+                    ->description('Pilih kategori buku, kode koleksi/rak, judul, dan penulis.')
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -99,13 +103,20 @@ class BookResource extends Resource
                                     ->required(),
 
                                 Forms\Components\TextInput::make('book_code')
-                                    ->label('Kode Buku')
-                                    ->helperText('Contoh: TA-2026-001 atau PKL-2026-012 (Wajib untuk TA/Skripsi, Proposal TA/PKL dan Laporan PKL).')
+                                    ->label('Kode Buku / Koleksi')
+                                    ->placeholder('Contoh: AKT-001, TA-2026-001, atau PKL-2026-012')
+                                    ->helperText('Wajib untuk TA/Skripsi & Laporan PKL; opsional sebagai kode inventaris/rak untuk buku umum.')
                                     ->maxLength(50)
                                     ->unique(table: Book::class, column: 'book_code', ignoreRecord: true)
                                     ->required(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')))
-                                    ->visible(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')) || filled($get('book_code')))
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? strtoupper(trim($state)) : null),
+
+                                Forms\Components\TextInput::make('rak')
+                                    ->label('Lokasi Rak')
+                                    ->placeholder('Contoh: Rak A-02 / Lantai 2')
+                                    ->helperText('Lokasi fisik buku disimpan di ruang baca.')
+                                    ->maxLength(100)
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null),
 
                                 Forms\Components\TextInput::make('judul')
                                     ->label('Judul Buku')
@@ -301,8 +312,8 @@ class BookResource extends Resource
                             ]),
                     ]),
 
-                Forms\Components\Section::make('Stok, Cover & Sinopsis')
-                    ->description('Atur stok tersedia, gambar cover, dan sinopsis atau abstrak.')
+                Forms\Components\Section::make('Stok, Cover & Deskripsi')
+                    ->description('Atur stok tersedia, gambar cover, dan deskripsi buku.')
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -321,8 +332,8 @@ class BookResource extends Resource
                             ]),
 
                         Forms\Components\Textarea::make('sinopsis')
-                            ->label('Sinopsis / Abstrak')
-                            ->placeholder('Tulis ringkasan isi buku atau abstrak Tugas Akhir/Skripsi di sini...')
+                            ->label('Deskripsi Buku')
+                            ->placeholder('Tulis deskripsi atau ringkasan isi buku di sini...')
                             ->rows(4)
                             ->columnSpanFull(),
                     ]),
@@ -356,6 +367,9 @@ class BookResource extends Resource
                                             ->color('info'),
                                         Infolists\Components\TextEntry::make('penulis')
                                             ->label('Penulis'),
+                                        Infolists\Components\TextEntry::make('rak')
+                                            ->label('Lokasi Rak')
+                                            ->placeholder('-'),
                                         Infolists\Components\TextEntry::make('penerbit')
                                             ->label('Penerbit'),
                                         Infolists\Components\TextEntry::make('tahun_terbit')
@@ -377,8 +391,8 @@ class BookResource extends Resource
                                     ->columnSpan(2),
                             ]),
                         Infolists\Components\TextEntry::make('sinopsis')
-                            ->label('Sinopsis / Abstrak')
-                            ->placeholder('Belum ada sinopsis untuk buku ini.')
+                            ->label('Deskripsi Buku')
+                            ->placeholder('Belum ada deskripsi untuk buku ini.')
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -406,6 +420,11 @@ class BookResource extends Resource
                     ->label('Kategori')
                     ->badge()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('rak')
+                    ->label('Lokasi Rak')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('penulis')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tahun_terbit')
@@ -430,13 +449,17 @@ class BookResource extends Resource
                     ->relationship('category', 'nama'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Lihat'),
+                Tables\Actions\EditAction::make()
+                    ->label('Ubah'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Hapus Terpilih'),
                 ]),
             ]);
     }

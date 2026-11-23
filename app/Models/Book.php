@@ -24,6 +24,7 @@ class Book extends Model
         'isbn',
         'sinopsis',
         'stok',
+        'rak',
         'cover',
     ];
 
@@ -51,7 +52,25 @@ class Book extends Model
      */
     public function getLoanDurationWeekdays(): int
     {
-        return $this->collection_type === 'ta_skripsi' ? 14 : 7;
+        return ($this->collection_type === 'ta_skripsi' || $this->category?->slug === 'ta-skripsi') ? 14 : 7;
+    }
+
+    /**
+     * Tarif denda keterlambatan per hari.
+     * TA / Skripsi: Rp 300 / hari.
+     * Kategori lainnya (Akuntansi, Perpajakan, Fiksi, Laporan PKL): Rp 200 / hari.
+     */
+    public function getDendaPerHari(): int
+    {
+        $catSlug = $this->category?->slug;
+        $isTa = ($this->collection_type === 'ta_skripsi') || ($catSlug === 'ta-skripsi');
+
+        return $isTa ? 300 : 200;
+    }
+
+    public function getDendaPerHariAttribute(): int
+    {
+        return $this->getDendaPerHari();
     }
 
     /**
@@ -76,5 +95,19 @@ class Book extends Model
     public function activeLoans(): HasMany
     {
         return $this->hasMany(Loan::class)->whereIn('status', ['dipinjam', 'terlambat']);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function isFavoritedBy(?Anggota $student): bool
+    {
+        if (! $student) {
+            return false;
+        }
+
+        return $this->favorites()->where('anggota_id', $student->id)->exists();
     }
 }

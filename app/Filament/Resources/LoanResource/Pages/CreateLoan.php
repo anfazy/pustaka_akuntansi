@@ -30,6 +30,10 @@ class CreateLoan extends CreateRecord
 
         // 2. Sinkronisasi NIM
         $nim = $this->data['member_nim'] ?? null;
+        if (empty($nim) && ! empty($this->data['anggota_id'])) {
+            $nim = \App\Models\Anggota::find($this->data['anggota_id'])?->nim_no_anggota;
+            $this->data['member_nim'] = $nim;
+        }
         if (empty($nim) && ! empty($this->data['member_id'])) {
             $nim = Member::find($this->data['member_id'])?->nis_nip;
             $this->data['member_nim'] = $nim;

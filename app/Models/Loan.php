@@ -39,14 +39,20 @@ class Loan extends Model
 
     protected static function booted(): void
     {
-        // Generate kode booking AKT-XXXX & sinkronkan NIM dari tabel anggotas
+        // Generate kode otomatis: AKT-XXXX (Booking Web User) atau PJM-XXXX (Pinjam Langsung oleh Admin)
         static::creating(function (Loan $loan): void {
             if (empty($loan->booking_code)) {
+                $prefix = ($loan->status === 'booked') ? 'AKT-' : 'PJM-';
+
                 do {
-                    $code = 'AKT-' . strtoupper(Str::random(4));
+                    $code = $prefix . strtoupper(Str::random(4));
                 } while (static::where('booking_code', $code)->exists());
 
                 $loan->booking_code = $code;
+            }
+
+            if (empty($loan->tanggal_pinjam)) {
+                $loan->tanggal_pinjam = now()->toDateString();
             }
         });
 
@@ -114,8 +120,18 @@ class Loan extends Model
         });
     }
 
+    public function getJaminanAttribute(): ?string
+    {
+        return $this->card_type;
+    }
+
+    public function setJaminanAttribute(?string $value): void
+    {
+        $this->attributes['card_type'] = $value;
+    }
+
     /**
-     * Hitung tanggal jatuh tempo otomatis (hari kerja + tambahan 7 hari kerja jika diperpanjang).
+     * Hitung tanggal jatuh tempo otomatis (hari kerja + tambahan 3 hari kerja jika diperpanjang).
      */
     public function getJatuhTempoAttribute(): ?Carbon
     {
@@ -124,9 +140,30 @@ class Loan extends Model
         }
 
         $baseDuration = $this->book?->getLoanDurationWeekdays() ?? 7;
-        $extraDuration = $this->is_extended ? 7 : 0;
+        $extraDuration = $this->is_extended ? 3 : 0;
 
         return $this->tanggal_pinjam->copy()->addWeekdays($baseDuration + $extraDuration);
+    }
+
+    public function calculateOverdueDays(?Carbon $returnDate = null): int
+    {
+        if (in_array($this->status, ['booked', 'dibatalkan'])) {
+            return 0;
+        }
+
+        $due = $this->jatuh_tempo;
+        if (! $due) {
+            return 0;
+        }
+
+        $end = ($returnDate ?? $this->tanggal_kembali ?? today())->copy()->startOfDay();
+        $dueStart = $due->copy()->startOfDay();
+
+        if ($end->lte($dueStart)) {
+            return 0;
+        }
+
+        return abs((int) $dueStart->diffInDays($end));
     }
 
     public function calculateOverdueWeekdays(?Carbon $returnDate = null): int
@@ -161,14 +198,21 @@ class Loan extends Model
 
     public function calculateLateFine(?Carbon $returnDate = null): int
     {
+        $rate = $this->book?->getDendaPerHari() ?? (($this->book?->collection_type === 'ta_skripsi') ? 300 : 200);
+
         $weekdays = $this->calculateOverdueWeekdays($returnDate);
-        if ($weekdays <= 0) {
-            return 0;
+        if ($weekdays > 0) {
+            return $weekdays * $rate;
         }
 
-        $rate = ($this->book?->collection_type === 'ta_skripsi') ? 300 : 200;
+        if ($this->isOverdue()) {
+            $days = $this->calculateOverdueDays($returnDate);
+            if ($days > 0) {
+                return $days * $rate;
+            }
+        }
 
-        return $weekdays * $rate;
+        return 0;
     }
 
     public function calculateLostFine(): int
@@ -219,6 +263,19 @@ class Loan extends Model
         return now()->gt($this->created_at->copy()->addHours(24));
     }
 
+    /**
+     * Cek apakah kode transaksi berasal dari peminjaman langsung (PJM-) atau booking web (AKT-).
+     */
+    public function isDirectLoanCode(): bool
+    {
+        return str_starts_with((string) $this->booking_code, 'PJM-');
+    }
+
+    public function getTransactionCodeLabelAttribute(): string
+    {
+        return $this->isDirectLoanCode() ? 'Kode Pinjam' : 'Kode Booking';
+    }
+
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
@@ -227,5 +284,10 @@ class Loan extends Model
     public function anggota(): BelongsTo
     {
         return $this->belongsTo(Anggota::class);
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class);
     }
 }

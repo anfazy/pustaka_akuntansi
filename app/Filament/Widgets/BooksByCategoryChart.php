@@ -12,6 +12,8 @@ class BooksByCategoryChart extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected static bool $isLazy = false;
+
     protected static ?string $maxHeight = '280px';
 
     protected int | string | array $columnSpan = [
@@ -85,14 +87,18 @@ class BooksByCategoryChart extends ChartWidget
         $data = $categories->pluck('books_count')->toArray();
 
         $palette = [
-            '#3b82f6', '#6366f1', '#10b981', '#f59e0b',
-            '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6',
-            '#f97316', '#64748b',
+            '#065f46', // forest-800
+            '#f59e0b', // gold-500
+            '#059669', // forest-600
+            '#d97706', // gold-600
+            '#047857', // forest-700
+            '#10b981', // forest-500
+            '#fbbf24', // gold-400
         ];
 
         $backgroundColors = array_slice($palette, 0, count($labels));
         if (count($labels) > count($backgroundColors)) {
-            $backgroundColors = array_pad($backgroundColors, count($labels), '#6366f1');
+            $backgroundColors = array_pad($backgroundColors, count($labels), '#059669');
         }
 
         return [

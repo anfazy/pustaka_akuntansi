@@ -24,7 +24,8 @@ class AnggotaResource extends Resource
     protected static ?string $pluralModelLabel = 'Anggota';
     protected static ?string $modelLabel = 'Anggota';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?int $navigationSort = 1;
 
     // Form Input / Edit Data Anggota (Semua kolom wajib diisi)
     public static function form(Form $form): Form
