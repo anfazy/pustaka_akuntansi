@@ -112,7 +112,7 @@
                 <div class="w-9 h-9 rounded-full bg-gold-400 text-forest-950 font-extrabold text-sm flex items-center justify-center ring-2 ring-gold-300/60 shadow-xs cursor-pointer" title="{{ $user->email ?? 'Admin Perpustakaan' }}">
                     {{ strtoupper(substr($user->name ?? 'AP', 0, 2)) }}
                 </div>
-                <form action="{{ route('keluar') }}" method="POST" class="inline ml-1">
+                <form action="{{ route('filament.admin.auth.logout') }}" method="POST" class="inline ml-1">
                     @csrf
                     <button type="submit" title="Keluar / Logout" class="text-forest-200 hover:text-white p-1.5 rounded-lg hover:bg-forest-800 transition">
                         <i data-lucide="log-out" class="w-4 h-4"></i>

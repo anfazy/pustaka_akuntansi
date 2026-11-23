@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Anggota;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Favorite;
 use App\Models\Loan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class UserPortalController extends Controller
@@ -512,18 +512,19 @@ class UserPortalController extends Controller
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Silakan masuk terlebih dahulu.'], 401);
             }
+
             return redirect()->route('masuk')->with('error', 'Silakan masuk untuk menyimpan buku favorit.');
         }
 
         $book = Book::findOrFail($id);
 
-        $fav = \App\Models\Favorite::where('anggota_id', $student->id)->where('book_id', $book->id)->first();
+        $fav = Favorite::where('anggota_id', $student->id)->where('book_id', $book->id)->first();
         if ($fav) {
             $fav->delete();
             $isFavorited = false;
             $msg = 'Buku dihapus dari favorit.';
         } else {
-            \App\Models\Favorite::create([
+            Favorite::create([
                 'anggota_id' => $student->id,
                 'book_id' => $book->id,
             ]);
@@ -575,9 +576,15 @@ class UserPortalController extends Controller
     /**
      * Keluar (Logout).
      */
-    public function keluar(): RedirectResponse
+    public function keluar(Request $request): RedirectResponse
     {
         session()->forget('student_id');
+
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return redirect()->route('beranda')->with('info', 'Anda telah keluar.');
     }

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,6 +46,15 @@ Route::middleware(['web'])->group(function () {
     Route::get('/admin/anggota', [AdminDashboardController::class, 'anggota'])->name('filament.admin.resources.anggota.index');
     Route::get('/admin/peminjaman', [AdminDashboardController::class, 'peminjaman'])->name('filament.admin.resources.peminjaman.index');
     Route::get('/admin/kategori', [AdminDashboardController::class, 'kategori'])->name('filament.admin.resources.kategori.index');
+
+    // Admin Authentication / Logout
+    Route::match(['get', 'post'], '/admin/logout', function (Request $request) {
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->to('/admin/login');
+    })->name('filament.admin.auth.logout');
 
     // Admin API Routes (Database persistence untuk form & aksi di mockup)
     Route::post('/admin/api/anggota', [AdminDashboardController::class, 'saveAnggota'])->name('admin.api.anggota.save');
