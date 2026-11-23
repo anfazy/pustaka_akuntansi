@@ -67,7 +67,7 @@
                 <div class="relative" id="prodiCombobox">
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Program Studi</label>
-                        <span class="text-[11px] text-emerald-800 font-medium">Bisa diketik / dipilih</span>
+                        
                     </div>
                     <div class="glass-field relative flex items-center rounded-2xl px-4 py-3">
                         <input type="text"
@@ -165,11 +165,7 @@
                 </button>
             </div>
 
-            <!-- Status Info (Liquid Amber Glass Pill) -->
-            <div class="liquid-badge-amber mt-5 flex items-center justify-center gap-2 rounded-2xl p-3.5 text-xs font-semibold">
-                <span class="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(251,191,36,0.9)]"></span>
-                <span>Menunggu Verifikasi Pustakawan (Maks. 1&times;24 Jam)</span>
-            </div>
+            
         </form>
     </div>
 

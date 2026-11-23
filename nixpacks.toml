@@ -1,12 +1,11 @@
 # Configuration for Railway Deployment
-# Tells Nixpacks to only use PHP/Composer and skip npm install (avoiding memory limit exit code 137)
 providers = ["php"]
 
 [phases.setup]
-nixPkgs = ["php83", "php83Packages.composer"]
+nixPkgs = ["php83", "php83Packages.composer", "php83Extensions.gd", "php83Extensions.zip", "php83Extensions.intl", "php83Extensions.pdo_pgsql"]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-gd"]
 
 [phases.build]
 cmds = []
