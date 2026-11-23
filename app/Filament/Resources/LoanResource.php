@@ -20,6 +20,8 @@ class LoanResource extends Resource
 {
     protected static ?string $model = Loan::class;
 
+    protected static ?string $slug = 'peminjaman';
+
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $navigationLabel = 'Peminjaman & Pengembalian Buku';
@@ -354,7 +356,7 @@ class LoanResource extends Resource
                                 return new HtmlString("
                                     <div class='text-sm text-primary-600 dark:text-primary-400 font-medium'>
                                         Tenggat: <strong>{$jatuhTempo->locale('id')->translatedFormat('l, d F Y')}</strong>
-                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$totalDays} hari kerja " . ($isExtended ? '(Termasuk perpanjangan +7 hari)' : '') . " &bull; Kategori: {$kategori}</div>
+                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$totalDays} hari kerja ".($isExtended ? '(Termasuk perpanjangan +7 hari)' : '')." &bull; Kategori: {$kategori}</div>
                                     </div>
                                 ");
                             }),
@@ -454,7 +456,7 @@ class LoanResource extends Resource
                         $kode = $book?->book_code ? "[{$book->book_code}] " : '';
                         $kategori = static::getBookCategoryLabel($book);
 
-                        return $kode . $kategori;
+                        return $kode.$kategori;
                     })
                     ->weight('bold')
                     ->searchable(['books.judul', 'books.book_code'])
@@ -471,7 +473,7 @@ class LoanResource extends Resource
                     ->state(function (Loan $record): ?string {
                         if ($record->status === 'booked') {
                             return $record->booking_expires_at
-                                ? 'Ambil s/d ' . $record->booking_expires_at->locale('id')->translatedFormat('d M, H:i')
+                                ? 'Ambil s/d '.$record->booking_expires_at->locale('id')->translatedFormat('d M, H:i')
                                 : 'Menunggu Diambil (1x24 Jam)';
                         }
                         if ($record->status === 'dibatalkan') {
@@ -504,7 +506,7 @@ class LoanResource extends Resource
                             return "Hari ini jatuh tempo{$extLabel}";
                         }
 
-                        return 'Sisa ' . today()->diffInDays($record->jatuh_tempo->copy()->startOfDay()) . " hari{$extLabel}";
+                        return 'Sisa '.today()->diffInDays($record->jatuh_tempo->copy()->startOfDay())." hari{$extLabel}";
                     })
                     ->color(fn (Loan $record): ?string => ($record->isOverdue() || $record->isBookingExpired()) ? 'danger' : 'gray'),
 
@@ -622,10 +624,10 @@ class LoanResource extends Resource
                 Tables\Filters\SelectFilter::make('periode_denda')
                     ->label('Laporan Keuangan Denda')
                     ->options([
-                        'hari_ini' => 'Denda Hari Ini (' . now()->format('d M Y') . ')',
+                        'hari_ini' => 'Denda Hari Ini ('.now()->format('d M Y').')',
                         'minggu_ini' => 'Denda Minggu Ini',
-                        'bulan_ini' => 'Denda Bulan Ini (' . now()->locale('id')->translatedFormat('F Y') . ')',
-                        'tahun_ini' => 'Denda Tahun Ini (' . now()->year . ')',
+                        'bulan_ini' => 'Denda Bulan Ini ('.now()->locale('id')->translatedFormat('F Y').')',
+                        'tahun_ini' => 'Denda Tahun Ini ('.now()->year.')',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
@@ -657,7 +659,7 @@ class LoanResource extends Resource
                     ->visible(fn (Loan $record): bool => $record->status === 'booked' && ! $record->isBookingExpired())
                     ->requiresConfirmation()
                     ->modalHeading(fn (Loan $record): string => "Konfirmasi Pengambilan ({$record->booking_code})")
-                    ->modalDescription(fn (Loan $record): string => "Pastikan kartu identitas ({$record->card_type}) milik {$record->anggota?->nama} (NIM: {$record->member_nim} • Kelas: " . ($record->anggota?->kelas ?? '-') . ") sudah diserahkan. Stok buku akan otomatis berkurang 1.")
+                    ->modalDescription(fn (Loan $record): string => "Pastikan kartu identitas ({$record->card_type}) milik {$record->anggota?->nama} (NIM: {$record->member_nim} • Kelas: ".($record->anggota?->kelas ?? '-').') sudah diserahkan. Stok buku akan otomatis berkurang 1.')
                     ->modalSubmitActionLabel('Ya, Sudah Diambil')
                     ->action(function (Loan $record): void {
                         if (($record->book?->stok ?? 0) <= 0) {
@@ -737,7 +739,7 @@ class LoanResource extends Resource
                     ->url(function (Loan $record): string {
                         $phone = preg_replace('/[^0-9]/', '', $record->anggota->no_hp);
                         if (str_starts_with($phone, '0')) {
-                            $phone = '62' . substr($phone, 1);
+                            $phone = '62'.substr($phone, 1);
                         }
 
                         $nama = $record->anggota->nama;
@@ -757,24 +759,24 @@ class LoanResource extends Resource
                             $statusBaris = "*TERLAMBAT ({$hariTelat} hari kerja)*";
                             $catatan = "Estimasi denda sementara: *Rp {$estimasiDenda}*.\nMohon segera mengembalikan buku ke perpustakaan agar denda tidak terus bertambah.";
                         } elseif ($isHariH) {
-                            $statusBaris = "*JATUH TEMPO HARI INI*";
-                            $catatan = "Batas pengembalian berakhir *hari ini* sebelum jam tutup layanan. Mohon segera dikembalikan agar tidak terkena denda keterlambatan.";
+                            $statusBaris = '*JATUH TEMPO HARI INI*';
+                            $catatan = 'Batas pengembalian berakhir *hari ini* sebelum jam tutup layanan. Mohon segera dikembalikan agar tidak terkena denda keterlambatan.';
                         } else {
                             $sisaHari = $jatuhTempoCarbon ? today()->diffInDays($jatuhTempoCarbon) : 0;
                             $statusBaris = "Aktif (Sisa {$sisaHari} hari)";
-                            $catatan = "Mohon mengembalikan buku tepat waktu sebelum tanggal jatuh tempo.";
+                            $catatan = 'Mohon mengembalikan buku tepat waktu sebelum tanggal jatuh tempo.';
                         }
 
                         $pesan = "Halo *{$nama}*,\n\n"
-                            . "Pengingat Peminjaman Buku — *Perpustakaan Jurusan Akuntansi*\n\n"
-                            . "• Kode Booking : *{$kodeBooking}*\n"
-                            . "• Judul Buku : *{$judulBuku}*\n"
-                            . "• Jatuh Tempo : *{$jatuhTempoTeks}*\n"
-                            . "• Status : {$statusBaris}\n\n"
-                            . "{$catatan}\n\n"
-                            . "Terima kasih.";
+                            ."Pengingat Peminjaman Buku — *Perpustakaan Jurusan Akuntansi*\n\n"
+                            ."• Kode Booking : *{$kodeBooking}*\n"
+                            ."• Judul Buku : *{$judulBuku}*\n"
+                            ."• Jatuh Tempo : *{$jatuhTempoTeks}*\n"
+                            ."• Status : {$statusBaris}\n\n"
+                            ."{$catatan}\n\n"
+                            .'Terima kasih.';
 
-                        return 'https://wa.me/' . $phone . '?text=' . urlencode($pesan);
+                        return 'https://wa.me/'.$phone.'?text='.urlencode($pesan);
                     })
                     ->openUrlInNewTab(),
 
@@ -819,7 +821,7 @@ class LoanResource extends Resource
                                 $kategori = e(static::getBookCategoryLabel($book));
 
                                 $overdueHtml = $overdueDays > 0
-                                    ? "<span class='text-danger-600 dark:text-danger-400 font-bold'>Terlambat {$overdueDays} hari kerja (Denda: Rp " . number_format($lateFine, 0, ',', '.') . ')</span>'
+                                    ? "<span class='text-danger-600 dark:text-danger-400 font-bold'>Terlambat {$overdueDays} hari kerja (Denda: Rp ".number_format($lateFine, 0, ',', '.').')</span>'
                                     : "<span class='text-success-600 dark:text-success-400 font-semibold'>Tepat Waktu (Tidak ada denda terlambat)</span>";
 
                                 return new HtmlString("
@@ -829,7 +831,7 @@ class LoanResource extends Resource
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Kelas & No. HP:</strong> {$kelas} &bull; {$noHp}</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Jaminan Kartu:</strong> {$record->card_type}</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Koleksi:</strong> {$book?->judul} <span class='text-xs px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300 ring-1 ring-primary-600/20'>{$kategori}</span></div>
-                                        <div><strong class='text-gray-600 dark:text-gray-400'>Tgl Pinjam:</strong> " . ($record->tanggal_pinjam?->format('d M Y') ?? '-') . " &bull; <strong class='text-gray-600 dark:text-gray-400'>Jatuh Tempo:</strong> " . ($due?->format('d M Y') ?? '-') . "</div>
+                                        <div><strong class='text-gray-600 dark:text-gray-400'>Tgl Pinjam:</strong> ".($record->tanggal_pinjam?->format('d M Y') ?? '-')." &bull; <strong class='text-gray-600 dark:text-gray-400'>Jatuh Tempo:</strong> ".($due?->format('d M Y') ?? '-')."</div>
                                         <div><strong class='text-gray-600 dark:text-gray-400'>Status Keterlambatan:</strong> {$overdueHtml}</div>
                                     </div>
                                 ");
@@ -892,8 +894,8 @@ class LoanResource extends Resource
                         ]);
 
                         $statusMsg = $isLost
-                            ? 'Buku ditandai hilang. Denda sebesar Rp ' . number_format($fineAmount, 0, ',', '.') . ' telah dicatat (stok tidak ditambah).'
-                            : 'Buku berhasil dikembalikan ke rak (stok bertambah 1). Denda: Rp ' . number_format($fineAmount, 0, ',', '.') . '.';
+                            ? 'Buku ditandai hilang. Denda sebesar Rp '.number_format($fineAmount, 0, ',', '.').' telah dicatat (stok tidak ditambah).'
+                            : 'Buku berhasil dikembalikan ke rak (stok bertambah 1). Denda: Rp '.number_format($fineAmount, 0, ',', '.').'.';
 
                         Notification::make()
                             ->title('Pengembalian Berhasil Diproses')

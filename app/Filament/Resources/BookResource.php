@@ -15,10 +15,13 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 
 class BookResource extends Resource
 {
     protected static ?string $model = Book::class;
+
+    protected static ?string $slug = 'buku';
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
@@ -159,7 +162,7 @@ class BookResource extends Resource
                                         table: Book::class,
                                         column: 'isbn',
                                         ignoreRecord: true,
-                                        modifyRuleUsing: fn (\Illuminate\Validation\Rules\Unique $rule) => $rule->whereNotNull('isbn')
+                                        modifyRuleUsing: fn (Unique $rule) => $rule->whereNotNull('isbn')
                                     )
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null)
                                     ->live(onBlur: true)
@@ -204,7 +207,7 @@ class BookResource extends Resource
                                                         ->connectTimeout(8)
                                                         ->timeout(15)
                                                         ->get('https://www.googleapis.com/books/v1/volumes', [
-                                                            'q' => 'isbn:' . $cleanIsbn,
+                                                            'q' => 'isbn:'.$cleanIsbn,
                                                         ]);
 
                                                     if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
@@ -212,7 +215,7 @@ class BookResource extends Resource
 
                                                         $title = $volumeInfo['title'] ?? null;
                                                         if (! empty($volumeInfo['subtitle'])) {
-                                                            $title .= ': ' . $volumeInfo['subtitle'];
+                                                            $title .= ': '.$volumeInfo['subtitle'];
                                                         }
 
                                                         if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
@@ -238,13 +241,13 @@ class BookResource extends Resource
                                                             ->connectTimeout(8)
                                                             ->timeout(15)
                                                             ->get('https://openlibrary.org/api/books', [
-                                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
+                                                                'bibkeys' => 'ISBN:'.$cleanIsbn,
                                                                 'format' => 'json',
                                                                 'jscmd' => 'data',
                                                             ]);
 
                                                         if ($openLibraryResponse->successful()) {
-                                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
+                                                            $bookData = $openLibraryResponse->json('ISBN:'.$cleanIsbn);
                                                             if (! empty($bookData)) {
                                                                 $title = $title ?? ($bookData['title'] ?? null);
 

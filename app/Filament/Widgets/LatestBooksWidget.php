@@ -49,12 +49,12 @@ class LatestBooksWidget extends BaseWidget
                     ->badge()
                     ->color(fn (int $state): string => $state > 0 ? 'success' : 'danger'),
             ])
-            ->recordUrl(fn (Book $record): string => route('filament.admin.resources.books.edit', ['record' => $record]))
+            ->recordUrl(fn (Book $record): string => route('filament.admin.resources.buku.edit', ['record' => $record]))
             ->actions([
                 Tables\Actions\Action::make('edit')
                     ->label('Detail / Edit')
                     ->icon('heroicon-m-arrow-top-right-on-square')
-                    ->url(fn (Book $record): string => route('filament.admin.resources.books.edit', ['record' => $record]))
+                    ->url(fn (Book $record): string => route('filament.admin.resources.buku.edit', ['record' => $record]))
                     ->size('xs')
                     ->color('gray'),
             ])
@@ -63,7 +63,7 @@ class LatestBooksWidget extends BaseWidget
             ->emptyStateActions([
                 Tables\Actions\Action::make('create')
                     ->label('Tambah Buku Baru')
-                    ->url(route('filament.admin.resources.books.create'))
+                    ->url(route('filament.admin.resources.buku.create'))
                     ->icon('heroicon-m-plus')
                     ->button(),
             ]);

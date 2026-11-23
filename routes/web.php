@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
 use Illuminate\Support\Facades\Route;
@@ -36,19 +35,6 @@ Route::post('/masuk', [UserPortalController::class, 'prosesMasuk'])->name('masuk
 Route::get('/daftar', [UserPortalController::class, 'daftar'])->name('daftar');
 Route::post('/daftar', [UserPortalController::class, 'prosesDaftar'])->name('daftar.proses');
 Route::match(['get', 'post'], '/keluar', [UserPortalController::class, 'keluar'])->name('keluar');
-
-// Admin Dashboard & API Routes (Persis Mockup Pustaka Akuntansi)
-Route::get('/admin', [AdminDashboardController::class, 'index'])->name('filament.admin.pages.dashboard');
-Route::get('/admin/dashboard', fn () => redirect()->route('filament.admin.pages.dashboard'))->name('admin.dashboard');
-Route::post('/admin/api/anggota', [AdminDashboardController::class, 'saveAnggota'])->name('admin.api.anggota.save');
-Route::delete('/admin/api/anggota/{id}', [AdminDashboardController::class, 'deleteAnggota'])->name('admin.api.anggota.delete');
-Route::post('/admin/api/books', [AdminDashboardController::class, 'saveBook'])->name('admin.api.books.save');
-Route::delete('/admin/api/books/{id}', [AdminDashboardController::class, 'deleteBook'])->name('admin.api.books.delete');
-Route::post('/admin/api/loans', [AdminDashboardController::class, 'saveLoan'])->name('admin.api.loans.save');
-Route::post('/admin/api/loans/{id}/return', [AdminDashboardController::class, 'returnLoan'])->name('admin.api.loans.return');
-Route::post('/admin/api/loans/{id}/confirm-handover', [AdminDashboardController::class, 'confirmHandoverLoan'])->name('admin.api.loans.handover');
-Route::post('/admin/api/loans/{id}/cancel-booking', [AdminDashboardController::class, 'cancelBookingAdmin'])->name('admin.api.loans.cancel-booking');
-Route::post('/admin/api/loans/lookup-booking', [AdminDashboardController::class, 'lookupBooking'])->name('admin.api.loans.lookup-booking');
 
 // Admin Helper Routes
 Route::get('/admin/anggota/download-template', [AnggotaTemplateController::class, 'download'])

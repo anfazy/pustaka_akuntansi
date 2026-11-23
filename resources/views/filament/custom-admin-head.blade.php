@@ -136,7 +136,7 @@
     /* =========================================================
        MAIN CONTENT: Cards, Tables & Sections
        ========================================================= */
-    .fi-layout {
+    .fi-layout:not(.fi-simple-layout) {
         padding-top: 4rem !important;
     }
 

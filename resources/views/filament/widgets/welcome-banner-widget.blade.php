@@ -32,7 +32,7 @@
 
         <div class="relative z-10 shrink-0">
             <a
-                href="{{ route('filament.admin.resources.books.index') }}"
+                href="{{ route('filament.admin.resources.buku.index') }}"
                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-sm transition-all"
                 style="background: #fbbf24 !important; color: #022c22 !important; border: 1px solid #fde68a !important;"
             >

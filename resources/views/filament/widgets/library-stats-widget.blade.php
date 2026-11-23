@@ -2,7 +2,7 @@
     <!-- 4 KARTU STATISTIK UTAMA DASHBOARD PERSIS MOCKUP -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <!-- Card 1: Total Kategori -->
-        <a href="{{ route('filament.admin.resources.categories.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-emerald-400 transition-all group block">
+        <a href="{{ route('filament.admin.resources.kategori.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-emerald-400 transition-all group block">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold text-gray-500">Total Kategori</p>
                 <span class="w-7 h-7 rounded-lg flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white transition-colors" style="background-color: #ecfdf5; color: #047857;">
@@ -24,7 +24,7 @@
         </a>
 
         <!-- Card 2: Koleksi Judul Buku -->
-        <a href="{{ route('filament.admin.resources.books.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-amber-400 transition-all group block">
+        <a href="{{ route('filament.admin.resources.buku.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-amber-400 transition-all group block">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold text-gray-500">Koleksi Judul Buku</p>
                 <span class="w-7 h-7 rounded-lg flex items-center justify-center group-hover:bg-amber-400 group-hover:text-emerald-950 transition-colors" style="background-color: #fef3c7; color: #b45309;">
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Card 4: Sedang Dipinjam -->
-        <a href="{{ route('filament.admin.resources.loans.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-rose-300 transition-colors block">
+        <a href="{{ route('filament.admin.resources.peminjaman.index') }}" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/90 shadow-2xs hover:border-rose-300 transition-colors block">
             <div class="flex items-center justify-between">
                 <p class="text-xs font-semibold text-gray-500">Sedang Dipinjam</p>
                 <span class="w-7 h-7 rounded-lg flex items-center justify-center" style="background-color: #ffe4e6; color: #e11d48;">

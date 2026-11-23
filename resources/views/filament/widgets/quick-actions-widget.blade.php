@@ -25,7 +25,7 @@
         {{-- 3 Tombol Aksi Cepat Persis Mockup --}}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <a
-                href="{{ route('filament.admin.resources.loans.create') }}"
+                href="{{ route('filament.admin.resources.peminjaman.create') }}"
                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all hover:brightness-105 active:scale-[0.99]"
                 style="background: #fbbf24; color: #022c22; border: 1px solid rgba(245, 158, 11, 0.4);"
             >
@@ -35,7 +35,7 @@
                 <span>Catat Peminjaman</span>
             </a>
             <a
-                href="{{ route('filament.admin.resources.books.create') }}"
+                href="{{ route('filament.admin.resources.buku.create') }}"
                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all hover:brightness-105 active:scale-[0.99]"
                 style="background: #047857; color: #ffffff;"
             >
@@ -45,7 +45,7 @@
                 <span>Tambah Buku</span>
             </a>
             <a
-                href="{{ route('filament.admin.resources.categories.create') }}"
+                href="{{ route('filament.admin.resources.kategori.create') }}"
                 class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all hover:brightness-105 active:scale-[0.99]"
                 style="background: #064e3b; color: #ffffff; box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.4);"
             >
@@ -89,7 +89,7 @@
                 </span>
             </div>
             <a
-                href="{{ route('filament.admin.resources.books.index') }}"
+                href="{{ route('filament.admin.resources.buku.index') }}"
                 class="font-bold inline-flex items-center gap-1 hover:underline"
                 style="color: #047857;"
             >

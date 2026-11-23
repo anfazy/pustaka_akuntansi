@@ -1,3 +1,4 @@
+@if(auth()->check())
 <!-- TOP NAVBAR PERSIS MOCKUP -->
 <header class="fi-custom-full-header fixed top-0 left-0 right-0 z-40 h-16 border-b px-4 lg:px-6 flex items-center justify-between shadow-sm" style="background: linear-gradient(to right, #022c22, #064e3b, #047857); border-color: rgba(4, 120, 87, 0.8);">
     <div class="flex items-center gap-3">
@@ -57,3 +58,4 @@
         </div>
     </div>
 </header>
+@endif
