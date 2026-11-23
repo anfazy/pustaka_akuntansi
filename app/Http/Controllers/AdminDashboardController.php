@@ -15,6 +15,31 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        return $this->renderMockup('dashboard');
+    }
+
+    public function buku()
+    {
+        return $this->renderMockup('buku');
+    }
+
+    public function anggota()
+    {
+        return $this->renderMockup('anggota');
+    }
+
+    public function peminjaman()
+    {
+        return $this->renderMockup('sirkulasi');
+    }
+
+    public function kategori()
+    {
+        return $this->renderMockup('buku', ['openCategoryModal' => true]);
+    }
+
+    protected function renderMockup(string $activeTab = 'dashboard', array $extra = [])
+    {
         // Pastikan hanya user terotentikasi yang bisa akses admin
         if (! Auth::check()) {
             return redirect()->to('/admin/login');
@@ -217,7 +242,8 @@ class AdminDashboardController extends Controller
         };
         $formattedDate = $now->isoFormat('dddd, D MMMM Y');
 
-        return view('admin.mockup', [
+        return view('admin.mockup', array_merge([
+            'activeTab' => $activeTab,
             'user' => $user,
             'greeting' => $greeting,
             'formattedDate' => $formattedDate,
@@ -226,7 +252,7 @@ class AdminDashboardController extends Controller
             'booksDb' => $booksDb,
             'sirkulasiDb' => $sirkulasiDb,
             'webCatalogBookings' => $webCatalogBookings,
-        ]);
+        ], $extra));
     }
 
     // =========================================================================

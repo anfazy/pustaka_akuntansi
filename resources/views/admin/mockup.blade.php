@@ -128,25 +128,25 @@
         <aside id="sidebar-drawer" class="fixed inset-y-0 left-0 top-16 z-20 w-64 bg-white border-r border-gray-200/90 transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto transition-transform duration-200 ease-in-out flex flex-col justify-between shrink-0">
             <nav class="p-3.5 space-y-1">
                 <!-- 1. Dashboard -->
-                <button type="button" onclick="switchSidebarMenu('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-forest-50 text-forest-800 ring-1 ring-forest-200/90 transition-colors">
+                <a href="/admin" onclick="switchSidebarMenu('dashboard', event)" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-forest-50 text-forest-800 ring-1 ring-forest-200/90 transition-colors">
                     <i data-lucide="home" class="w-4 h-4 text-forest-700"></i>
                     <span>Dashboard</span>
-                </button>
+                </a>
 
                 <!-- 2. Anggota -->
-                <button type="button" onclick="switchSidebarMenu('anggota')" id="nav-anggota" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
+                <a href="/admin/anggota" onclick="switchSidebarMenu('anggota', event)" id="nav-anggota" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
                     <i data-lucide="users" class="w-4 h-4 text-gray-400"></i>
                     <span>Anggota</span>
-                </button>
+                </a>
 
                 <!-- 3. Buku -->
-                <button type="button" onclick="switchSidebarMenu('buku')" id="nav-buku" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
+                <a href="/admin/buku" onclick="switchSidebarMenu('buku', event)" id="nav-buku" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
                     <i data-lucide="book-open" class="w-4 h-4 text-gray-400"></i>
                     <span>Buku</span>
-                </button>
+                </a>
 
                 <!-- 4. Peminjaman & Pengembalian Buku -->
-                <button type="button" onclick="switchSidebarMenu('sirkulasi')" id="nav-sirkulasi" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
+                <a href="/admin/peminjaman" onclick="switchSidebarMenu('sirkulasi', event)" id="nav-sirkulasi" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-forest-50/70 hover:text-forest-800 transition-colors">
                     <div class="flex items-center gap-3 min-w-0">
                         <i data-lucide="arrow-left-right" class="w-4 h-4 text-gray-400 shrink-0"></i>
                         <span class="truncate">Peminjaman &amp; Pengembalian Buku</span>
@@ -154,7 +154,7 @@
                     <span id="sidebar-active-badge" class="ml-2 px-2 py-0.5 text-[11px] font-bold rounded-md bg-gold-100 text-amber-800 border border-gold-300 shrink-0">
                         2
                     </span>
-                </button>
+                </a>
             </nav>
 
             <!-- Info Ringkas di Bawah Sidebar -->
@@ -1983,7 +1983,19 @@
         // =========================================================================
         // 3. NAVIGASI SPA ANTAR MENU SIDEBAR
         // =========================================================================
-        function switchSidebarMenu(key) {
+        function switchSidebarMenu(key, event) {
+            if (event && event.type === 'click' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+                event.preventDefault();
+                let targetPath = '/admin';
+                if (key === 'buku') targetPath = '/admin/buku';
+                else if (key === 'anggota') targetPath = '/admin/anggota';
+                else if (key === 'sirkulasi') targetPath = '/admin/peminjaman';
+
+                if (window.location.pathname !== targetPath) {
+                    history.pushState({ tab: key }, '', targetPath);
+                }
+            }
+
             const allViews = [
                 "view-dashboard",
                 "view-anggota",
@@ -2030,6 +2042,15 @@
             window.scrollTo({ top: 0, behavior: "smooth" });
             lucide.createIcons();
         }
+
+        window.addEventListener("popstate", (e) => {
+            const p = window.location.pathname.toLowerCase();
+            let tab = "dashboard";
+            if (p.includes("/buku")) tab = "buku";
+            else if (p.includes("/anggota")) tab = "anggota";
+            else if (p.includes("/peminjaman") || p.includes("/sirkulasi")) tab = "sirkulasi";
+            switchSidebarMenu(tab);
+        });
 
         // =========================================================================
         // 4. LOGIKA DASHBOARD (KPI, CHART.JS DONUT, & 2 TABEL RINGKAS)
@@ -3881,6 +3902,20 @@
             renderDashboardChart();
             renderAnggotaTable();
             renderBooksTable();
+
+            let currentTab = "{{ $activeTab ?? '' }}";
+            if (!currentTab) {
+                const path = window.location.pathname.toLowerCase();
+                if (path.includes('/buku')) currentTab = 'buku';
+                else if (path.includes('/anggota')) currentTab = 'anggota';
+                else if (path.includes('/peminjaman') || path.includes('/sirkulasi')) currentTab = 'sirkulasi';
+                else currentTab = 'dashboard';
+            }
+            switchSidebarMenu(currentTab);
+
+            @if(!empty($openCategoryModal))
+                setTimeout(() => openKategoriModal(), 150);
+            @endif
         });
     </script>
 </body>

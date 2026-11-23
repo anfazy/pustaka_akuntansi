@@ -64,10 +64,6 @@ class AdminPanelProvider extends PanelProvider
                 'info' => Color::Teal,
             ])
             ->renderHook(
-                PanelsRenderHook::BODY_START,
-                fn () => view('filament.components.topbar-full')
-            )
-            ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.custom-admin-head')
             )
