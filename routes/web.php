@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
 use Illuminate\Support\Facades\Route;
@@ -37,16 +38,17 @@ Route::post('/daftar', [UserPortalController::class, 'prosesDaftar'])->name('daf
 Route::match(['get', 'post'], '/keluar', [UserPortalController::class, 'keluar'])->name('keluar');
 
 // Admin Dashboard & API Routes (Persis Mockup Pustaka Akuntansi)
-Route::get('/admin', [App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
-Route::post('/admin/api/anggota', [App\Http\Controllers\AdminDashboardController::class, 'saveAnggota'])->name('admin.api.anggota.save');
-Route::delete('/admin/api/anggota/{id}', [App\Http\Controllers\AdminDashboardController::class, 'deleteAnggota'])->name('admin.api.anggota.delete');
-Route::post('/admin/api/books', [App\Http\Controllers\AdminDashboardController::class, 'saveBook'])->name('admin.api.books.save');
-Route::delete('/admin/api/books/{id}', [App\Http\Controllers\AdminDashboardController::class, 'deleteBook'])->name('admin.api.books.delete');
-Route::post('/admin/api/loans', [App\Http\Controllers\AdminDashboardController::class, 'saveLoan'])->name('admin.api.loans.save');
-Route::post('/admin/api/loans/{id}/return', [App\Http\Controllers\AdminDashboardController::class, 'returnLoan'])->name('admin.api.loans.return');
-Route::post('/admin/api/loans/{id}/confirm-handover', [App\Http\Controllers\AdminDashboardController::class, 'confirmHandoverLoan'])->name('admin.api.loans.handover');
-Route::post('/admin/api/loans/{id}/cancel-booking', [App\Http\Controllers\AdminDashboardController::class, 'cancelBookingAdmin'])->name('admin.api.loans.cancel-booking');
-Route::post('/admin/api/loans/lookup-booking', [App\Http\Controllers\AdminDashboardController::class, 'lookupBooking'])->name('admin.api.loans.lookup-booking');
+Route::get('/admin', [AdminDashboardController::class, 'index'])->name('filament.admin.pages.dashboard');
+Route::get('/admin/dashboard', fn () => redirect()->route('filament.admin.pages.dashboard'))->name('admin.dashboard');
+Route::post('/admin/api/anggota', [AdminDashboardController::class, 'saveAnggota'])->name('admin.api.anggota.save');
+Route::delete('/admin/api/anggota/{id}', [AdminDashboardController::class, 'deleteAnggota'])->name('admin.api.anggota.delete');
+Route::post('/admin/api/books', [AdminDashboardController::class, 'saveBook'])->name('admin.api.books.save');
+Route::delete('/admin/api/books/{id}', [AdminDashboardController::class, 'deleteBook'])->name('admin.api.books.delete');
+Route::post('/admin/api/loans', [AdminDashboardController::class, 'saveLoan'])->name('admin.api.loans.save');
+Route::post('/admin/api/loans/{id}/return', [AdminDashboardController::class, 'returnLoan'])->name('admin.api.loans.return');
+Route::post('/admin/api/loans/{id}/confirm-handover', [AdminDashboardController::class, 'confirmHandoverLoan'])->name('admin.api.loans.handover');
+Route::post('/admin/api/loans/{id}/cancel-booking', [AdminDashboardController::class, 'cancelBookingAdmin'])->name('admin.api.loans.cancel-booking');
+Route::post('/admin/api/loans/lookup-booking', [AdminDashboardController::class, 'lookupBooking'])->name('admin.api.loans.lookup-booking');
 
 // Admin Helper Routes
 Route::get('/admin/anggota/download-template', [AnggotaTemplateController::class, 'download'])
