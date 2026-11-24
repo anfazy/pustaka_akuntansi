@@ -21,7 +21,7 @@
 
             <div class="pa-hero-actions">
                 <a
-                    href="{{ route('filament.admin.resources.books.index') }}"
+                    href="{{ \App\Filament\Resources\BookResource::getUrl('index') }}"
                     class="pa-pill-emerald inline-flex items-center gap-2 text-xs sm:text-sm"
                 >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -30,7 +30,7 @@
                     <span>Jelajahi Koleksi Buku</span>
                 </a>
                 <a
-                    href="{{ route('filament.admin.resources.loans.index') }}"
+                    href="{{ \App\Filament\Resources\LoanResource::getUrl('index') }}"
                     class="pa-hero-secondary-btn inline-flex items-center gap-2 font-bold text-xs sm:text-sm transition-all"
                 >
                     <span>Kelola Peminjaman &amp; Booking</span>
