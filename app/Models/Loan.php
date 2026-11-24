@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 class Loan extends Model
 {
@@ -39,16 +38,11 @@ class Loan extends Model
 
     protected static function booted(): void
     {
-        // Generate kode otomatis: AKT-XXXX (Booking Web User) atau PJM-XXXX (Pinjam Langsung oleh Admin)
+        // Generate satu format & satu urutan kode otomatis (AKT-0001, AKT-0002, dst.)
+        // Berlaku sama baik saat booking dari portal User maupun input langsung di Admin
         static::creating(function (Loan $loan): void {
             if (empty($loan->booking_code)) {
-                $prefix = ($loan->status === 'booked') ? 'AKT-' : 'PJM-';
-
-                do {
-                    $code = $prefix . strtoupper(Str::random(4));
-                } while (static::where('booking_code', $code)->exists());
-
-                $loan->booking_code = $code;
+                $loan->booking_code = static::generateNextSequentialCode();
             }
 
             if (empty($loan->tanggal_pinjam)) {
@@ -92,6 +86,12 @@ class Loan extends Model
                 if (empty($loan->tanggal_kembali)) {
                     $loan->tanggal_kembali = now()->toDateString();
                 }
+
+                if (empty($loan->fine_amount)) {
+                    $loan->fine_amount = $loan->is_lost
+                        ? $loan->calculateLostFine()
+                        : $loan->calculateLateFine(Carbon::parse($loan->tanggal_kembali));
+                }
             }
             // Dari booked / dikembalikan -> dipinjam: kurangi stok
             elseif (! $wasBorrowed && $nowBorrowed) {
@@ -120,6 +120,37 @@ class Loan extends Model
         });
     }
 
+    /**
+     * Menghasilkan nomor urut transaksi berikutnya dengan format AKT-0001, AKT-0002, dst.
+     */
+    public static function generateNextSequentialCode(): string
+    {
+        $maxNumber = 0;
+
+        $existingCodes = static::whereNotNull('booking_code')
+            ->pluck('booking_code');
+
+        foreach ($existingCodes as $code) {
+            if (preg_match('/^AKT-(\d+)$/i', (string) $code, $matches)) {
+                $num = (int) $matches[1];
+                if ($num > $maxNumber) {
+                    $maxNumber = $num;
+                }
+            }
+        }
+
+        // Pastikan nomor urut minimal mengikuti ID terakhir jika sudah ada data sebelumnya
+        $lastId = (int) static::max('id');
+        $nextNumber = max($maxNumber, $lastId) + 1;
+
+        do {
+            $candidate = 'AKT-' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+            $nextNumber++;
+        } while (static::where('booking_code', $candidate)->exists());
+
+        return $candidate;
+    }
+
     public function getJaminanAttribute(): ?string
     {
         return $this->card_type;
@@ -131,7 +162,10 @@ class Loan extends Model
     }
 
     /**
-     * Hitung tanggal jatuh tempo otomatis (hari kerja + tambahan 3 hari kerja jika diperpanjang).
+     * Hitung tanggal jatuh tempo otomatis:
+     * - TA / Skripsi: 14 hari kerja
+     * - Non-TA / Skripsi, Proposal TA/PKL & Laporan PKL: 7 hari kerja
+     * - Ditambah 3 hari kerja jika diperpanjang
      */
     public function getJatuhTempoAttribute(): ?Carbon
     {
@@ -139,7 +173,8 @@ class Loan extends Model
             return null;
         }
 
-        $baseDuration = $this->book?->getLoanDurationWeekdays() ?? 7;
+        $baseDuration = $this->book?->getLoanDurationWeekdays()
+            ?? (($this->book?->collection_type === 'ta_skripsi') ? 14 : 7);
         $extraDuration = $this->is_extended ? 3 : 0;
 
         return $this->tanggal_pinjam->copy()->addWeekdays($baseDuration + $extraDuration);
@@ -196,9 +231,15 @@ class Loan extends Model
         return $overdueWeekdays;
     }
 
+    /**
+     * Denda keterlambatan:
+     * - TA / Skripsi: Rp 300 / hari kerja
+     * - Non-TA / Skripsi & Proposal/Laporan PKL: Rp 200 / hari kerja
+     */
     public function calculateLateFine(?Carbon $returnDate = null): int
     {
-        $rate = $this->book?->getDendaPerHari() ?? (($this->book?->collection_type === 'ta_skripsi') ? 300 : 200);
+        $rate = $this->book?->getDendaPerHari()
+            ?? (($this->book?->collection_type === 'ta_skripsi') ? 300 : 200);
 
         $weekdays = $this->calculateOverdueWeekdays($returnDate);
         if ($weekdays > 0) {
@@ -215,6 +256,11 @@ class Loan extends Model
         return 0;
     }
 
+    /**
+     * Denda kehilangan:
+     * - TA / Skripsi & Proposal/Laporan PKL: Rp 200.000
+     * - Non-TA / Skripsi: Mengganti buku yang sama atau seharga buku yang dihilangkan (diinput manual oleh admin)
+     */
     public function calculateLostFine(): int
     {
         if (in_array($this->book?->collection_type, ['ta_skripsi', 'proposal_laporan_pkl'])) {
@@ -222,6 +268,20 @@ class Loan extends Model
         }
 
         return 0;
+    }
+
+    /**
+     * Cek apakah jatuh tempo peminjaman tepat pada hari ini (Hari-H).
+     */
+    public function isDueToday(): bool
+    {
+        if (! in_array($this->status, ['dipinjam', 'terlambat'])) {
+            return false;
+        }
+
+        $due = $this->jatuh_tempo;
+
+        return $due ? today()->equalTo($due->copy()->startOfDay()) : false;
     }
 
     public function isOverdue(): bool
@@ -237,6 +297,62 @@ class Loan extends Model
         $due = $this->jatuh_tempo;
 
         return $due ? today()->gt($due->copy()->startOfDay()) : false;
+    }
+
+    /**
+     * Susun URL WhatsApp (wa.me) pengingat jatuh tempo Hari-H atau keterlambatan.
+     */
+    public function getWhatsAppReminderUrl(): ?string
+    {
+        $rawPhone = $this->anggota?->no_hp
+            ?? $this->anggota?->no_telepon
+            ?? $this->anggota?->telepon
+            ?? $this->member?->no_telepon
+            ?? $this->member?->telepon
+            ?? null;
+
+        if (empty($rawPhone)) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', (string) $rawPhone);
+        if (str_starts_with($digits, '0')) {
+            $digits = '62' . substr($digits, 1);
+        } elseif (str_starts_with($digits, '8')) {
+            $digits = '62' . $digits;
+        }
+
+        if (strlen($digits) < 10) {
+            return null;
+        }
+
+        $nama = $this->anggota?->nama ?? $this->member?->nama ?? 'Mahasiswa';
+        $kode = $this->booking_code ?? '-';
+        $judulBuku = $this->book?->judul ?? 'Buku Perpustakaan';
+        $jatuhTempo = $this->jatuh_tempo ? $this->jatuh_tempo->locale('id')->translatedFormat('d F Y') : '-';
+        $jamTutup = now()->timezone('Asia/Jakarta')->isFriday() ? '14.00 WIB' : '15.30 WIB';
+
+        if ($this->isOverdue()) {
+            $hariTelat = max(1, $this->calculateOverdueWeekdays());
+            $denda = number_format($this->calculateLateFine(), 0, ',', '.');
+            $statusPesan = "*TERLAMBAT {$hariTelat} hari kerja* (Estimasi denda: *Rp {$denda}*). Mohon segera mengembalikan buku ke Perpustakaan Jurusan Akuntansi agar denda tidak terus bertambah.";
+        } elseif ($this->isDueToday()) {
+            $statusPesan = "*JATUH TEMPO HARI INI ({$jatuhTempo})*. Mohon segera mengembalikan atau memperpanjang peminjaman buku sebelum jam layanan tutup ({$jamTutup}).";
+        } else {
+            $statusPesan = "Akan jatuh tempo pada *{$jatuhTempo}*. Mohon mengembalikan buku tepat waktu ke Perpustakaan Jurusan Akuntansi.";
+        }
+
+        $pesan = "Halo *{$nama}*,\n\n"
+            . "Pengingat Sirkulasi *Perpustakaan Jurusan Akuntansi*:\n"
+            . "• Kode Transaksi: *{$kode}*\n"
+            . "• Judul Buku: *{$judulBuku}*\n"
+            . "• Jatuh Tempo: *{$jatuhTempo}*\n\n"
+            . "Status: {$statusPesan}\n"
+            . "Jam Layanan: Senin–Kamis (08.30–15.30 WIB) | Jumat (08.30–14.00 WIB)\n"
+            . "WA Perpustakaan: 0895-3363-84919\n\n"
+            . "Terima kasih.";
+
+        return 'https://wa.me/' . $digits . '?text=' . rawurlencode($pesan);
     }
 
     /**
@@ -263,17 +379,9 @@ class Loan extends Model
         return now()->gt($this->created_at->copy()->addHours(24));
     }
 
-    /**
-     * Cek apakah kode transaksi berasal dari peminjaman langsung (PJM-) atau booking web (AKT-).
-     */
-    public function isDirectLoanCode(): bool
-    {
-        return str_starts_with((string) $this->booking_code, 'PJM-');
-    }
-
     public function getTransactionCodeLabelAttribute(): string
     {
-        return $this->isDirectLoanCode() ? 'Kode Pinjam' : 'Kode Booking';
+        return $this->status === 'booked' ? 'Kode Booking' : 'Kode Pinjam';
     }
 
     public function book(): BelongsTo

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perpustakaan Jurusan Akuntansi - Pustaka Akuntansi</title>
+    <title>Perpustakaan Jurusan Akuntansi - Perpustakaan Jurusan Akuntansi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Plus Jakarta Sans & Inter -->
@@ -14,7 +14,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -85,7 +85,7 @@
             <button id="mobile-menu-btn" type="button" class="lg:hidden p-2 rounded-lg text-forest-100 hover:bg-forest-800 focus:outline-none">
                 <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
-            
+
             <!-- Brand Title: Perpustakaan Jurusan Akuntansi -->
             <a href="#" onclick="switchSidebarMenu('dashboard'); return false;" class="flex items-center gap-3 group">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-300 to-gold-500 text-forest-950 flex items-center justify-center shadow-sm ring-1 ring-gold-200/60 group-hover:scale-105 transition-transform">
@@ -106,7 +106,7 @@
                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-gold-400"></i>
                 <span>{{ $formattedDate ?? 'Minggu, 22 November 2026' }}</span>
             </div>
-            
+
             <div class="flex items-center gap-2.5">
                 <span class="hidden sm:inline text-xs font-semibold text-forest-100">{{ $user->name ?? 'Admin Perpus' }}</span>
                 <div class="w-9 h-9 rounded-full bg-gold-400 text-forest-950 font-extrabold text-sm flex items-center justify-center ring-2 ring-gold-300/60 shadow-xs cursor-pointer" title="{{ $user->email ?? 'Admin Perpustakaan' }}">
@@ -123,7 +123,7 @@
     </header>
 
     <div class="min-h-[calc(100vh-4rem)] flex">
-        
+
         <!-- SIDEBAR KIRI (4 Menu Persis Seperti sirkulasi_2.html) -->
         <aside id="sidebar-drawer" class="fixed inset-y-0 left-0 top-16 z-20 w-64 bg-white border-r border-gray-200/90 transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto transition-transform duration-200 ease-in-out flex flex-col justify-between shrink-0">
             <nav class="p-3.5 space-y-1">
@@ -178,7 +178,7 @@
             <!-- VIEW 1: DASHBOARD (Utama)                                             -->
             <!-- ===================================================================== -->
             <div id="view-dashboard" class="view-section space-y-6">
-                
+
                 <!-- Header Halaman -->
                 <div class="flex items-center justify-between">
                     <h1 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
@@ -196,7 +196,7 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-forest-950/70 border border-forest-700/80 text-gold-300 text-xs font-bold">
                                 <i data-lucide="landmark" class="w-3.5 h-3.5"></i>
-                                <span>Pustaka Akuntansi</span>
+                                <span>Perpustakaan Jurusan Akuntansi</span>
                             </span>
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-forest-800/80 border border-forest-700/60 text-forest-100 text-xs font-medium">
                                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-gold-400"></i>
@@ -207,7 +207,7 @@
                             {{ $greeting ?? 'Selamat Datang' }}, <span class="text-gold-300">{{ $user->name ?? 'Admin Perpus' }}!</span> 👋
                         </h2>
                         <p class="text-xs sm:text-sm text-forest-100/90 max-w-3xl leading-relaxed">
-                            Selamat datang di pusat kendali operasional Pustaka Akuntansi. Pantau statistik sirkulasi, distribusi kategori referensi, dan ketersediaan stok buku secara real-time.
+                            Selamat datang di pusat kendali operasional Perpustakaan Jurusan Akuntansi. Pantau statistik sirkulasi, distribusi kategori referensi, dan ketersediaan stok buku secara real-time.
                         </p>
                     </div>
 
@@ -284,7 +284,7 @@
 
                 <!-- BARIS TENGAH 2 KOLOM: DONUT CHART & AKSI CEPAT + INFO PERPUSTAKAAN -->
                 <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
+
                     <!-- Kolom Kiri: Distribusi Koleksi Buku per Kategori -->
                     <div class="bg-white rounded-xl border border-gray-200/90 shadow-2xs p-5 sm:p-6 flex flex-col justify-between">
                         <div class="flex items-start justify-between gap-3 mb-4">
@@ -323,7 +323,7 @@
                                         Aksi Cepat &amp; Info Perpustakaan
                                     </h3>
                                     <p class="text-xs text-gray-500">
-                                        Pustaka Akuntansi • Akses instan dan ringkasan panduan operasional layanan
+                                        Perpustakaan Jurusan Akuntansi • Akses instan dan ringkasan panduan operasional layanan
                                     </p>
                                 </div>
                             </div>
@@ -979,7 +979,7 @@
             <!-- VIEW 4A: PEMINJAMAN & PENGEMBALIAN BUKU (Sirkulasi > List)            -->
             <!-- ===================================================================== -->
             <div id="view-sirkulasi" class="hidden view-section space-y-6">
-                
+
                 <!-- Breadcrumb & Header Halaman + 3 Tombol Aksi Kanan Atas -->
                 <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                     <div>
@@ -1497,7 +1497,7 @@
             </div>
             <form onsubmit="submitBookForm(event)" class="p-5 space-y-3.5 text-xs sm:text-sm overflow-y-auto">
                 <input type="hidden" id="book-edit-id">
-                
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="book-kode-input" class="block text-xs font-bold text-gray-700 mb-1">Kode Buku*</label>

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\URL;
+use Filament\Notifications\Notification;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,18 +22,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST']) && filled($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $scheme = (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
-            URL::forceRootUrl($scheme.'://'.$_SERVER['HTTP_X_FORWARDED_HOST']);
-        } elseif (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], 'ngrok')) {
-            URL::forceRootUrl('https://'.$_SERVER['HTTP_HOST']);
-        }
+        Event::listen(Login::class, function (Login $event) {
+            $namaAdmin = $event->user->name ?? 'Admin';
 
-        if ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
-            (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], 'ngrok')) ||
-            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
-            app()->environment('production')) {
-            URL::forceScheme('https');
-        }
+            Notification::make()
+                ->title('Selamat Datang, Admin!')
+                ->body("Halo {$namaAdmin}, selamat bertugas mengelola Ruang Baca Jurusan Akuntansi Polines.")
+                ->success()
+                ->icon('heroicon-o-sparkles')
+                ->duration(6000)
+                ->send();
+        });
     }
 }

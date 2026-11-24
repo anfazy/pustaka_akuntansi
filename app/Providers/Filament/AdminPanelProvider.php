@@ -27,7 +27,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Pustaka Akuntansi')
+            ->darkMode(true)
+            ->brandName('Perpustakaan Jurusan Akuntansi')
             ->brandLogo(fn () => view('filament.components.brand'))
             ->brandLogoHeight('2.75rem')
             ->favicon(fn () => asset('images/logo-hmj-akuntansi.jpg'))
@@ -66,10 +67,6 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.custom-admin-head')
-            )
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_FOOTER,
-                fn () => view('filament.components.sidebar-rules-card')
             )
             ->maxContentWidth('full')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
