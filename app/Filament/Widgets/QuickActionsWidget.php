@@ -23,15 +23,25 @@ class QuickActionsWidget extends Widget
     {
         $now = now()->timezone('Asia/Jakarta');
 
-        // Hari Senin (1) sampai Jumat (5)
+        // Sabtu (6) dan Minggu (0) tutup
         if (! $now->isWeekday()) {
             return false;
         }
 
-        // Pukul 08.00 - 16.00 WIB
         $currentMinutes = ($now->hour * 60) + $now->minute;
+        $openMinutes = (8 * 60) + 30; // 08.30 WIB
 
-        return $currentMinutes >= (8 * 60) && $currentMinutes < (16 * 60);
+        // Jumat (5): 08.30 - 14.00 WIB
+        if ($now->isFriday()) {
+            $closeMinutes = 14 * 60; // 14.00 WIB
+
+            return $currentMinutes >= $openMinutes && $currentMinutes < $closeMinutes;
+        }
+
+        // Senin (1) - Kamis (4): 08.30 - 15.30 WIB
+        $closeMinutes = (15 * 60) + 30; // 15.30 WIB
+
+        return $currentMinutes >= $openMinutes && $currentMinutes < $closeMinutes;
     }
 
     public function getQuickStats(): array

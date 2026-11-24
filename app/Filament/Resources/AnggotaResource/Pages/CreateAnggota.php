@@ -42,4 +42,9 @@ class CreateAnggota extends CreateRecord
         return parent::getCancelFormAction()
             ->label('Batal');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

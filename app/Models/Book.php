@@ -33,6 +33,33 @@ class Book extends Model
         'stok' => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Book $book): void {
+            if ($book->category_id) {
+                $category = $book->category ?? Category::find($book->category_id);
+                if ($category) {
+                    $nama = strtolower($category->nama);
+                    $slug = strtolower((string) $category->slug);
+
+                    if (str_contains($nama, 'pkl') || str_contains($nama, 'proposal') || str_contains($slug, 'pkl') || str_contains($slug, 'proposal')) {
+                        $book->collection_type = 'proposal_laporan_pkl';
+                    } elseif (
+                        str_contains($nama, 'skripsi')
+                        || str_contains($nama, 'tugas akhir')
+                        || preg_match('/\bta\b/', $nama)
+                        || str_contains($slug, 'ta-skripsi')
+                        || str_contains($slug, 'tugas-akhir')
+                    ) {
+                        $book->collection_type = 'ta_skripsi';
+                    } else {
+                        $book->collection_type = 'umum';
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * Get the human-readable label for the collection type.
      */
@@ -58,7 +85,7 @@ class Book extends Model
     /**
      * Tarif denda keterlambatan per hari.
      * TA / Skripsi: Rp 300 / hari.
-     * Kategori lainnya (Akuntansi, Perpajakan, Fiksi, Laporan PKL): Rp 200 / hari.
+     * Kategori lainnya (Non-TA / Umum, Proposal TA/PKL & Laporan PKL): Rp 200 / hari.
      */
     public function getDendaPerHari(): int
     {

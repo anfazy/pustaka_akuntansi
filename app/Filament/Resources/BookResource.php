@@ -58,7 +58,7 @@ class BookResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Klasifikasi & Identitas Buku')
-                    ->description('Pilih kategori buku, kode koleksi/rak, judul, dan penulis.')
+                    ->description('Pilih kategori buku, kode koleksi, judul, dan penulis.')
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -105,18 +105,11 @@ class BookResource extends Resource
                                 Forms\Components\TextInput::make('book_code')
                                     ->label('Kode Buku / Koleksi')
                                     ->placeholder('Contoh: AKT-001, TA-2026-001, atau PKL-2026-012')
-                                    ->helperText('Wajib untuk TA/Skripsi & Laporan PKL; opsional sebagai kode inventaris/rak untuk buku umum.')
+                                    ->helperText('Wajib untuk TA/Skripsi & Laporan PKL; opsional sebagai kode inventaris untuk buku umum.')
                                     ->maxLength(50)
                                     ->unique(table: Book::class, column: 'book_code', ignoreRecord: true)
                                     ->required(fn (Forms\Get $get): bool => self::isNonIsbnCategory($get('category_id')))
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? strtoupper(trim($state)) : null),
-
-                                Forms\Components\TextInput::make('rak')
-                                    ->label('Lokasi Rak')
-                                    ->placeholder('Contoh: Rak A-02 / Lantai 2')
-                                    ->helperText('Lokasi fisik buku disimpan di ruang baca.')
-                                    ->maxLength(100)
-                                    ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null),
 
                                 Forms\Components\TextInput::make('judul')
                                     ->label('Judul Buku')
@@ -313,28 +306,31 @@ class BookResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Stok, Cover & Deskripsi')
-                    ->description('Atur stok tersedia, gambar cover, dan deskripsi buku.')
+                    ->description('Atur jumlah stok tersedia. Cover dan deskripsi/sinopsis bersifat opsional.')
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('stok')
                                     ->label('Stok Tersedia')
                                     ->numeric()
-                                    ->default(0)
+                                    ->default(1)
                                     ->minValue(0)
                                     ->required(),
 
                                 Forms\Components\FileUpload::make('cover')
-                                    ->label('Cover Buku')
+                                    ->label('Cover Buku (Opsional)')
+                                    ->helperText('Boleh dikosongkan jika tidak ada gambar sampul.')
                                     ->image()
                                     ->directory('covers')
-                                    ->disk('public'),
+                                    ->disk('public')
+                                    ->nullable(),
                             ]),
 
                         Forms\Components\Textarea::make('sinopsis')
-                            ->label('Deskripsi Buku')
-                            ->placeholder('Tulis deskripsi atau ringkasan isi buku di sini...')
+                            ->label('Deskripsi / Sinopsis Buku (Opsional)')
+                            ->placeholder('Boleh dikosongkan atau tulis ringkasan isi buku di sini...')
                             ->rows(4)
+                            ->nullable()
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -344,12 +340,13 @@ class BookResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Detail Buku Pustaka Akuntansi')
+                Infolists\Components\Section::make('Detail Buku Perpustakaan Jurusan Akuntansi')
                     ->schema([
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\ImageEntry::make('cover')
                                     ->disk('public')
+                                    ->defaultImageUrl(asset('images/logo-hmj-akuntansi.jpg'))
                                     ->label('Cover Buku')
                                     ->columnSpan(1),
                                 Infolists\Components\Grid::make(2)
@@ -367,9 +364,6 @@ class BookResource extends Resource
                                             ->color('info'),
                                         Infolists\Components\TextEntry::make('penulis')
                                             ->label('Penulis'),
-                                        Infolists\Components\TextEntry::make('rak')
-                                            ->label('Lokasi Rak')
-                                            ->placeholder('-'),
                                         Infolists\Components\TextEntry::make('penerbit')
                                             ->label('Penerbit'),
                                         Infolists\Components\TextEntry::make('tahun_terbit')
@@ -391,7 +385,7 @@ class BookResource extends Resource
                                     ->columnSpan(2),
                             ]),
                         Infolists\Components\TextEntry::make('sinopsis')
-                            ->label('Deskripsi Buku')
+                            ->label('Deskripsi / Sinopsis Buku')
                             ->placeholder('Belum ada deskripsi untuk buku ini.')
                             ->columnSpanFull(),
                     ]),
@@ -404,6 +398,7 @@ class BookResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
                     ->disk('public')
+                    ->defaultImageUrl(asset('images/logo-hmj-akuntansi.jpg'))
                     ->label('Cover')
                     ->square()
                     ->size(48),
@@ -420,11 +415,6 @@ class BookResource extends Resource
                     ->label('Kategori')
                     ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('rak')
-                    ->label('Lokasi Rak')
-                    ->searchable()
-                    ->sortable()
-                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('penulis')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tahun_terbit')

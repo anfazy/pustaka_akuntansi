@@ -30,12 +30,20 @@ class ListLoans extends ListRecords
             ->count();
 
         $borrowedCount = Loan::where('status', 'dipinjam')->count();
+
+        $dueTodayIds = Loan::with('book')
+            ->whereIn('status', ['dipinjam', 'terlambat'])
+            ->where('is_lost', false)
+            ->get()
+            ->filter(fn (Loan $loan): bool => $loan->isDueToday())
+            ->pluck('id');
+
         $overdueCount = Loan::where('status', 'terlambat')->count();
 
         return [
             'semua' => Tab::make('Semua Transaksi'),
 
-            'booking' => Tab::make('Rekap Booking User')
+            'booking' => Tab::make('Booking Masuk')
                 ->icon('heroicon-m-ticket')
                 ->badge($activeBookingCount > 0 ? (string) $activeBookingCount : null)
                 ->badgeColor('info')
@@ -48,6 +56,12 @@ class ListLoans extends ListRecords
                 ->badge($borrowedCount > 0 ? (string) $borrowedCount : null)
                 ->badgeColor('warning')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'dipinjam')),
+
+            'jatuh_tempo_hari_ini' => Tab::make('Jatuh Tempo Hari-H')
+                ->icon('heroicon-m-bell-alert')
+                ->badge($dueTodayIds->count() > 0 ? (string) $dueTodayIds->count() : null)
+                ->badgeColor('warning')
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereIn('id', $dueTodayIds)),
 
             'terlambat' => Tab::make('Terlambat')
                 ->icon('heroicon-m-exclamation-triangle')
@@ -64,9 +78,9 @@ class ListLoans extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // 1. Export Laporan Keuangan Denda (Excel rapi dengan border & format kolom)
+            // 1. Export Laporan Keuangan Denda (Excel)
             Actions\Action::make('exportLaporanDenda')
-                ->label('Export Laporan Denda (Excel)')
+                ->label('Laporan Denda (Excel)')
                 ->icon('heroicon-o-banknotes')
                 ->color('warning')
                 ->form([
@@ -115,6 +129,7 @@ class ListLoans extends ListRecords
 
                         foreach ($loans as $index => $loan) {
                             /** @var Loan $loan */
+                            $no = $index + 1;
                             $denda = (int) ($loan->fine_amount ?? 0);
                             $totalDenda += $denda;
 
@@ -134,86 +149,86 @@ class ListLoans extends ListRecords
                             $tglKembali = e($loan->tanggal_kembali?->format('d/m/Y') ?? '-');
                             $dendaFormat = 'Rp ' . number_format($denda, 0, ',', '.');
 
-                            $rowsHtml .= "
-                                <tr>
-                                    <td style='border:1px solid #999; text-align:center;'>" . ($index + 1) . "</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$tglTransaksi}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kodeBooking}</td>
-                                    <td style='border:1px solid #999; mso-number-format:\"\@\";'>{$nim}</td>
-                                    <td style='border:1px solid #999;'>{$nama}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kelas}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kodeBuku}</td>
-                                    <td style='border:1px solid #999;'>{$judulBuku}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$tglPinjam}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$jatuhTempo}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$tglKembali}</td>
-                                    <td style='border:1px solid #999;'>{$keterangan}</td>
-                                    <td style='border:1px solid #999; text-align:right; font-weight:bold;'>{$dendaFormat}</td>
-                                </tr>
-                            ";
+                            $rowsHtml .= <<<HTML
+<tr>
+    <td style="border:1px solid #999; text-align:center;">{$no}</td>
+    <td style="border:1px solid #999; text-align:center;">{$tglTransaksi}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kodeBooking}</td>
+    <td style="border:1px solid #999; mso-number-format:'\@';">{$nim}</td>
+    <td style="border:1px solid #999;">{$nama}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kelas}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kodeBuku}</td>
+    <td style="border:1px solid #999;">{$judulBuku}</td>
+    <td style="border:1px solid #999; text-align:center;">{$tglPinjam}</td>
+    <td style="border:1px solid #999; text-align:center;">{$jatuhTempo}</td>
+    <td style="border:1px solid #999; text-align:center;">{$tglKembali}</td>
+    <td style="border:1px solid #999;">{$keterangan}</td>
+    <td style="border:1px solid #999; text-align:right; font-weight:bold;">{$dendaFormat}</td>
+</tr>
+HTML;
                         }
 
                         $totalFormat = 'Rp ' . number_format($totalDenda, 0, ',', '.');
                         $tanggalCetak = now()->format('d/m/Y H:i');
                         $periodeUpper = strtoupper($labelPeriode);
 
-                        echo "
-                        <html xmlns:x='urn:schemas-microsoft-com:office:excel'>
-                        <head><meta charset='UTF-8'></head>
-                        <body>
-                            <table>
-                                <tr>
-                                    <td colspan='13' style='font-size:14pt; font-weight:bold;'>LAPORAN KEUANGAN DENDA PERPUSTAKAAN PUSTAKA AKUNTANSI</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='2'><strong>Periode Laporan:</strong></td>
-                                    <td colspan='11'>{$periodeUpper}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='2'><strong>Tanggal Cetak:</strong></td>
-                                    <td colspan='11'>{$tanggalCetak}</td>
-                                </tr>
-                                <tr><td colspan='13'></td></tr>
-                                <thead>
-                                    <tr style='background-color:#1E3A8A; color:#FFFFFF; font-weight:bold; text-align:center;'>
-                                        <th style='border:1px solid #000; padding:6px;'>No</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Tanggal Transaksi</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kode Booking</th>
-                                        <th style='border:1px solid #000; padding:6px;'>NIM / No. Anggota</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Nama Anggota</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kelas</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kode Buku</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Judul Buku</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Tanggal Pinjam</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Jatuh Tempo</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Tanggal Kembali</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Keterangan Denda</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Nominal Denda</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {$rowsHtml}
-                                    <tr style='background-color:#FEF3C7; font-weight:bold;'>
-                                        <td colspan='12' style='border:1px solid #000; text-align:right; padding:6px;'>TOTAL PEMASUKAN DENDA</td>
-                                        <td style='border:1px solid #000; text-align:right; padding:6px;'>{$totalFormat}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </body>
-                        </html>
-                        ";
+                        echo <<<HTML
+<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head><meta charset="UTF-8"></head>
+<body>
+    <table>
+        <tr>
+            <td colspan="13" style="font-size:14pt; font-weight:bold;">LAPORAN KEUANGAN DENDA PERPUSTAKAAN JURUSAN AKUNTANSI</td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Periode Laporan:</strong></td>
+            <td colspan="11">{$periodeUpper}</td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Tanggal Cetak:</strong></td>
+            <td colspan="11">{$tanggalCetak}</td>
+        </tr>
+        <tr><td colspan="13"></td></tr>
+        <thead>
+            <tr style="background-color:#065F46; color:#FFFFFF; font-weight:bold; text-align:center;">
+                <th style="border:1px solid #000; padding:6px;">No</th>
+                <th style="border:1px solid #000; padding:6px;">Tanggal Transaksi</th>
+                <th style="border:1px solid #000; padding:6px;">Kode Transaksi</th>
+                <th style="border:1px solid #000; padding:6px;">NIM / No. Anggota</th>
+                <th style="border:1px solid #000; padding:6px;">Nama Anggota</th>
+                <th style="border:1px solid #000; padding:6px;">Kelas</th>
+                <th style="border:1px solid #000; padding:6px;">Kode Buku</th>
+                <th style="border:1px solid #000; padding:6px;">Judul Buku</th>
+                <th style="border:1px solid #000; padding:6px;">Tanggal Pinjam</th>
+                <th style="border:1px solid #000; padding:6px;">Jatuh Tempo</th>
+                <th style="border:1px solid #000; padding:6px;">Tanggal Kembali</th>
+                <th style="border:1px solid #000; padding:6px;">Keterangan Denda</th>
+                <th style="border:1px solid #000; padding:6px;">Nominal Denda</th>
+            </tr>
+        </thead>
+        <tbody>
+            {$rowsHtml}
+            <tr style="background-color:#FEF3C7; font-weight:bold;">
+                <td colspan="12" style="border:1px solid #000; text-align:right; padding:6px;">TOTAL PEMASUKAN DENDA</td>
+                <td style="border:1px solid #000; text-align:right; padding:6px;">{$totalFormat}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+HTML;
                     }, $fileName, [
                         'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
                     ]);
                 }),
 
-            // 2. Export Laporan Sirkulasi Keseluruhan (Excel rapi)
+            // 2. Export Laporan Sirkulasi Keseluruhan (Excel)
             Actions\Action::make('exportLaporan')
                 ->label('Export Sirkulasi (Excel)')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->action(function (): StreamedResponse {
-                    $fileName = 'laporan-sirkulasi-pustaka-akuntansi-' . now()->format('Y-m-d_His') . '.xls';
+                    $fileName = 'laporan-sirkulasi-perpustakaan-akuntansi-' . now()->format('Y-m-d_His') . '.xls';
 
                     $loans = $this->getFilteredTableQuery()
                         ->with(['anggota', 'book'])
@@ -225,6 +240,7 @@ class ListLoans extends ListRecords
 
                         foreach ($loans as $index => $loan) {
                             /** @var Loan $loan */
+                            $no = $index + 1;
                             $statusLabel = match (true) {
                                 $loan->is_lost => 'Buku Hilang',
                                 $loan->status === 'booked' => 'Belum Diambil (Booking)',
@@ -249,70 +265,70 @@ class ListLoans extends ListRecords
                             $hilang = $loan->is_lost ? 'Ya' : 'Tidak';
                             $denda = 'Rp ' . number_format((int) ($loan->fine_amount ?? 0), 0, ',', '.');
 
-                            $rowsHtml .= "
-                                <tr>
-                                    <td style='border:1px solid #999; text-align:center;'>" . ($index + 1) . "</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kodeBooking}</td>
-                                    <td style='border:1px solid #999;'>{$nama}</td>
-                                    <td style='border:1px solid #999; mso-number-format:\"\@\";'>{$nim}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kelas}</td>
-                                    <td style='border:1px solid #999; mso-number-format:\"\@\";'>{$noHp}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kartu}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$kodeBuku}</td>
-                                    <td style='border:1px solid #999;'>{$judulBuku}</td>
-                                    <td style='border:1px solid #999;'>{$jenisKoleksi}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$tglPinjam}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$jatuhTempo}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$tglKembali}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$statusLabel}</td>
-                                    <td style='border:1px solid #999; text-align:center;'>{$hilang}</td>
-                                    <td style='border:1px solid #999; text-align:right;'>{$denda}</td>
-                                </tr>
-                            ";
+                            $rowsHtml .= <<<HTML
+<tr>
+    <td style="border:1px solid #999; text-align:center;">{$no}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kodeBooking}</td>
+    <td style="border:1px solid #999;">{$nama}</td>
+    <td style="border:1px solid #999; mso-number-format:'\@';">{$nim}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kelas}</td>
+    <td style="border:1px solid #999; mso-number-format:'\@';">{$noHp}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kartu}</td>
+    <td style="border:1px solid #999; text-align:center;">{$kodeBuku}</td>
+    <td style="border:1px solid #999;">{$judulBuku}</td>
+    <td style="border:1px solid #999;">{$jenisKoleksi}</td>
+    <td style="border:1px solid #999; text-align:center;">{$tglPinjam}</td>
+    <td style="border:1px solid #999; text-align:center;">{$jatuhTempo}</td>
+    <td style="border:1px solid #999; text-align:center;">{$tglKembali}</td>
+    <td style="border:1px solid #999; text-align:center;">{$statusLabel}</td>
+    <td style="border:1px solid #999; text-align:center;">{$hilang}</td>
+    <td style="border:1px solid #999; text-align:right;">{$denda}</td>
+</tr>
+HTML;
                         }
 
                         $tanggalCetak = now()->format('d/m/Y H:i');
 
-                        echo "
-                        <html xmlns:x='urn:schemas-microsoft-com:office:excel'>
-                        <head><meta charset='UTF-8'></head>
-                        <body>
-                            <table>
-                                <tr>
-                                    <td colspan='16' style='font-size:14pt; font-weight:bold;'>LAPORAN SIRKULASI PEMINJAMAN & PENGEMBALIAN PUSTAKA AKUNTANSI</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='2'><strong>Tanggal Cetak:</strong></td>
-                                    <td colspan='14'>{$tanggalCetak}</td>
-                                </tr>
-                                <tr><td colspan='16'></td></tr>
-                                <thead>
-                                    <tr style='background-color:#065F46; color:#FFFFFF; font-weight:bold; text-align:center;'>
-                                        <th style='border:1px solid #000; padding:6px;'>No</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kode Booking</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Nama Anggota</th>
-                                        <th style='border:1px solid #000; padding:6px;'>NIM / No. Anggota</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kelas</th>
-                                        <th style='border:1px solid #000; padding:6px;'>No. HP</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kartu Jaminan</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Kode Buku</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Judul Buku</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Jenis Koleksi</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Tanggal Pinjam</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Jatuh Tempo</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Tanggal Kembali</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Status</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Buku Hilang</th>
-                                        <th style='border:1px solid #000; padding:6px;'>Nominal Denda</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {$rowsHtml}
-                                </tbody>
-                            </table>
-                        </body>
-                        </html>
-                        ";
+                        echo <<<HTML
+<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head><meta charset="UTF-8"></head>
+<body>
+    <table>
+        <tr>
+            <td colspan="16" style="font-size:14pt; font-weight:bold;">LAPORAN SIRKULASI PEMINJAMAN & PENGEMBALIAN PERPUSTAKAAN JURUSAN AKUNTANSI</td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Tanggal Cetak:</strong></td>
+            <td colspan="14">{$tanggalCetak}</td>
+        </tr>
+        <tr><td colspan="16"></td></tr>
+        <thead>
+            <tr style="background-color:#065F46; color:#FFFFFF; font-weight:bold; text-align:center;">
+                <th style="border:1px solid #000; padding:6px;">No</th>
+                <th style="border:1px solid #000; padding:6px;">Kode Transaksi</th>
+                <th style="border:1px solid #000; padding:6px;">Nama Anggota</th>
+                <th style="border:1px solid #000; padding:6px;">NIM / No. Anggota</th>
+                <th style="border:1px solid #000; padding:6px;">Kelas</th>
+                <th style="border:1px solid #000; padding:6px;">No. HP</th>
+                <th style="border:1px solid #000; padding:6px;">Kartu Jaminan</th>
+                <th style="border:1px solid #000; padding:6px;">Kode Buku</th>
+                <th style="border:1px solid #000; padding:6px;">Judul Buku</th>
+                <th style="border:1px solid #000; padding:6px;">Jenis Koleksi</th>
+                <th style="border:1px solid #000; padding:6px;">Tanggal Pinjam</th>
+                <th style="border:1px solid #000; padding:6px;">Jatuh Tempo</th>
+                <th style="border:1px solid #000; padding:6px;">Tanggal Kembali</th>
+                <th style="border:1px solid #000; padding:6px;">Status</th>
+                <th style="border:1px solid #000; padding:6px;">Buku Hilang</th>
+                <th style="border:1px solid #000; padding:6px;">Nominal Denda</th>
+            </tr>
+        </thead>
+        <tbody>
+            {$rowsHtml}
+        </tbody>
+    </table>
+</body>
+</html>
+HTML;
                     }, $fileName, [
                         'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
                     ]);

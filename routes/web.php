@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Pustaka Akuntansi
+| Web Routes - Perpustakaan Jurusan Akuntansi
 |--------------------------------------------------------------------------
 | Frontend User / Mahasiswa: /
 | Backend Admin / Pustakawan: /admin (Filament Panel)
@@ -37,9 +37,9 @@ Route::get('/daftar', [UserPortalController::class, 'daftar'])->name('daftar');
 Route::post('/daftar', [UserPortalController::class, 'prosesDaftar'])->name('daftar.proses');
 Route::match(['get', 'post'], '/keluar', [UserPortalController::class, 'keluar'])->name('keluar');
 
-// Admin Dashboard & API Routes (Persis Mockup Pustaka Akuntansi)
-Route::get('/admin', [AdminDashboardController::class, 'index'])->name('filament.admin.pages.dashboard');
-Route::get('/admin/dashboard', fn () => redirect()->route('filament.admin.pages.dashboard'))->name('admin.dashboard');
+// Admin Mockup (Arsip Prototype) & Redirect Dashboard
+Route::get('/admin/mockup', [AdminDashboardController::class, 'index'])->name('admin.mockup');
+Route::get('/admin/dashboard', fn () => redirect('/admin'))->name('admin.dashboard');
 Route::post('/admin/api/anggota', [AdminDashboardController::class, 'saveAnggota'])->name('admin.api.anggota.save');
 Route::delete('/admin/api/anggota/{id}', [AdminDashboardController::class, 'deleteAnggota'])->name('admin.api.anggota.delete');
 Route::post('/admin/api/books', [AdminDashboardController::class, 'saveBook'])->name('admin.api.books.save');

@@ -5,15 +5,12 @@
 
 <style>
     /* =========================================================
-       PUSTAKA AKUNTANSI - ADMIN PANEL THEME (Forest & Gold)
-       Matching mockup_pustaka_akuntansi.html
+       PERPUSTAKAAN JURUSAN AKUNTANSI - ADMIN PANEL THEME
+       100% Kembar Identik dengan Portal User (Spacing Lega & Presisi)
        ========================================================= */
 
-    /* Typography Overrides */
     body, .fi, .fi-body {
         font-family: 'Inter', sans-serif !important;
-        background-color: #f9fafb !important;
-        color: #111827 !important;
     }
 
     h1, h2, h3, .fi-header-heading, .font-display {
@@ -21,241 +18,330 @@
     }
 
     .fi-header-heading {
-        font-size: 1.75rem !important;
+        font-size: 1.85rem !important;
         font-weight: 800 !important;
         letter-spacing: -0.025em !important;
-        color: #111827 !important;
+        margin-bottom: 0.35rem !important;
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-        background: #f8fafc;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    html:not(.dark) ::-webkit-scrollbar-track { background: #f2f8f5; }
+    html:not(.dark) ::-webkit-scrollbar-thumb { background: #b7dfd0; border-radius: 9999px; }
+    html.dark ::-webkit-scrollbar-track { background: #09110e; }
+    html.dark ::-webkit-scrollbar-thumb { background: #1e352d; border-radius: 9999px; }
 
     /* =========================================================
-       FULL-WIDTH TOPBAR (PERSIS MOCKUP)
+       LIGHT MODE (Soft Mint Radial Glow — Kembar Portal User)
        ========================================================= */
-    .fi-custom-full-header {
-        background: linear-gradient(to right, #022c22, #064e3b, #047857) !important;
-        border-bottom: 1px solid rgba(4, 120, 87, 0.8) !important;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12) !important;
-        height: 4rem !important;
+    html:not(.dark) body,
+    html:not(.dark) .fi,
+    html:not(.dark) .fi-body {
+        background: radial-gradient(circle at 50% 0%, #e1f4ea 0%, #f3f8f5 48%, #f7faf9 100%) !important;
+        color: #0f172a !important;
     }
 
-    /* Hide standard filament topbar inside main content to prevent duplicates */
-    div.fi-topbar, header.fi-topbar, .fi-topbar {
-        display: none !important;
+    html:not(.dark) .fi-main { background: transparent !important; }
+    html:not(.dark) .fi-header-heading { color: #0f172a !important; }
+    html:not(.dark) .pa-brand-title { color: #064e3b !important; }
+    html:not(.dark) .pa-brand-sub { color: #059669 !important; }
+
+    html:not(.dark) .fi-topbar nav {
+        background: rgba(255, 255, 255, 0.78) !important;
+        backdrop-filter: blur(16px) !important;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.14) !important;
     }
 
-    /* =========================================================
-       SIDEBAR: Below Header, Clean White with Forest-50 Active State
-       ========================================================= */
-    aside.fi-sidebar, .fi-sidebar {
-        top: 4rem !important;
-        height: calc(100vh - 4rem) !important;
-        background-color: #ffffff !important;
-        border-right: 1px solid rgba(229, 231, 235, 0.9) !important;
-        z-index: 30 !important;
+    html:not(.dark) aside.fi-sidebar,
+    html:not(.dark) .fi-sidebar {
+        background: rgba(255, 255, 255, 0.88) !important;
+        backdrop-filter: blur(14px) !important;
+        border-right: 1px solid rgba(16, 185, 129, 0.14) !important;
     }
 
-    /* Hide default sidebar header since brand is in full topbar */
-    .fi-sidebar-header {
-        display: none !important;
-    }
-
-    /* Sidebar Footer holds the Aturan Sirkulasi card at the bottom */
-    .fi-sidebar-footer {
-        padding: 0 !important;
-        border-top: none !important;
-        background: transparent !important;
-    }
-
-    /* Active Nav Item */
-    .fi-sidebar-item-active > a,
-    .fi-sidebar-item-active > button,
-    .fi-sidebar-item-active .fi-sidebar-item-button {
-        background-color: #ecfdf5 !important;
+    html:not(.dark) .fi-sidebar-item-active > a,
+    html:not(.dark) .fi-sidebar-item-active > button,
+    html:not(.dark) .fi-sidebar-item-active .fi-sidebar-item-button {
+        background-color: #e2f5ec !important;
         color: #065f46 !important;
-        box-shadow: inset 0 0 0 1px rgba(167, 243, 208, 0.9) !important;
-        font-weight: 600 !important;
-        border-radius: 0.5rem !important;
-    }
-
-    .fi-sidebar-item-active svg,
-    .fi-sidebar-item-active .fi-sidebar-item-icon {
-        color: #047857 !important;
-    }
-
-    /* Inactive Nav Item */
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active) {
-        color: #4b5563 !important;
-        font-weight: 500 !important;
-        border-radius: 0.5rem !important;
-        transition: all 0.15s ease;
-    }
-
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active):hover {
-        background-color: rgba(236, 253, 245, 0.7) !important;
-        color: #065f46 !important;
-    }
-
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active) svg,
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active) .fi-sidebar-item-icon {
-        color: #9ca3af !important;
-    }
-
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active):hover svg,
-    .fi-sidebar-item-button:not(.fi-sidebar-item-active):hover .fi-sidebar-item-icon {
-        color: #059669 !important;
-    }
-
-    /* Sidebar Badge (Gold pill matching mockup) */
-    .fi-sidebar-item-badge,
-    .fi-sidebar-item .fi-badge,
-    .fi-sidebar-group-badge {
-        background-color: #fef3c7 !important;
-        color: #92400e !important;
-        border: 1px solid #fcd34d !important;
+        box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25) !important;
         font-weight: 700 !important;
-        border-radius: 0.375rem !important;
-        font-size: 11px !important;
-        padding: 0.125rem 0.5rem !important;
+        border-radius: 0.85rem !important;
+    }
+
+    html:not(.dark) .fi-sidebar-item-active svg,
+    html:not(.dark) .fi-sidebar-item-active .fi-sidebar-item-icon {
+        color: #10b981 !important;
+    }
+
+    html:not(.dark) .fi-sidebar-item-button:not(.fi-sidebar-item-active) {
+        color: #475569 !important;
+        font-weight: 500 !important;
+        border-radius: 0.85rem !important;
+    }
+
+    html:not(.dark) .fi-sidebar-item-button:not(.fi-sidebar-item-active):hover {
+        background-color: rgba(226, 245, 236, 0.65) !important;
+        color: #065f46 !important;
+    }
+
+    /* Light Mode Hero Banner & Cards */
+    html:not(.dark) .pa-hero-banner {
+        background: linear-gradient(135deg, #ffffff 0%, #f1fbf6 55%, #e5f6ed 100%) !important;
+        border: 1px solid rgba(16, 185, 129, 0.22) !important;
+        box-shadow: 0 14px 34px -8px rgba(16, 185, 129, 0.12) !important;
+        color: #0f172a !important;
+    }
+
+    html:not(.dark) .pa-hero-banner .pa-hero-title { color: #0f172a !important; }
+    html:not(.dark) .pa-hero-banner .pa-hero-highlight { color: #16a34a !important; }
+    html:not(.dark) .pa-hero-banner .pa-hero-desc { color: #475569 !important; }
+
+    html:not(.dark) .pa-hero-banner .pa-hero-pill {
+        background: #fef9c3 !important;
+        border: 1px solid #fde047 !important;
+        color: #854d0e !important;
+    }
+
+    html:not(.dark) .pa-hero-banner .pa-hero-date {
+        background: rgba(16, 185, 129, 0.1) !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+        color: #065f46 !important;
+    }
+
+    html:not(.dark) .pa-hero-banner .pa-hero-secondary-btn {
+        background: #ffffff !important;
+        color: #065f46 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+
+    html:not(.dark) .fi-section,
+    html:not(.dark) .fi-ta-ctn,
+    html:not(.dark) .fi-wi-stats-overview-stat,
+    html:not(.dark) .pa-card {
+        background: rgba(255, 255, 255, 0.94) !important;
+        border: 1px solid rgba(16, 185, 129, 0.16) !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.05) !important;
+        color: #0f172a !important;
+    }
+
+    html:not(.dark) .pa-sop-box {
+        background: linear-gradient(135deg, #f0fdf4 0%, #fefce8 100%) !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    }
+
+    html:not(.dark) .fi-ta-header-cell {
+        background-color: rgba(240, 253, 244, 0.85) !important;
+        color: #065f46 !important;
     }
 
     /* =========================================================
-       MAIN CONTENT: Cards, Tables & Sections
+       DARK MODE (Deep Forest Radial Glow — Kembar Portal User)
        ========================================================= */
-    .fi-layout {
-        padding-top: 4rem !important;
+    html.dark body,
+    html.dark .fi,
+    html.dark .fi-body {
+        background: radial-gradient(circle at 50% 0%, #152e24 0%, #0b1512 48%, #080f0d 100%) !important;
+        color: #f1f5f9 !important;
     }
 
+    html.dark .fi-main { background: transparent !important; }
+    html.dark .fi-header-heading { color: #ffffff !important; }
+    html.dark .pa-brand-title { color: #ffffff !important; }
+    html.dark .pa-brand-sub { color: #34d399 !important; }
+
+    html.dark .fi-topbar nav {
+        background: rgba(12, 22, 18, 0.78) !important;
+        backdrop-filter: blur(16px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html.dark aside.fi-sidebar,
+    html.dark .fi-sidebar {
+        background: rgba(11, 20, 17, 0.88) !important;
+        backdrop-filter: blur(14px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html.dark .fi-sidebar-item-active > a,
+    html.dark .fi-sidebar-item-active > button,
+    html.dark .fi-sidebar-item-active .fi-sidebar-item-button {
+        background: rgba(45, 138, 102, 0.24) !important;
+        color: #6ee7b7 !important;
+        box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.32) !important;
+        font-weight: 700 !important;
+        border-radius: 0.85rem !important;
+    }
+
+    html.dark .fi-sidebar-item-active svg,
+    html.dark .fi-sidebar-item-active .fi-sidebar-item-icon {
+        color: #34d399 !important;
+    }
+
+    html.dark .fi-sidebar-item-button:not(.fi-sidebar-item-active) {
+        color: #94a3b8 !important;
+        border-radius: 0.85rem !important;
+    }
+
+    html.dark .fi-sidebar-item-button:not(.fi-sidebar-item-active):hover {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* Dark Mode Hero Banner & Cards */
+    html.dark .pa-hero-banner {
+        background: linear-gradient(135deg, rgba(21, 44, 35, 0.88) 0%, rgba(14, 28, 22, 0.94) 100%) !important;
+        border: 1px solid rgba(52, 211, 153, 0.18) !important;
+        box-shadow: 0 18px 38px -8px rgba(0, 0, 0, 0.5) !important;
+        color: #ffffff !important;
+    }
+
+    html.dark .pa-hero-banner .pa-hero-title { color: #ffffff !important; }
+    html.dark .pa-hero-banner .pa-hero-highlight { color: #fde047 !important; }
+    html.dark .pa-hero-banner .pa-hero-desc { color: #cbd5e1 !important; }
+
+    html.dark .pa-hero-banner .pa-hero-pill {
+        background: rgba(250, 204, 21, 0.14) !important;
+        border: 1px solid rgba(250, 204, 21, 0.35) !important;
+        color: #fde047 !important;
+    }
+
+    html.dark .pa-hero-banner .pa-hero-date {
+        background: rgba(255, 255, 255, 0.07) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #e2e8f0 !important;
+    }
+
+    html.dark .pa-hero-banner .pa-hero-secondary-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #f1f5f9 !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    }
+
+    html.dark .fi-section,
+    html.dark .fi-ta-ctn,
+    html.dark .fi-wi-stats-overview-stat,
+    html.dark .fi-modal-window,
+    html.dark .pa-card {
+        background: linear-gradient(145deg, rgba(20, 38, 31, 0.9) 0%, rgba(13, 25, 20, 0.96) 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45) !important;
+        color: #f1f5f9 !important;
+    }
+
+    html.dark .pa-card h3,
+    html.dark .pa-card .pa-value { color: #ffffff !important; }
+    html.dark .pa-card .pa-muted { color: #94a3b8 !important; }
+
+    html.dark .pa-sop-box {
+        background: rgba(10, 20, 16, 0.72) !important;
+        border: 1px solid rgba(52, 211, 153, 0.18) !important;
+        color: #cbd5e1 !important;
+    }
+
+    html.dark .fi-ta-header-cell {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        color: #94a3b8 !important;
+    }
+
+    /* =========================================================
+       SPACING LEGA & ANTI-DEMPET (EXPLICIT LAYOUT SPACING)
+       ========================================================= */
     .fi-main {
-        background-color: #f9fafb !important;
-        padding-top: 1.5rem !important;
-        padding-bottom: 3rem !important;
-        max-width: 1440px !important;
+        padding: 2rem 2.25rem 3.5rem 2.25rem !important;
+        max-width: 1380px !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
 
-    .fi-section,
-    .fi-ta-ctn {
-        background-color: #ffffff !important;
-        border: 1px solid rgba(229, 231, 235, 0.9) !important;
-        border-radius: 0.75rem !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+    .fi-wi {
+        gap: 1.5rem !important;
     }
 
-    /* Tables */
-    .fi-ta-header {
-        background-color: #ffffff !important;
-        border-bottom: 1px solid #e5e7eb !important;
+    .pa-hero-banner {
+        padding: 2.25rem 2.5rem !important;
+        border-radius: 1.5rem !important;
     }
 
-    .fi-ta-header-cell {
-        background-color: rgba(249, 250, 251, 0.95) !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
-        color: #374151 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-        border-bottom: 1px solid #e5e7eb !important;
-        padding-top: 0.75rem !important;
-        padding-bottom: 0.75rem !important;
-    }
-
-    .fi-ta-row:hover {
-        background-color: rgba(236, 253, 245, 0.35) !important;
-    }
-
-    /* =========================================================
-       BUTTON STYLES (Mockup Hierarchy)
-       ========================================================= */
-    /* Primary Dark Forest Button (Tambah Buku, Buat Data, dll) */
-    .fi-btn-color-primary:not(.fi-btn-outlined) {
-        background-color: #064e3b !important;
-        color: #ffffff !important;
-        border: 1px solid #047857 !important;
-        font-weight: 700 !important;
-        border-radius: 0.5rem !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-        transition: all 0.15s ease;
-    }
-
-    .fi-btn-color-primary:not(.fi-btn-outlined):hover {
-        background-color: #065f46 !important;
-        border-color: #059669 !important;
-    }
-
-    /* Warning / Gold Button (Catat Peminjaman, Buka Katalog, Aksi Cepat) */
-    .fi-btn-color-warning:not(.fi-btn-outlined) {
-        background-color: #fbbf24 !important;
-        color: #022c22 !important;
-        border: 1px solid #f59e0b !important;
-        font-weight: 800 !important;
-        border-radius: 0.5rem !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-        transition: all 0.15s ease;
-    }
-
-    .fi-btn-color-warning:not(.fi-btn-outlined):hover {
-        background-color: #f59e0b !important;
-    }
-
-    /* Outlined / Gray Button (Download Template, Batal, Kembali) */
-    .fi-btn-color-gray {
-        background-color: #ffffff !important;
-        color: #374151 !important;
-        border: 1px solid #d1d5db !important;
-        font-weight: 600 !important;
-        border-radius: 0.5rem !important;
-    }
-
-    .fi-btn-color-gray:hover {
-        background-color: #f9fafb !important;
-        color: #111827 !important;
-    }
-
-    /* Badges */
-    .fi-badge-color-primary, .fi-badge-color-success {
-        background-color: #ecfdf5 !important;
-        color: #047857 !important;
-        border: 1px solid #a7f3d0 !important;
-    }
-
-    .fi-badge-color-warning {
-        background-color: #fef3c7 !important;
-        color: #92400e !important;
-        border: 1px solid #fcd34d !important;
-    }
-
-    .fi-badge-color-danger {
-        background-color: #ffe4e6 !important;
-        color: #9f1239 !important;
-        border: 1px solid #fecdd3 !important;
-    }
-
-    .fi-badge-color-info {
-        background-color: #eff6ff !important;
-        color: #1d4ed8 !important;
-        border: 1px solid #bfdbfe !important;
-    }
-
-    /* Header action container alignment */
-    .fi-header-actions {
+    .pa-hero-top-row {
         display: flex !important;
+        flex-wrap: wrap !important;
         align-items: center !important;
         gap: 0.75rem !important;
+        margin-bottom: 1.15rem !important;
+    }
+
+    .pa-hero-title {
+        font-size: 1.9rem !important;
+        line-height: 1.25 !important;
+        margin-bottom: 0.65rem !important;
+    }
+
+    .pa-hero-desc {
+        font-size: 0.925rem !important;
+        line-height: 1.65 !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .pa-hero-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 0.85rem !important;
+    }
+
+    .pa-card {
+        padding: 1.5rem 1.65rem !important;
+    }
+
+    .pa-sop-box {
+        padding: 1.15rem 1.35rem !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .pa-sop-box ol {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.55rem !important;
+        margin-top: 0.65rem !important;
+    }
+
+    /* Pill Primary Button (Persis tombol "Jelajahi Seluruh Koleksi") */
+    .fi-btn-color-primary:not(.fi-btn-outlined),
+    .pa-pill-emerald {
+        background: linear-gradient(135deg, #34a874 0%, #1e8256 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(110, 231, 183, 0.35) !important;
+        font-weight: 700 !important;
+        border-radius: 9999px !important;
+        padding: 0.65rem 1.4rem !important;
+        box-shadow: 0 4px 16px rgba(30, 130, 86, 0.3) !important;
+        transition: all 0.2s ease;
+    }
+
+    .fi-btn-color-primary:not(.fi-btn-outlined):hover,
+    .pa-pill-emerald:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+    }
+
+    .pa-hero-secondary-btn {
+        border-radius: 9999px !important;
+        padding: 0.65rem 1.4rem !important;
+    }
+
+    /* Pill Warning / Yellow Button (Persis tombol "Daftar") */
+    .fi-btn-color-warning:not(.fi-btn-outlined),
+    .pa-pill-yellow {
+        background: linear-gradient(135deg, #fde047 0%, #facc15 100%) !important;
+        color: #0f172a !important;
+        border: 1px solid #fef08a !important;
+        font-weight: 800 !important;
+        border-radius: 9999px !important;
+        box-shadow: 0 4px 14px rgba(250, 204, 21, 0.25) !important;
+        transition: all 0.2s ease;
     }
 </style>

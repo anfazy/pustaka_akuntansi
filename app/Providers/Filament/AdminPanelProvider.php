@@ -6,12 +6,10 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -28,7 +26,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Pustaka Akuntansi')
+            ->darkMode(true)
+            ->brandName('Perpustakaan Jurusan Akuntansi')
             ->brandLogo(fn () => view('filament.components.brand'))
             ->brandLogoHeight('2.75rem')
             ->favicon(fn () => asset('images/logo-hmj-akuntansi.jpg'))
@@ -67,10 +66,6 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.custom-admin-head')
-            )
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_FOOTER,
-                fn () => view('filament.components.sidebar-rules-card')
             )
             ->maxContentWidth('full')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
