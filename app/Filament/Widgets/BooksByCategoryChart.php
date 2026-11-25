@@ -87,18 +87,23 @@ class BooksByCategoryChart extends ChartWidget
         $data = $categories->pluck('books_count')->toArray();
 
         $palette = [
-            '#065f46', // forest-800
-            '#f59e0b', // gold-500
-            '#059669', // forest-600
-            '#d97706', // gold-600
-            '#047857', // forest-700
-            '#10b981', // forest-500
-            '#fbbf24', // gold-400
+            '#10b981', // Emerald Utama (Hijau Segar — Warna Brand)
+            '#f59e0b', // Warm Gold / Amber (Kuning Emas — Aksen Brand)
+            '#0d9488', // Deep Teal (Hijau Kebiruan)
+            '#3b82f6', // Royal Sky Blue (Biru Lembut)
+            '#d97706', // Terracotta / Bronze (Cokelat Keemasan)
+            '#064e3b', // Dark Forest (Hijau Hutan Tua)
+            '#8b5cf6', // Muted Violet (Ungu Lembut)
+            '#65a30d', // Olive / Sage Green (Hijau Zaitun)
+            '#e11d48', // Crimson Rose (Merah Marun Lembut)
+            '#0284c7', // Ocean Blue (Biru Laut)
         ];
 
-        $backgroundColors = array_slice($palette, 0, count($labels));
-        if (count($labels) > count($backgroundColors)) {
-            $backgroundColors = array_pad($backgroundColors, count($labels), '#059669');
+        $backgroundColors = [];
+        $paletteCount = count($palette);
+
+        foreach (array_keys($labels) as $index) {
+            $backgroundColors[] = $palette[$index % $paletteCount];
         }
 
         return [
@@ -107,6 +112,7 @@ class BooksByCategoryChart extends ChartWidget
                     'label' => 'Jumlah Judul Buku',
                     'data' => $data,
                     'backgroundColor' => $backgroundColors,
+                    'borderColor' => 'transparent',
                     'borderWidth' => 2,
                     'hoverOffset' => 6,
                 ],
