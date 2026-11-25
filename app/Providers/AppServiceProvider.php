@@ -25,13 +25,13 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             $namaAdmin = $event->user->name ?? 'Admin';
 
-            Notification::make()
-                ->title('Selamat Datang, Admin!')
-                ->body("Halo {$namaAdmin}, selamat bertugas mengelola Ruang Baca Jurusan Akuntansi Polines.")
-                ->success()
-                ->icon('heroicon-o-sparkles')
-                ->duration(6000)
-                ->send();
+           Notification::make()
+            ->title('Selamat Datang, Admin!')
+            ->body('Halo Admin Perpustakaan, selamat bertugas mengelola Perpustakaan Jurusan Akuntansi Polines.')
+            ->success()
+            ->icon('heroicon-o-sparkles')
+            ->duration(6000)
+            ->send();
         });
     }
 }

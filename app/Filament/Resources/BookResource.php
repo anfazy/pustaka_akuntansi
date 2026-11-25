@@ -6,6 +6,7 @@ use App\Filament\Resources\BookResource\Pages;
 use App\Models\Book;
 use App\Models\Category;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
@@ -14,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
@@ -103,6 +105,44 @@ class BookResource extends Resource
 
                                         return $category->id;
                                     })
+                                    ->suffixAction(
+                                        Action::make('hapusKategori')
+                                            ->icon('heroicon-o-trash')
+                                            ->color('danger')
+                                            ->tooltip('Hapus kategori yang sedang dipilih')
+                                            ->requiresConfirmation()
+                                            ->modalHeading('Hapus Kategori')
+                                            ->modalDescription('Kategori yang dipilih akan dihapus permanen. Pastikan tidak ada buku yang masih menggunakan kategori ini.')
+                                            ->visible(fn (Forms\Get $get) => filled($get('category_id')))
+                                            ->action(function (Forms\Get $get, Forms\Set $set) {
+                                                $categoryId = $get('category_id');
+                                                $category = Category::find($categoryId);
+
+                                                if (! $category) {
+                                                    return;
+                                                }
+
+                                                if ($category->books()->exists()) {
+                                                    Notification::make()
+                                                        ->title('Kategori Tidak Bisa Dihapus')
+                                                        ->body('Masih ada buku yang menggunakan kategori "' . $category->nama . '". Hapus atau pindahkan bukunya terlebih dahulu.')
+                                                        ->danger()
+                                                        ->send();
+
+                                                    return;
+                                                }
+
+                                                $namaKategori = $category->nama;
+                                                $category->delete();
+                                                $set('category_id', null);
+
+                                                Notification::make()
+                                                    ->title('Kategori Berhasil Dihapus')
+                                                    ->body('Kategori "' . $namaKategori . '" telah dihapus.')
+                                                    ->success()
+                                                    ->send();
+                                            })
+                                    )
                                     ->required(),
 
                                 Forms\Components\TextInput::make('book_code')
@@ -398,6 +438,176 @@ class BookResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Tables\Actions\Action::make('importCsv')
+                    ->label('Import CSV')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('success')
+                    ->modalHeading('Import Daftar Buku dari Spreadsheet (CSV)')
+                    ->modalDescription('Unduh tab sheet dari Google Sheets/Excel sebagai file .csv (kolom: No, Judul Buku, Nama Penulis). Kategori otomatis dibuat jika belum ada.')
+                    ->modalSubmitActionLabel('Mulai Import')
+                    ->form([
+                        Forms\Components\TextInput::make('nama_kategori')
+                            ->label('Nama Kategori Buku')
+                            ->placeholder('Contoh: Buku Pelajaran, Buku Fiksi, Komik, atau TA/Skripsi')
+                            ->helperText('Otomatis membuat kategori baru jika belum ada, atau memakai kategori yang sudah ada.')
+                            ->datalist(fn () => Category::pluck('nama')->toArray())
+                            ->required(),
+
+                        Forms\Components\TextInput::make('default_penerbit')
+                            ->label('Penerbit Default (jika tidak ada di CSV)')
+                            ->default('Perpustakaan Jurusan Akuntansi')
+                            ->required(),
+
+                        Forms\Components\TextInput::make('default_tahun')
+                            ->label('Tahun Terbit Default')
+                            ->numeric()
+                            ->default((int) date('Y'))
+                            ->required(),
+
+                        Forms\Components\FileUpload::make('csv_file')
+                            ->label('File CSV (.csv)')
+                            ->disk('local')
+                            ->directory('temp-imports')
+                            ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel', '.csv'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $namaKategori = ucwords(strtolower(trim($data['nama_kategori'])));
+                        $category = Category::whereRaw('LOWER(nama) = ?', [strtolower($namaKategori)])->first();
+
+                        if (! $category) {
+                            $baseSlug = Str::slug($namaKategori) ?: 'kategori';
+                            $slug = $baseSlug;
+                            $counter = 1;
+                            while (Category::where('slug', $slug)->exists()) {
+                                $slug = "{$baseSlug}-{$counter}";
+                                $counter++;
+                            }
+
+                            $category = Category::create([
+                                'nama' => $namaKategori,
+                                'slug' => $slug,
+                            ]);
+                        }
+
+                        $fullPath = Storage::disk('local')->path($data['csv_file']);
+                        if (! file_exists($fullPath)) {
+                            Notification::make()
+                                ->title('File Tidak Ditemukan')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $rawContent = file_get_contents($fullPath);
+                        $firstLine = strtok($rawContent, "\r\n");
+                        $delimiter = substr_count((string) $firstLine, ';') > substr_count((string) $firstLine, ',') ? ';' : ',';
+
+                        $handle = fopen($fullPath, 'r');
+                        $header = fgetcsv($handle, 0, $delimiter);
+
+                        $judulIdx = null;
+                        $penulisIdx = null;
+                        $penerbitIdx = null;
+                        $tahunIdx = null;
+                        $kodeIdx = null;
+                        $stokIdx = null;
+
+                        if (is_array($header)) {
+                            foreach ($header as $i => $col) {
+                                $cleanCol = strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string) $col)));
+                                if (str_contains($cleanCol, 'judul')) {
+                                    $judulIdx = $i;
+                                } elseif (str_contains($cleanCol, 'penulis') || str_contains($cleanCol, 'pengarang')) {
+                                    $penulisIdx = $i;
+                                } elseif (str_contains($cleanCol, 'penerbit')) {
+                                    $penerbitIdx = $i;
+                                } elseif (str_contains($cleanCol, 'tahun')) {
+                                    $tahunIdx = $i;
+                                } elseif (str_contains($cleanCol, 'kode')) {
+                                    $kodeIdx = $i;
+                                } elseif (str_contains($cleanCol, 'stok') || str_contains($cleanCol, 'jumlah')) {
+                                    $stokIdx = $i;
+                                }
+                            }
+                        }
+
+                        // Jika file CSV tidak memakai header standar, pakai posisi kolom: 0=No, 1=Judul, 2=Penulis
+                        if ($judulIdx === null) {
+                            $judulIdx = 1;
+                            $penulisIdx = 2;
+                            rewind($handle);
+                        }
+
+                        $isNonIsbn = self::isNonIsbnCategory($category->id);
+                        $imported = 0;
+                        $updated = 0;
+
+                        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+                            $rawJudul = trim((string) ($row[$judulIdx] ?? ''));
+                            $rawPenulis = trim((string) ($row[$penulisIdx] ?? ''));
+
+                            if ($rawJudul === '' || strtolower($rawJudul) === 'judul buku') {
+                                continue;
+                            }
+
+                            $judul = ucwords(strtolower($rawJudul));
+                            $penulis = $rawPenulis !== '' ? ucwords(strtolower($rawPenulis)) : 'Tidak Diketahui';
+                            $penerbit = ($penerbitIdx !== null && ! empty(trim((string) ($row[$penerbitIdx] ?? ''))))
+                                ? trim((string) $row[$penerbitIdx])
+                                : trim($data['default_penerbit']);
+                            $tahun = ($tahunIdx !== null && is_numeric(trim((string) ($row[$tahunIdx] ?? ''))))
+                                ? (int) trim((string) $row[$tahunIdx])
+                                : (int) $data['default_tahun'];
+                            $stok = ($stokIdx !== null && is_numeric(trim((string) ($row[$stokIdx] ?? ''))))
+                                ? max(1, (int) trim((string) $row[$stokIdx]))
+                                : 1;
+
+                            // Jika judul + penulis yang sama sudah ada di kategori yang sama, tambahkan stoknya
+                            $existing = Book::where('category_id', $category->id)
+                                ->whereRaw('LOWER(judul) = ?', [strtolower($judul)])
+                                ->whereRaw('LOWER(penulis) = ?', [strtolower($penulis)])
+                                ->first();
+
+                            if ($existing) {
+                                $existing->increment('stok', $stok);
+                                $updated++;
+                                continue;
+                            }
+
+                            $bookCode = null;
+                            if ($kodeIdx !== null && ! empty(trim((string) ($row[$kodeIdx] ?? '')))) {
+                                $bookCode = strtoupper(trim((string) $row[$kodeIdx]));
+                            } elseif ($isNonIsbn) {
+                                $prefix = str_contains(strtolower($category->nama), 'pkl') ? 'PKL' : 'TA';
+                                $bookCode = $prefix . '-' . date('Y') . '-' . str_pad((string) (Book::max('id') + 1), 4, '0', STR_PAD_LEFT);
+                            }
+
+                            Book::create([
+                                'category_id' => $category->id,
+                                'book_code' => $bookCode,
+                                'judul' => $judul,
+                                'penulis' => $penulis,
+                                'penerbit' => $penerbit,
+                                'tahun_terbit' => $tahun,
+                                'stok' => $stok,
+                            ]);
+
+                            $imported++;
+                        }
+
+                        fclose($handle);
+                        Storage::disk('local')->delete($data['csv_file']);
+
+                        Notification::make()
+                            ->title('Import CSV Selesai')
+                            ->body("{$imported} buku baru ditambahkan dan {$updated} stok buku diperbarui ke kategori \"{$category->nama}\".")
+                            ->success()
+                            ->send();
+                    }),
+            ])
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
                     ->disk('public')
