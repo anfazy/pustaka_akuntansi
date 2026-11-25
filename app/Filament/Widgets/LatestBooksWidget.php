@@ -29,9 +29,28 @@ class LatestBooksWidget extends BaseWidget
             ->paginated(false)
             ->columns([
                 Tables\Columns\TextColumn::make('book_code')
-                    ->label('Kode Buku')
-                    ->placeholder('-')
-                    ->searchable(),
+                    ->label('Kode Buku / ISBN')
+                    ->state(function (Book $record): string {
+                        if (filled($record->book_code)) {
+                            return $record->book_code;
+                        }
+
+                        if (filled($record->isbn)) {
+                            return $record->isbn;
+                        }
+
+                        return '-';
+                    })
+                    ->description(function (Book $record): ?string {
+                        if (filled($record->book_code) && filled($record->isbn)) {
+                            return 'ISBN: ' . $record->isbn;
+                        }
+
+                        return null;
+                    })
+                    ->badge(fn (Book $record): bool => filled($record->book_code) || filled($record->isbn))
+                    ->color('info')
+                    ->searchable(['book_code', 'isbn']),
                 Tables\Columns\TextColumn::make('judul')
                     ->label('Judul Buku')
                     ->weight('bold')
