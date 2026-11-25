@@ -7,26 +7,26 @@
 
     <!-- TOP TOOLBAR: FILTER & SEARCH -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <!-- Segmented Filter Tabs -->
-        <div class="segment-track inline-flex rounded-full p-1 max-w-[360px]">
+        <!-- Segmented Filter Tabs (>=44px hit height) -->
+        <div class="segment-track inline-flex rounded-full p-1 max-w-[380px]">
             <a href="{{ route('riwayat', array_merge(request()->except('status', 'page'), ['status' => 'semua'])) }}"
-               class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all {{ $currentFilter === 'semua' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+               class="inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold transition-all whitespace-nowrap {{ $currentFilter === 'semua' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
                 Semua
             </a>
             <a href="{{ route('riwayat', array_merge(request()->except('status', 'page'), ['status' => 'tepat'])) }}"
-               class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all {{ $currentFilter === 'tepat' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+               class="inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold transition-all whitespace-nowrap {{ $currentFilter === 'tepat' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
                 Tepat Waktu
             </a>
             <a href="{{ route('riwayat', array_merge(request()->except('status', 'page'), ['status' => 'terlambat'])) }}"
-               class="rounded-full px-4 py-1.5 text-xs font-semibold transition-all {{ $currentFilter === 'terlambat' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+               class="inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold transition-all whitespace-nowrap {{ $currentFilter === 'terlambat' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
                 Terlambat
             </a>
         </div>
 
-        <!-- Inline Search -->
+        <!-- Inline Search (44px hit height) -->
         <form action="{{ route('riwayat') }}" method="GET" class="w-full sm:w-[320px]">
             <input type="hidden" name="status" value="{{ $currentFilter }}">
-            <div class="glass-field flex h-10 items-center gap-2 rounded-full px-4">
+            <div class="glass-field flex h-11 items-center gap-2 rounded-full px-4">
                 <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
@@ -100,7 +100,7 @@
                                 <!-- Action -->
                                 <td class="py-4 pr-4 text-right">
                                     @if($loan->book)
-                                        <a href="{{ route('buku.detail', $loan->book->id) }}" class="btn-glass rounded-full px-3.5 py-1 text-xs font-semibold text-emerald-800 hover:border-emerald-300">
+                                        <a href="{{ route('buku.detail', $loan->book->id) }}" class="btn-glass inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold text-emerald-800 hover:border-emerald-300 whitespace-nowrap">
                                             Pinjam Lagi
                                         </a>
                                     @endif

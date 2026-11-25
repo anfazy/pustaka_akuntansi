@@ -3,10 +3,10 @@
 @section('title', 'Masuk — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[440px] rounded-[32px] p-8 sm:p-10 shadow-2xl animate-rise">
-        <!-- Back to Beranda Link -->
-        <div class="flex items-center justify-between mb-6">
-            <a href="{{ route('beranda') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
+    <div class="glass-card w-full max-w-[440px] rounded-[32px] p-6 sm:p-8 shadow-2xl animate-rise">
+        <!-- Back to Beranda Link (44px min hit height) -->
+        <div class="flex items-center justify-between mb-5">
+            <a href="{{ route('beranda') }}" class="inline-flex min-h-[44px] items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
@@ -57,21 +57,21 @@
 
             <div>
                 <label for="nimInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">NIM Mahasiswa <span class="text-rose-500">*</span></label>
-                <div class="glass-field rounded-2xl px-4 py-3">
+                <div class="glass-field rounded-[16px] px-4 py-3">
                     <input type="text" name="nim" id="nimInput" value="{{ old('nim') }}" required placeholder="Contoh: 4.41.24.0.12" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                 </div>
             </div>
 
             <div>
-                <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center justify-between mb-1">
                     <label for="passwordInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Kata Sandi <span class="text-rose-500">*</span></label>
-                    <button type="button" onclick="document.getElementById('modalForgotPw').classList.remove('hidden')" class="text-xs font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
+                    <button type="button" onclick="document.getElementById('modalForgotPw').classList.remove('hidden')" class="inline-flex min-h-[44px] items-center text-xs font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
                         Lupa kata sandi?
                     </button>
                 </div>
-                <div class="glass-field relative flex items-center rounded-2xl px-4 py-3">
-                    <input type="password" name="password" id="passwordInput" required placeholder="Masukkan kata sandi" class="w-full bg-transparent pr-9 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
-                    <button type="button" onclick="togglePasswordVisibility('passwordInput', this)" aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-3 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-emerald-700 transition">
+                <div class="glass-field relative flex items-center rounded-[16px] px-4 py-3">
+                    <input type="password" name="password" id="passwordInput" required placeholder="Masukkan kata sandi" class="w-full bg-transparent pr-10 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                    <button type="button" onclick="togglePasswordVisibility('passwordInput', this)" aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-1 grid h-11 w-11 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition">
                         <svg class="eye-open h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -104,11 +104,11 @@
         </div>
     </div>
 
-    <!-- MODAL LUPA KATA SANDI (Apple Liquid Glass) -->
-    <div id="modalForgotPw" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fade">
-        <div class="glass-card relative w-full max-w-[420px] rounded-[32px] p-7 sm:p-8 shadow-2xl border border-white/80 dark:border-white/20">
-            <!-- Close icon button -->
-            <button type="button" onclick="document.getElementById('modalForgotPw').classList.add('hidden')" class="absolute right-5 top-5 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-700 transition">
+    <!-- MODAL LUPA KATA SANDI (Concentric 32px -> 16px, 44x44 close button, Apple vertical rounded-rectangle button stack) -->
+    <div id="modalForgotPw" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md">
+        <div class="glass-card animate-rise relative w-full max-w-[420px] rounded-[32px] p-6 sm:p-8 shadow-2xl border border-white/80 dark:border-white/20">
+            <!-- Close icon button (44x44 circle) -->
+            <button type="button" onclick="document.getElementById('modalForgotPw').classList.add('hidden')" aria-label="Tutup modal" class="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full text-slate-400 hover:bg-slate-200/60 dark:hover:bg-white/10 hover:text-slate-700 active:scale-95 transition">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -146,17 +146,17 @@
                 </div>
             </div>
 
-            <!-- Direct WhatsApp CTA Button -->
-            <div class="mt-6 space-y-2">
+            <!-- Direct WhatsApp CTA Button (Apple HIG vertical button stack: rounded-[14px], identical h-11 height) -->
+            <div class="mt-6 space-y-2.5">
                 <a href="https://wa.me/62887895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines,%20saya%20ingin%20mengatur%20ulang%20kata%20sandi%20akun%20mahasiswa%20saya.%0A%0ANama:%20%0ANIM:%20"
                    target="_blank"
-                   class="btn-emerald flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold shadow-md">
+                   class="btn-emerald flex h-11 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-semibold shadow-md">
                     <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.087.087-.179.182-.077.357.101.174.452.744.97 1.205.666.593 1.228.777 1.402.864.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.232-.144.39-.086s1.004.474 1.177.561c.174.087.289.13.332.203.044.072.044.419-.1 1.024z"/>
                     </svg>
                     <span>Hubungi via WhatsApp</span>
                 </a>
-                <button type="button" onclick="document.getElementById('modalForgotPw').classList.add('hidden')" class="btn-glass flex w-full items-center justify-center rounded-full py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <button type="button" onclick="document.getElementById('modalForgotPw').classList.add('hidden')" class="btn-glass flex h-11 w-full items-center justify-center rounded-[14px] text-sm font-semibold text-slate-600 dark:text-slate-300">
                     Batal
                 </button>
             </div>

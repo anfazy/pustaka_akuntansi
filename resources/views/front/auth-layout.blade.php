@@ -2,7 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>@yield('title', 'Masuk — Perpustakaan Jurusan Akuntansi')</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-hmj-akuntansi.jpg') }}">
 
@@ -55,6 +55,11 @@
     </script>
 
     <style>
+        :root {
+            --apple-ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --apple-spring: cubic-bezier(0.22, 1.36, 0.36, 1);
+        }
+
         body {
             background: radial-gradient(1100px 650px at 85% -5%, rgba(52, 211, 153, 0.28), transparent 60%),
                         radial-gradient(850px 500px at 85% 15%, rgba(245, 158, 11, 0.08), transparent 50%),
@@ -68,7 +73,7 @@
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
             overflow-x: hidden;
-            transition: background 0.4s ease, color 0.3s ease;
+            transition: background 0.45s var(--apple-ease), color 0.3s ease;
         }
 
         /* Apple Liquid Glass Card */
@@ -124,7 +129,10 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
             position: relative;
             overflow: hidden;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            touch-action: manipulation;
+            transition: transform 0.38s var(--apple-spring),
+                        box-shadow 0.28s var(--apple-ease),
+                        filter 0.24s ease;
         }
 
         .btn-emerald::before {
@@ -139,9 +147,25 @@
             pointer-events: none;
         }
 
+        .btn-emerald::after,
+        .btn-glass::after {
+            content: '';
+            position: absolute;
+            inset: -20% -60%;
+            background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.38) 50%, transparent 65%);
+            transform: translateX(-110%);
+            transition: transform 0.65s var(--apple-ease);
+            pointer-events: none;
+        }
+
+        .btn-emerald:hover::after,
+        .btn-glass:hover::after {
+            transform: translateX(110%);
+        }
+
         .btn-emerald:hover {
             filter: brightness(1.08);
-            transform: translateY(-1.5px);
+            transform: translateY(-2px) scale(1.015);
             box-shadow: inset 0 1.5px 1.5px 0 #ffffff,
                         inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2),
                         0 16px 36px -6px rgba(16, 185, 129, 0.65),
@@ -149,7 +173,46 @@
         }
 
         .btn-emerald:active {
-            transform: translateY(0) scale(0.98);
+            transform: translateY(0) scale(0.94);
+            transition-duration: 90ms;
+        }
+
+        .btn-glass {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(240, 253, 244, 0.50) 100%);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border: 1px solid rgba(15, 23, 42, 0.10);
+            border-top: 1.5px solid #ffffff;
+            box-shadow: inset 0 1.5px 1px 0 #ffffff, 0 6px 16px -6px rgba(6, 78, 59, 0.12);
+            color: #0f172a;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+            transition: transform 0.38s var(--apple-spring),
+                        background 0.24s ease,
+                        border-color 0.24s ease,
+                        box-shadow 0.28s var(--apple-ease);
+        }
+
+        .btn-glass:hover {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 253, 244, 0.70) 100%);
+            border-color: rgba(52, 211, 153, 0.55);
+            transform: translateY(-2px) scale(1.012);
+        }
+
+        .btn-glass:active {
+            transform: translateY(0) scale(0.94);
+            transition-duration: 90ms;
+        }
+
+        .liquid-badge-emerald {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.20) 0%, rgba(5, 150, 105, 0.08) 100%);
+            backdrop-filter: blur(16px) saturate(200%);
+            -webkit-backdrop-filter: blur(16px) saturate(200%);
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            border-top: 1.5px solid rgba(110, 231, 183, 0.9);
+            box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.7), 0 4px 12px -3px rgba(5, 150, 105, 0.15);
+            color: #064e3b;
         }
 
         /* Apple Liquid Bright Lemon-Yellow (Light, Sunny, Non-Dark) */
@@ -236,7 +299,7 @@
             color: #334155;
             position: relative;
             overflow: hidden;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.38s var(--apple-spring), filter 0.2s ease, box-shadow 0.28s var(--apple-ease);
         }
 
         .liquid-icon-btn::before {
@@ -252,18 +315,24 @@
         }
 
         .liquid-icon-btn:hover {
-            transform: translateY(-1px);
+            transform: translateY(-1.5px) scale(1.04);
             filter: brightness(1.04);
             box-shadow: inset 0 1.5px 1px 0 #ffffff, 0 8px 18px -4px rgba(6, 78, 59, 0.18);
         }
 
+        .liquid-icon-btn:active {
+            transform: translateY(0) scale(0.90);
+            transition-duration: 85ms;
+            filter: brightness(0.96);
+        }
+
         @keyframes riseIn {
-            from { opacity: 0; transform: translateY(14px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(18px) scale(0.975); filter: blur(6px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         .animate-rise {
-            animation: riseIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation: riseIn 0.48s var(--apple-ease) both;
         }
 
         /* DARK MODE APPLE LIQUID GLASS STYLES */
@@ -323,6 +392,19 @@
             border: 1px solid rgba(255, 255, 255, 0.16) !important;
             border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
             box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.35), 0 4px 12px -4px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        html.dark .btn-glass {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.16) !important;
+            border-top: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+            color: #f8fafc !important;
+        }
+
+        html.dark .liquid-badge-emerald {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 100%) !important;
+            border: 1px solid rgba(52, 211, 153, 0.35) !important;
+            color: #6ee7b7 !important;
         }
 
         /* Liquid Bright Lemon-Yellow in Dark Mode */
@@ -385,12 +467,13 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative">
 
-    <!-- FLOATING THEME TOGGLE (Top-Right) -->
-    <div class="fixed top-5 right-5 z-20">
+    <!-- FLOATING THEME TOGGLE (Top-Right, >=44x44pt & safe-area inset) -->
+    <div class="fixed z-20" style="top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right));">
         <button type="button"
                 onclick="toggleDarkMode()"
-                class="liquid-icon-btn grid h-10 w-10 place-items-center rounded-full text-slate-600 dark:text-amber-300 shadow-md hover:scale-105 transition-all"
-                title="Ganti Mode Gelap / Terang">
+                class="liquid-icon-btn grid h-11 w-11 place-items-center rounded-full text-slate-600 dark:text-amber-300 shadow-md hover:scale-105 transition-all"
+                title="Ganti Mode Gelap / Terang"
+                aria-label="Ganti Mode Gelap atau Terang">
             <!-- Sun icon (shown when dark) -->
             <svg class="hidden dark:block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />

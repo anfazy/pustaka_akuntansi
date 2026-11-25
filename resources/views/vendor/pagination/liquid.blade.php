@@ -13,12 +13,12 @@
         <div class="flex flex-wrap items-center justify-center gap-2">
             {{-- Previous Page Link --}}
             @if ($paginator->onFirstPage())
-                <span class="inline-flex h-10 items-center rounded-full px-4 text-xs font-semibold text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 cursor-not-allowed">
+                <span class="inline-flex h-11 items-center rounded-full px-4 text-xs font-semibold text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 cursor-not-allowed">
                     &laquo; Sebelumnya
                 </span>
             @else
                 <a href="{{ $paginator->previousPageUrl() }}" rel="prev"
-                   class="liquid-chip inline-flex h-10 items-center rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                   class="liquid-chip inline-flex h-11 items-center rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200">
                     &laquo; Sebelumnya
                 </a>
             @endif
@@ -26,19 +26,19 @@
             {{-- Pagination Elements --}}
             @foreach ($elements as $element)
                 @if (is_string($element))
-                    <span class="inline-flex h-10 w-10 items-center justify-center text-xs font-semibold text-slate-400">{{ $element }}</span>
+                    <span class="inline-flex h-11 w-11 items-center justify-center text-xs font-semibold text-slate-400">{{ $element }}</span>
                 @endif
 
                 @if (is_array($element))
                     @foreach ($element as $page => $url)
                         @if ($page == $paginator->currentPage())
                             <span aria-current="page"
-                                  class="btn-emerald inline-flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold shadow-sm">
+                                  class="btn-emerald inline-flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm">
                                 {{ $page }}
                             </span>
                         @else
                             <a href="{{ $url }}"
-                               class="liquid-chip inline-flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200">
+                               class="liquid-chip inline-flex h-11 w-11 items-center justify-center rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200">
                                 {{ $page }}
                             </a>
                         @endif
@@ -49,11 +49,11 @@
             {{-- Next Page Link --}}
             @if ($paginator->hasMorePages())
                 <a href="{{ $paginator->nextPageUrl() }}" rel="next"
-                   class="liquid-chip inline-flex h-10 items-center rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                   class="liquid-chip inline-flex h-11 items-center rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200">
                     Berikutnya &raquo;
                 </a>
             @else
-                <span class="inline-flex h-10 items-center rounded-full px-4 text-xs font-semibold text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 cursor-not-allowed">
+                <span class="inline-flex h-11 items-center rounded-full px-4 text-xs font-semibold text-slate-400 dark:text-slate-600 bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 cursor-not-allowed">
                     Berikutnya &raquo;
                 </span>
             @endif

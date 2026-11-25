@@ -29,6 +29,38 @@ class UserPortalController extends Controller
     }
 
     /**
+     * Sinkronisasi status peminjaman siswa agar selalu selaras dengan aturan Panel Admin:
+     * - Booking > 24 jam otomatis dibatalkan.
+     * - Status 'dipinjam' <-> 'terlambat' diselaraskan dengan jatuh tempo hari kerja.
+     */
+    protected function syncStudentLoansStatus(Anggota $student): void
+    {
+        Loan::where('status', 'booked')
+            ->where(function ($q) use ($student) {
+                $q->where('member_nim', $student->nim_no_anggota)
+                    ->orWhere('anggota_id', $student->id);
+            })
+            ->where('created_at', '<', now()->subHours(24))
+            ->update(['status' => 'dibatalkan']);
+
+        Loan::with('book')
+            ->where(function ($q) use ($student) {
+                $q->where('member_nim', $student->nim_no_anggota)
+                    ->orWhere('anggota_id', $student->id);
+            })
+            ->whereIn('status', ['dipinjam', 'terlambat'])
+            ->where('is_lost', false)
+            ->get()
+            ->each(function (Loan $loan): void {
+                if ($loan->isOverdue() && $loan->status !== 'terlambat') {
+                    $loan->updateQuietly(['status' => 'terlambat']);
+                } elseif (! $loan->isOverdue() && $loan->status === 'terlambat') {
+                    $loan->updateQuietly(['status' => 'dipinjam']);
+                }
+            });
+    }
+
+    /**
      * Beranda (Home page).
      * Accessible by both guests and authenticated students.
      */
@@ -36,20 +68,59 @@ class UserPortalController extends Controller
     {
         $student = $this->getStudent();
 
-        // Books data
+        // Books data for Beranda showcase shelves
         $popularBooks = Book::with('category')
             ->orderBy('stok', 'asc') // more borrowed = less stock
             ->latest()
-            ->take(4)
+            ->take(8)
             ->get();
 
-        $popularIds = $popularBooks->pluck('id')->toArray();
+        $popularIds = $popularBooks->take(4)->pluck('id')->toArray();
 
         $newestBooks = Book::with('category')
             ->whereNotIn('id', $popularIds)
             ->latest()
-            ->take(4)
+            ->take(8)
             ->get();
+
+        $spotlightBooks = Book::with('category')
+            ->orderByDesc('stok')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $accountingBooks = Book::with('category')
+            ->whereHas('category', function ($q): void {
+                $q->whereIn('slug', ['akuntansi', 'perpajakan'])
+                    ->orWhere('nama', 'like', '%Akuntansi%')
+                    ->orWhere('nama', 'like', '%Perpajakan%');
+            })
+            ->latest()
+            ->take(8)
+            ->get();
+
+        $thesisBooks = Book::with('category')
+            ->where(function ($q): void {
+                $q->whereIn('collection_type', ['ta_skripsi', 'proposal_laporan_pkl'])
+                    ->orWhereHas('category', function ($catQ): void {
+                        $catQ->whereIn('slug', ['ta-skripsi', 'laporan-pkl']);
+                    });
+            })
+            ->latest()
+            ->take(8)
+            ->get();
+
+        $categories = Category::withCount('books')
+            ->orderByDesc('books_count')
+            ->orderBy('nama')
+            ->take(6)
+            ->get();
+
+        $librarySummary = [
+            'total_titles' => Book::count(),
+            'available_copies' => (int) Book::sum('stok'),
+            'active_loans' => (int) Loan::whereIn('status', ['dipinjam', 'terlambat'])->count(),
+        ];
 
         // Student statistics if logged in
         $stats = [
@@ -65,9 +136,13 @@ class UserPortalController extends Controller
         ];
 
         if ($student) {
+            $this->syncStudentLoansStatus($student);
+
             $studentLoans = Loan::with('book')
-                ->where('member_nim', $student->nim_no_anggota)
-                ->orWhere('anggota_id', $student->id)
+                ->where(function ($q) use ($student) {
+                    $q->where('member_nim', $student->nim_no_anggota)
+                        ->orWhere('anggota_id', $student->id);
+                })
                 ->get();
 
             $borrowed = $studentLoans->whereIn('status', ['dipinjam', 'terlambat']);
@@ -110,6 +185,11 @@ class UserPortalController extends Controller
             'stats' => $stats,
             'popularBooks' => $popularBooks,
             'newestBooks' => $newestBooks,
+            'spotlightBooks' => $spotlightBooks,
+            'accountingBooks' => $accountingBooks,
+            'thesisBooks' => $thesisBooks,
+            'categories' => $categories,
+            'librarySummary' => $librarySummary,
         ]);
     }
 
@@ -202,6 +282,8 @@ class UserPortalController extends Controller
 
         $book = Book::findOrFail($id);
 
+        $this->syncStudentLoansStatus($student);
+
         if ($book->stok <= 0) {
             return back()->with('error', 'Maaf, stok eksemplar buku ini sedang habis.');
         }
@@ -259,6 +341,8 @@ class UserPortalController extends Controller
             return redirect()->route('masuk')->with('warning', 'Silakan masuk untuk melihat pinjaman Anda.');
         }
 
+        $this->syncStudentLoansStatus($student);
+
         $loans = Loan::with('book.category')
             ->where(function ($q) use ($student) {
                 $q->where('member_nim', $student->nim_no_anggota)
@@ -270,7 +354,7 @@ class UserPortalController extends Controller
         $siapDiambil = $loans->where('status', 'booked');
         $sedangDipinjam = $loans->whereIn('status', ['dipinjam', 'terlambat']);
         $terlambat = $loans->filter(function (Loan $loan) {
-            return $loan->status === 'terlambat' || $loan->isOverdue();
+            return $loan->isOverdue();
         });
 
         $activeTab = $request->get('tab', 'siap');

@@ -12,13 +12,13 @@
         <div>
             @if(request('tersedia') === '1')
                 <a href="{{ route('katalog', request()->except('tersedia', 'page')) }}"
-                   class="inline-flex items-center gap-1.5 rounded-full liquid-badge-emerald px-4 py-2 text-xs font-semibold shadow-sm">
+                   class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full liquid-badge-emerald px-4 text-xs font-semibold shadow-sm">
                     <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                     <span>Hanya Stok Tersedia &times;</span>
                 </a>
             @else
                 <a href="{{ route('katalog', array_merge(request()->except('page'), ['tersedia' => '1'])) }}"
-                   class="inline-flex items-center gap-1.5 rounded-full liquid-chip px-4 py-2 text-xs font-medium">
+                   class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full liquid-chip px-4 text-xs font-medium">
                     <span class="h-2 w-2 rounded-full bg-slate-400"></span>
                     <span>Hanya Stok Tersedia</span>
                 </a>
@@ -26,11 +26,11 @@
         </div>
     </div>
 
-    <!-- CATEGORY FILTER CHIPS ONLY (5 Canonical Categories: Fiksi, Akuntansi, Perpajakan, TA/Skripsi, Laporan PKL) -->
+    <!-- CATEGORY FILTER CHIPS (Apple HIG >=44px touch target pills) -->
     <div class="no-scrollbar mb-5 -mx-4 px-4 flex items-center gap-2.5 overflow-x-auto pt-2 pb-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:pb-4">
         <!-- Semua -->
         <a href="{{ route('katalog', array_merge(request()->except('kategori', 'page'), ['kategori' => 'semua'])) }}"
-           class="inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-200 {{ $currentKategori === 'semua' ? 'btn-emerald' : 'liquid-chip' }}">
+           class="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-semibold transition-all duration-200 {{ $currentKategori === 'semua' ? 'btn-emerald' : 'liquid-chip' }}">
             Semua Kategori
         </a>
 
@@ -39,7 +39,7 @@
                 $isActiveCat = ($currentKategori === $category->slug || $currentKategori === $category->nama);
             @endphp
             <a href="{{ route('katalog', array_merge(request()->except('kategori', 'page'), ['kategori' => $category->slug])) }}"
-               class="inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[14px] font-medium transition-all duration-200 {{ $isActiveCat ? 'btn-emerald' : 'liquid-chip' }}">
+               class="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-medium transition-all duration-200 {{ $isActiveCat ? 'btn-emerald' : 'liquid-chip' }}">
                 <span>{{ $category->nama }}</span>
                 <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $isActiveCat ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400' }}">
                     {{ $category->books_count }}
@@ -70,7 +70,7 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800">Tidak ada buku yang sesuai</h3>
             <p class="text-sm text-slate-500 mt-1 max-w-sm">Coba ubah kata kunci pencarian atau bersihkan filter kategori Anda.</p>
-            <a href="{{ route('katalog') }}" class="btn-glass mt-5 rounded-full px-5 py-2 text-sm font-semibold">
+            <a href="{{ route('katalog') }}" class="btn-glass mt-5 inline-flex min-h-[44px] items-center rounded-full px-5 text-sm font-semibold">
                 Reset Semua Filter
             </a>
         </div>

@@ -48,7 +48,7 @@
             <button type="button"
                     id="btnToggleFav"
                     onclick="toggleFavoriteBook({{ $book->id }})"
-                    class="{{ $isFavorited ? 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-5 flex w-full max-w-[320px] items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all">
+                    class="{{ $isFavorited ? 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all">
                 <svg id="favStarIcon" class="h-4 w-4 {{ $isFavorited ? 'text-amber-600 fill-amber-500' : 'text-amber-500' }}" fill="{{ $isFavorited ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                 </svg>
@@ -115,7 +115,7 @@
                 <div class="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     @if(session('student_id'))
                         @if($book->stok > 0)
-                            <button type="button" onclick="document.getElementById('bookingModal').classList.remove('hidden')"
+                            <button type="button" onclick="openAppleModal('bookingModal')"
                                     class="btn-emerald h-12 rounded-full px-8 text-[15px] font-semibold w-full sm:w-auto">
                                 Ajukan Pinjam Buku
                             </button>
@@ -157,17 +157,17 @@
 
     <!-- MODAL KONFIRMASI PEMINJAMAN FISIK (Apple Liquid Glass) -->
     @if($student)
-        <div id="bookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div id="bookingModal" class="apple-modal-root fixed inset-0 z-50 hidden flex items-center justify-center p-4">
             <!-- Scrim Backdrop -->
-            <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity" onclick="document.getElementById('bookingModal').classList.add('hidden')"></div>
+            <div class="glass-modal-backdrop fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeAppleModal('bookingModal')"></div>
 
-            <!-- Dialog Window -->
-            <div class="glass-card relative z-10 w-full max-w-[500px] overflow-hidden rounded-[32px] p-7 sm:p-9 shadow-2xl border border-white/95 dark:border-white/10 animate-rise">
+            <!-- Dialog Window (Concentric outer 36px - p-6 24px / p-4 16px = inner 20px) -->
+            <div class="glass-card glass-modal-panel relative z-10 w-full max-w-[500px] overflow-hidden rounded-[36px] p-6 sm:p-8 shadow-2xl border border-white/95 dark:border-white/10">
                 <h3 class="text-[24px] font-bold tracking-tight text-slate-900">Konfirmasi Peminjaman Fisik</h3>
 
                 <!-- Mini Book Info -->
                 <div class="mt-6 flex items-center gap-4">
-                    <div class="relative aspect-[5/7] w-14 shrink-0 overflow-hidden rounded-[4px] book-shadow">
+                    <div class="relative aspect-[5/7] w-14 shrink-0 overflow-hidden rounded-[6px] book-shadow">
                         @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
                             <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $book->judul }}" class="h-full w-full object-cover">
                         @else
@@ -216,7 +216,7 @@
 
                     <!-- Modal Actions -->
                     <div class="mt-8 flex gap-3">
-                        <button type="button" onclick="document.getElementById('bookingModal').classList.add('hidden')"
+                        <button type="button" onclick="closeAppleModal('bookingModal')"
                                 class="btn-glass w-32 h-11 rounded-full text-sm font-semibold">
                             Batal
                         </button>
@@ -259,12 +259,12 @@
                 .then(data => {
                     if (data.success) {
                         if (data.is_favorited) {
-                            btn.className = 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700 mt-5 flex w-full max-w-[320px] items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all';
+                            btn.className = 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700 mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all';
                             icon.setAttribute('fill', 'currentColor');
                             icon.className = 'h-4 w-4 text-amber-600 fill-amber-500';
                             label.textContent = '★ Tersimpan di Favorit';
                         } else {
-                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-5 flex w-full max-w-[320px] items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition-all';
+                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all';
                             icon.setAttribute('fill', 'none');
                             icon.className = 'h-4 w-4 text-amber-500';
                             label.textContent = '☆ Simpan ke Favorit';

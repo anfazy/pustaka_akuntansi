@@ -5,18 +5,18 @@
 @section('content')
     <h1 class="text-[34px] font-bold tracking-tight text-slate-900 mb-8">Pinjaman Saya</h1>
 
-    <!-- SEGMENTED TABS (Apple Pill Track) -->
-    <div class="segment-track max-w-[760px] flex rounded-full p-1.5 mb-10">
+    <!-- SEGMENTED TABS (Apple Pill Track, >=44px hit height, scrollable safely on narrow phones) -->
+    <div class="segment-track max-w-[760px] flex rounded-full p-1.5 mb-8 overflow-x-auto no-scrollbar">
         <a href="{{ route('pinjaman', ['tab' => 'siap']) }}"
-           class="flex-1 text-center py-2 text-[14px] font-semibold rounded-full transition-all {{ $activeTab === 'siap' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+           class="flex-1 min-w-max inline-flex min-h-[44px] items-center justify-center px-3 sm:px-4 text-[12.5px] sm:text-[14px] font-semibold rounded-full transition-all whitespace-nowrap {{ $activeTab === 'siap' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
             Siap Diambil ({{ $siapDiambil->count() }})
         </a>
         <a href="{{ route('pinjaman', ['tab' => 'dipinjam']) }}"
-           class="flex-1 text-center py-2 text-[14px] font-semibold rounded-full transition-all {{ $activeTab === 'dipinjam' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+           class="flex-1 min-w-max inline-flex min-h-[44px] items-center justify-center px-3 sm:px-4 text-[12.5px] sm:text-[14px] font-semibold rounded-full transition-all whitespace-nowrap {{ $activeTab === 'dipinjam' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
             Sedang Dipinjam ({{ $sedangDipinjam->count() }})
         </a>
         <a href="{{ route('pinjaman', ['tab' => 'denda']) }}"
-           class="flex-1 text-center py-2 text-[14px] font-semibold rounded-full transition-all {{ $activeTab === 'denda' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+           class="flex-1 min-w-max inline-flex min-h-[44px] items-center justify-center px-3 sm:px-4 text-[12.5px] sm:text-[14px] font-semibold rounded-full transition-all whitespace-nowrap {{ $activeTab === 'denda' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
             Terlambat & Denda ({{ $terlambat->count() }})
         </a>
     </div>
@@ -28,9 +28,9 @@
                 @php
                     $deadline = $loan->created_at ? $loan->created_at->addHours(24)->translatedFormat('d M, H:i') . ' WIB' : 'Besok 16.00 WIB';
                 @endphp
-                <article class="glass-card flex flex-col gap-6 rounded-[28px] p-6 sm:p-8 sm:flex-row sm:items-center animate-rise">
-                    <!-- QR Code Box (White background for scanner reliability) -->
-                    <div class="grid h-32 w-32 shrink-0 place-items-center rounded-2xl p-2.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
+                <article class="glass-card flex flex-col gap-6 rounded-[28px] p-5 sm:p-7 sm:flex-row sm:items-center animate-rise">
+                    <!-- QR Code Box (Proportional concentric inner 16px) -->
+                    <div class="grid h-32 w-32 shrink-0 place-items-center rounded-[16px] p-2.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
                         <canvas id="qr_{{ $loan->id }}" class="h-full w-full"></canvas>
                     </div>
 
@@ -60,7 +60,7 @@
 
                         <form action="{{ route('pinjaman.batal', $loan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan booking ini?')">
                             @csrf
-                            <button type="submit" class="btn-glass rounded-full px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300">
+                            <button type="submit" class="btn-glass inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300">
                                 Batalkan Booking
                             </button>
                         </form>
@@ -68,9 +68,10 @@
                 </article>
 
                 <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        renderQrCode("qr_{{ $loan->id }}", "{{ $loan->booking_code }}");
-                    });
+                    (function() {
+                        const run = function() { renderQrCode("qr_{{ $loan->id }}", "{{ $loan->booking_code }}"); };
+                        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); } else { run(); }
+                    })();
                 </script>
             @empty
                 <div class="glass-card my-8 flex flex-col items-center justify-center rounded-[32px] p-12 text-center">
@@ -79,7 +80,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-800">Belum ada booking aktif</h3>
                     <p class="text-sm text-slate-500 mt-1 max-w-sm">Pilih buku di katalog dan ajukan pemesanan untuk mengambilnya di ruang baca jurusan.</p>
-                    <a href="{{ route('katalog') }}" class="btn-emerald mt-5 rounded-full px-6 py-2 text-sm font-semibold">
+                    <a href="{{ route('katalog') }}" class="btn-emerald mt-5 inline-flex min-h-[44px] items-center rounded-full px-6 text-sm font-semibold">
                         Jelajahi Katalog
                     </a>
                 </div>
@@ -92,8 +93,8 @@
                     $artIndex = abs(crc32($loan->book?->judul ?? 'buku')) % 6;
                     $today = today();
                     $due = $loan->jatuh_tempo ? $loan->jatuh_tempo->copy()->startOfDay() : null;
-                    $isOverdue = $due && $today->gt($due);
-                    $daysDiff = $due ? abs($today->diffInDays($due)) : 0;
+                    $isOverdue = $loan->isOverdue();
+                    $daysDiff = $isOverdue ? $loan->calculateOverdueWeekdays(today()) : ($due ? abs($today->diffInDays($due)) : 0);
                     $lateFine = $loan->calculateLateFine(today());
                 @endphp
                 <article class="glass-card flex flex-col gap-6 rounded-[28px] p-6 sm:p-7 sm:flex-row sm:items-center animate-rise">
@@ -143,7 +144,7 @@
                         @if(! $loan->is_extended && ! $isOverdue)
                             <form action="{{ route('pinjaman.perpanjang', $loan->id) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn-glass rounded-full px-4 py-2 text-xs font-semibold text-emerald-800 hover:border-emerald-300">
+                                <button type="submit" class="btn-glass inline-flex min-h-[44px] items-center rounded-full px-4 text-xs font-semibold text-emerald-800 hover:border-emerald-300">
                                     Perpanjang +3 Hari • Sisa 1x
                                 </button>
                             </form>
@@ -210,10 +211,10 @@
         @php
             $successLoan = \App\Models\Loan::with('book')->where('booking_code', $successBookingCode)->first();
         @endphp
-        <div id="bookingSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md" onclick="document.getElementById('bookingSuccessModal').classList.add('hidden')"></div>
+        <div id="bookingSuccessModal" class="apple-modal-root fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="glass-modal-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeAppleModal('bookingSuccessModal')"></div>
 
-            <div class="glass-card relative z-10 w-full max-w-[480px] overflow-hidden rounded-[36px] p-8 sm:p-10 text-center shadow-2xl border border-white/95 animate-rise">
+            <div class="glass-card glass-modal-panel relative z-10 w-full max-w-[480px] overflow-hidden rounded-[36px] p-6 sm:p-8 text-center shadow-2xl border border-white/95">
                 <!-- Checkmark Icon -->
                 <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600 mb-5">
                     <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
@@ -224,9 +225,9 @@
                     {{ $successLoan?->book?->judul ?? 'Buku Pilihan' }}
                 </p>
 
-                <!-- QR Card -->
-                <div class="pearl-card mt-7 rounded-[26px] p-6 shadow-sm border border-slate-200">
-                    <div class="mx-auto grid h-36 w-36 place-items-center rounded-xl bg-white p-2">
+                <!-- QR Card (Concentric: outer 36px -> inner 20px -> qr box 12px) -->
+                <div class="pearl-card mt-7 rounded-[20px] p-5 shadow-sm border border-slate-200">
+                    <div class="mx-auto grid h-36 w-36 place-items-center rounded-[12px] bg-white p-2">
                         <canvas id="successQrCanvas" class="h-full w-full"></canvas>
                     </div>
                     <div class="mt-4 text-[20px] font-bold tracking-tight text-slate-900">
@@ -239,7 +240,7 @@
 
                 <!-- Modal Actions -->
                 <div class="mt-8 flex gap-3">
-                    <button type="button" onclick="document.getElementById('bookingSuccessModal').classList.add('hidden')"
+                    <button type="button" onclick="closeAppleModal('bookingSuccessModal')"
                             class="btn-glass flex-1 h-11 rounded-full text-sm font-semibold">
                         Tutup
                     </button>
@@ -252,31 +253,10 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                renderQrCode("successQrCanvas", "{{ $successBookingCode }}");
-            });
+            (function() {
+                const run = function() { renderQrCode("successQrCanvas", "{{ $successBookingCode }}"); };
+                if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); } else { run(); }
+            })();
         </script>
     @endif
 @endsection
-
-@push('scripts')
-    <!-- Standalone QR Code Generator (Zero dependencies) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <script>
-        function renderQrCode(canvasId, value) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            try {
-                new QRious({
-                    element: canvas,
-                    value: value,
-                    size: 160,
-                    backgroundAlpha: 0,
-                    foreground: '#0f172a'
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    </script>
-@endpush
