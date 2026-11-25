@@ -76,7 +76,7 @@
 
         @keyframes vtFadeIn {
             from { opacity: 0; transform: translateY(10px) scale(0.994); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 1; transform: none; }
         }
 
         @keyframes spotlightSlideIn {
@@ -1201,7 +1201,7 @@
                     </svg>
                     <span class="sidebar-text flex-1">Pinjaman Saya</span>
                     @if($activeBadgeCount > 0)
-                        <span class="sidebar-badge grid h-6 min-w-6 place-items-center rounded-full bg-amber-400 text-amber-950 px-2 text-[12px] font-bold shadow-sm">
+                        <span class="sidebar-badge btn-amber-gold grid h-6 min-w-6 place-items-center rounded-full px-2 text-[12px] font-bold tabular-nums">
                             {{ $activeBadgeCount }}
                         </span>
                     @endif
@@ -1559,9 +1559,6 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5">
-                        <a href="{{ route('tata-tertib') }}" class="liquid-chip inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                            <span>Tata Tertib</span>
-                        </a>
                         <a href="/admin" class="btn-glass inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-800">
                             <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -1740,6 +1737,9 @@
         function openAppleModal(id) {
             const modal = document.getElementById(id);
             if (!modal) return;
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
             modal.classList.remove('hidden', 'is-closing');
         }
 
@@ -2020,10 +2020,21 @@
             initAppleSegments(isSoftSwap);
             initAppleReveals();
 
+            const stage = document.getElementById('appMainStage');
+            if (stage) {
+                // Remove stage transform class once entrance finishes so fixed descendants never anchor to #appMainStage
+                setTimeout(function() {
+                    stage.classList.remove('apple-stage-enter');
+                }, 250);
+
+                // Teleport modals onto document.body so fixed inset-0 always covers the full viewport (including sidebar & topbar)
+                stage.querySelectorAll('.apple-modal-root').forEach(function(modalEl) {
+                    document.body.appendChild(modalEl);
+                });
+            }
+
             // Execute inline scripts injected inside #appMainStage after PJAX swap
-            if (isSoftSwap) {
-                const stage = document.getElementById('appMainStage');
-                if (stage) {
+            if (isSoftSwap && stage) {
                     const inlineScripts = Array.from(stage.querySelectorAll('script'));
                     const executeScripts = function() {
                         inlineScripts.forEach(function(oldScript) {
@@ -2041,7 +2052,6 @@
                     } else {
                         executeScripts();
                     }
-                }
             }
         }
 
@@ -2146,6 +2156,9 @@
                 }
 
                 document.title = doc.title || document.title;
+                document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
+                    oldModal.remove();
+                });
                 stage.innerHTML = nextStage.innerHTML;
                 stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
                 void stage.offsetWidth;

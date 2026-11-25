@@ -48,11 +48,11 @@
             <button type="button"
                     id="btnToggleFav"
                     onclick="toggleFavoriteBook({{ $book->id }})"
-                    class="{{ $isFavorited ? 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all">
-                <svg id="favStarIcon" class="h-4 w-4 {{ $isFavorited ? 'text-amber-600 fill-amber-500' : 'text-amber-500' }}" fill="{{ $isFavorited ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    class="{{ $isFavorited ? 'btn-amber-gold' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold">
+                <svg id="favStarIcon" class="h-4 w-4 shrink-0 {{ $isFavorited ? 'text-amber-700 fill-amber-600' : 'text-amber-500' }}" fill="{{ $isFavorited ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                 </svg>
-                <span id="favTextLabel">{{ $isFavorited ? '★ Tersimpan di Favorit' : '☆ Simpan ke Favorit' }}</span>
+                <span id="favTextLabel">{{ $isFavorited ? 'Tersimpan di Favorit' : 'Simpan ke Favorit' }}</span>
             </button>
             @endif
         </div>
@@ -162,7 +162,7 @@
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeAppleModal('bookingModal')"></div>
 
             <!-- Dialog Window (Concentric outer 36px - p-6 24px / p-4 16px = inner 20px) -->
-            <div class="glass-card glass-modal-panel relative z-10 w-full max-w-[500px] overflow-hidden rounded-[36px] p-6 sm:p-8 shadow-2xl border border-white/95 dark:border-white/10">
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[36px] p-6 sm:p-8 shadow-2xl border border-white/95 dark:border-white/10">
                 <h3 class="text-[24px] font-bold tracking-tight text-slate-900">Konfirmasi Peminjaman Fisik</h3>
 
                 <!-- Mini Book Info -->
@@ -259,15 +259,15 @@
                 .then(data => {
                     if (data.success) {
                         if (data.is_favorited) {
-                            btn.className = 'bg-amber-100/90 text-amber-900 border-amber-300 shadow-sm dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700 mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all';
+                            btn.className = 'btn-amber-gold mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold';
                             icon.setAttribute('fill', 'currentColor');
-                            icon.className = 'h-4 w-4 text-amber-600 fill-amber-500';
-                            label.textContent = '★ Tersimpan di Favorit';
+                            icon.className = 'h-4 w-4 shrink-0 text-amber-700 fill-amber-600';
+                            label.textContent = 'Tersimpan di Favorit';
                         } else {
-                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:scale-[0.97] transition-all';
+                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-5 flex min-h-[44px] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold';
                             icon.setAttribute('fill', 'none');
-                            icon.className = 'h-4 w-4 text-amber-500';
-                            label.textContent = '☆ Simpan ke Favorit';
+                            icon.className = 'h-4 w-4 shrink-0 text-amber-500';
+                            label.textContent = 'Simpan ke Favorit';
                         }
                     }
                 })
