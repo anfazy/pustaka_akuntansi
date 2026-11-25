@@ -61,14 +61,16 @@ class LoanResource extends Resource
             ->where('created_at', '<', now()->subHours(24))
             ->update(['status' => 'dibatalkan']);
 
-        // 2. Sinkronisasi otomatis: ubah status 'dipinjam' menjadi 'terlambat' di database jika sudah melewati jatuh tempo
+        // 2. Sinkronisasi otomatis dua arah antara 'dipinjam' dan 'terlambat' sesuai tanggal jatuh tempo
         static::getModel()::with('book')
-            ->where('status', 'dipinjam')
+            ->whereIn('status', ['dipinjam', 'terlambat'])
             ->where('is_lost', false)
             ->get()
             ->each(function (Loan $loan): void {
-                if ($loan->isOverdue()) {
+                if ($loan->isOverdue() && $loan->status !== 'terlambat') {
                     $loan->updateQuietly(['status' => 'terlambat']);
+                } elseif (! $loan->isOverdue() && $loan->status === 'terlambat') {
+                    $loan->updateQuietly(['status' => 'dipinjam']);
                 }
             });
 
@@ -344,6 +346,21 @@ class LoanResource extends Resource
                             ->default(today())
                             ->native(false)
                             ->live()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set, ?string $state): void {
+                                if (! $state) {
+                                    return;
+                                }
+
+                                $bookId = $get('book_id');
+                                $book = $bookId ? Book::find($bookId) : null;
+                                $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
+                                $totalDays = $baseDays + ((bool) $get('is_extended') ? 3 : 0);
+                                $jatuhTempo = Carbon::parse($state)->addWeekdays($totalDays)->startOfDay();
+
+                                if ($get('status') === 'terlambat' && today()->lte($jatuhTempo)) {
+                                    $set('status', 'dipinjam');
+                                }
+                            })
                             ->required(),
 
                         Forms\Components\Placeholder::make('info_jatuh_tempo')
@@ -419,6 +436,20 @@ class LoanResource extends Resource
                         Forms\Components\Toggle::make('is_extended')
                             ->label('Status Diperpanjang (+3 Hari Kerja)')
                             ->live()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set, bool $state): void {
+                                if (! $state || ! $get('tanggal_pinjam')) {
+                                    return;
+                                }
+
+                                $bookId = $get('book_id');
+                                $book = $bookId ? Book::find($bookId) : null;
+                                $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
+                                $jatuhTempo = Carbon::parse($get('tanggal_pinjam'))->addWeekdays($baseDays + 3)->startOfDay();
+
+                                if ($get('status') === 'terlambat' && today()->lte($jatuhTempo)) {
+                                    $set('status', 'dipinjam');
+                                }
+                            })
                             ->helperText('Menambah masa pinjam 3 hari kerja dari tenggat awal.'),
 
                         Forms\Components\Toggle::make('is_lost')

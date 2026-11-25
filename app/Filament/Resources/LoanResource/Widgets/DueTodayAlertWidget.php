@@ -60,7 +60,7 @@ class DueTodayAlertWidget extends Widget
         }
 
         $pesan = "Halo *{$nama}*,\n\n"
-            . "Pengingat Peminjaman Buku — *Perpustakaan Pustaka Akuntansi*\n\n"
+            . "Pengingat Peminjaman Buku — *Perpustakaan Jurusan Akuntansi*\n\n"
             . "• Kode Booking : *{$kodeBooking}*\n"
             . "• Judul Buku : *{$judulBuku}*\n"
             . "• Jatuh Tempo : *{$jatuhTempoTeks}*\n"

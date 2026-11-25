@@ -57,6 +57,23 @@ class Loan extends Model
                     $loan->member_nim = $anggota->nim_no_anggota;
                 }
             }
+
+            // Pastikan status aktif ('dipinjam' / 'terlambat') selalu konsisten dengan tanggal jatuh tempo
+            if (in_array($loan->status, ['dipinjam', 'terlambat']) && ! $loan->is_lost && $loan->tanggal_pinjam) {
+                $book = $loan->book ?? ($loan->book_id ? Book::find($loan->book_id) : null);
+                $baseDuration = $book?->getLoanDurationWeekdays()
+                    ?? (($book?->collection_type === 'ta_skripsi') ? 14 : 7);
+                $extraDuration = $loan->is_extended ? 3 : 0;
+                $dueStart = Carbon::parse($loan->tanggal_pinjam)
+                    ->addWeekdays($baseDuration + $extraDuration)
+                    ->startOfDay();
+
+                if (today()->gt($dueStart)) {
+                    $loan->status = 'terlambat';
+                } else {
+                    $loan->status = 'dipinjam';
+                }
+            }
         });
 
         // 1. Saat transaksi baru dibuat: stok berkurang HANYA jika langsung dipinjam/terlambat (bukan booked/dibatalkan)
@@ -284,14 +301,13 @@ class Loan extends Model
         return $due ? today()->equalTo($due->copy()->startOfDay()) : false;
     }
 
+    /**
+     * Cek apakah peminjaman sudah melewati tanggal jatuh tempo (mulai H+1).
+     */
     public function isOverdue(): bool
     {
         if (in_array($this->status, ['dikembalikan', 'booked', 'dibatalkan'])) {
             return false;
-        }
-
-        if ($this->status === 'terlambat') {
-            return true;
         }
 
         $due = $this->jatuh_tempo;
