@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Masuk — Pustaka Akuntansi')</title>
+    <title>@yield('title', 'Masuk — Perpustakaan Jurusan Akuntansi')</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-hmj-akuntansi.jpg') }}">
 
     <!-- Google Fonts: Inter -->

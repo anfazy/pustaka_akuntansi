@@ -1,6 +1,6 @@
 @extends('front.layout')
 
-@section('title', 'Buku Favorit Saya — Pustaka Akuntansi')
+@section('title', 'Buku Favorit Saya — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
     <!-- PAGE HEADER -->

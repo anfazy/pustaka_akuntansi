@@ -19,7 +19,7 @@
                 </div>
                 <div class="space-y-1">
                     <p class="text-[11px] font-medium opacity-85 line-clamp-1">{{ $book->penulis }}</p>
-                    <p class="text-[8px] uppercase tracking-widest opacity-60">Pustaka Akuntansi</p>
+                    <p class="text-[8px] uppercase tracking-widest opacity-60">Perpustakaan Jurusan Akuntansi</p>
                 </div>
             </div>
         @endif

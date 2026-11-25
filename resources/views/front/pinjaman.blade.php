@@ -1,6 +1,6 @@
 @extends('front.layout')
 
-@section('title', 'Pinjaman Saya — Pustaka Akuntansi')
+@section('title', 'Pinjaman Saya — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
     <h1 class="text-[34px] font-bold tracking-tight text-slate-900 mb-8">Pinjaman Saya</h1>

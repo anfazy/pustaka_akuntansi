@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Pustaka Akuntansi — Ruang Baca Jurusan Akuntansi Polines')</title>
+    <title>@yield('title', 'Perpustakaan Jurusan Akuntansi — Ruang Baca Jurusan Akuntansi Polines')</title>
     <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-hmj-akuntansi.jpg') }}">
 
     <!-- Google Fonts: Inter -->
@@ -811,11 +811,11 @@
             <a href="{{ route('beranda') }}" class="flex items-center gap-3 transition-opacity hover:opacity-85">
                 <!-- Official HMJ Akuntansi Polines Logo Container -->
                 <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-md shadow-emerald-950/20 border border-white/60 dark:border-white/20 overflow-hidden">
-                    <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Pustaka Akuntansi" class="h-full w-full object-contain">
+                    <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </div>
                 <div class="sidebar-text">
-                    <span class="block text-[17px] font-bold leading-tight tracking-tight text-slate-900">Pustaka</span>
-                    <span class="block text-[17px] font-bold leading-tight tracking-tight text-emerald-800">Akuntansi</span>
+                    <span class="block text-[14px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan</span>
+                    <span class="block text-[15px] font-bold leading-tight tracking-tight text-emerald-800">Akuntansi</span>
                 </div>
             </a>
 
@@ -923,7 +923,7 @@
     <header id="appHeader" class="glass-topbar sidebar-transition fixed left-4 right-4 top-4 z-20 flex h-[72px] items-center gap-3 sm:gap-4 rounded-[26px] px-3 sm:px-4 lg:left-[300px] lg:right-6 lg:top-6 lg:px-6">
         <!-- Mobile Logo Icon -->
         <a href="{{ route('beranda') }}" class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white p-1 lg:hidden shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
-            <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Pustaka Akuntansi" class="h-full w-full object-contain">
+            <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
         </a>
 
         <!-- Liquid Glass Search Capsule -->
@@ -1051,7 +1051,7 @@
                                 </span>
                             @endif
                         </div>
-                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Pustaka Akuntansi</span>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Perpustakaan Jurusan Akuntansi</span>
                     </div>
 
                     <div class="max-h-[340px] overflow-y-auto space-y-2.5 pr-1">
@@ -1187,7 +1187,7 @@
                                 <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo" class="h-full w-full object-contain">
                             </div>
                             <div>
-                                <span class="block text-[17px] font-bold text-slate-900 leading-tight">Pustaka Akuntansi</span>
+                                <span class="block text-[16px] font-bold text-slate-900 leading-tight">Perpustakaan Jurusan Akuntansi</span>
                                 <span class="block text-xs text-emerald-800 dark:text-emerald-400 font-semibold">Ruang Baca Jurusan Polines</span>
                             </div>
                         </div>
@@ -1208,7 +1208,7 @@
                     <div class="lg:col-span-4 space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Tentang Kami</h4>
                         <p class="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                            Perpustakaan Pustaka Akuntansi menyediakan koleksi buku akuntansi, perpajakan, audit, manajemen keuangan, serta literatur tugas akhir dan skripsi.
+                            Perpustakaan Jurusan Akuntansi menyediakan koleksi buku akuntansi, perpajakan, audit, manajemen keuangan, serta literatur tugas akhir dan skripsi.
                         </p>
                         <div class="pt-1 text-xs space-y-1 text-slate-500 dark:text-slate-400">
                             <div>📍 Ruang Baca Jurusan Akuntansi Polines</div>
@@ -1239,7 +1239,7 @@
 
                 <!-- Copyright Bar -->
                 <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-                    <p>© 2026 Pustaka Akuntansi — Ruang Baca Jurusan Akuntansi Polines.</p>
+                    <p>© 2026 Perpustakaan Jurusan Akuntansi — Ruang Baca Jurusan Akuntansi Polines.</p>
                     <a href="{{ route('tata-tertib') }}" class="font-medium text-emerald-800 dark:text-emerald-400 hover:underline">
                         Tata Tertib & Ketentuan Layanan →
                     </a>

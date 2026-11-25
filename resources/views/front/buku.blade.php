@@ -1,6 +1,6 @@
 @extends('front.layout')
 
-@section('title', $book->judul . ' — Pustaka Akuntansi')
+@section('title', $book->judul . ' — Perpustakaan Jurusan Akuntansi')
 
 @php
     $cover = $book->cover;
@@ -36,7 +36,7 @@
                         </div>
                         <div class="space-y-1">
                             <p class="text-sm font-medium opacity-90">{{ $book->penulis }}</p>
-                            <p class="text-[10px] uppercase tracking-widest opacity-60">Pustaka Akuntansi</p>
+                            <p class="text-[10px] uppercase tracking-widest opacity-60">Perpustakaan Jurusan Akuntansi</p>
                         </div>
                     </div>
                 @endif

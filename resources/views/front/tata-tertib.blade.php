@@ -1,6 +1,6 @@
 @extends('front.layout')
 
-@section('title', 'Tata Tertib & Ketentuan Layanan — Pustaka Akuntansi')
+@section('title', 'Tata Tertib & Ketentuan Layanan — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
     <!-- PAGE HEADER -->

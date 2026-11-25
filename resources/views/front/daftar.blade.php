@@ -1,6 +1,6 @@
 @extends('front.auth-layout')
 
-@section('title', 'Daftar Anggota Baru — Pustaka Akuntansi')
+@section('title', 'Daftar Anggota Baru — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
     <div class="glass-card w-full max-w-[720px] rounded-[32px] p-8 sm:p-11 shadow-2xl animate-rise">
@@ -21,10 +21,10 @@
         <!-- Brand Header with Official HMJ Logo -->
         <div class="flex items-center gap-3.5 mb-6">
             <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-md shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
-                <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Pustaka Akuntansi" class="h-full w-full object-contain">
+                <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
             </div>
             <div>
-                <span class="block text-[18px] font-bold leading-tight tracking-tight text-slate-900">Pustaka Akuntansi</span>
+                <span class="block text-[17px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan Akuntansi</span>
                 <span class="block text-xs text-emerald-800 dark:text-emerald-400 font-medium">Ruang Baca Jurusan Polines</span>
             </div>
         </div>
