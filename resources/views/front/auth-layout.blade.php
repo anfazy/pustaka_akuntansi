@@ -87,13 +87,13 @@
         }
 
         .glass-field {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(240, 249, 244, 0.40) 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(240, 249, 244, 0.58) 100%);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-top: 1px solid rgba(255, 255, 255, 0.7);
-            border-bottom: 1.5px solid #ffffff;
-            box-shadow: inset 0 1.5px 3px 0 rgba(6, 78, 59, 0.06),
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-top: 1px solid rgba(15, 23, 42, 0.09);
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.95);
+            box-shadow: inset 0 1.5px 3px 0 rgba(6, 78, 59, 0.05),
                         inset 0 0 0 1px rgba(255, 255, 255, 0.65),
                         0 2px 8px -2px rgba(6, 78, 59, 0.05);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -402,8 +402,8 @@
         </button>
     </div>
 
-    <!-- MAIN CARD WRAPPER -->
-    <main class="relative z-10 w-full flex justify-center py-8">
+    <!-- MAIN CARD WRAPPER (Top padding clears floating theme toggle on all widths) -->
+    <main class="relative z-10 w-full flex justify-center pt-16 pb-8">
         @yield('content')
     </main>
 
@@ -411,6 +411,19 @@
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('perpus_theme', isDark ? 'dark' : 'light');
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            if (eyeOpen && eyeClosed) {
+                eyeOpen.classList.toggle('hidden', isHidden);
+                eyeClosed.classList.toggle('hidden', !isHidden);
+            }
         }
     </script>
 

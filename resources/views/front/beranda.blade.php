@@ -58,11 +58,11 @@
         <div class="glass-card relative overflow-hidden rounded-[32px] p-8 sm:p-11 mb-10">
             <div class="relative z-10 max-w-3xl">
                 <!-- Apple Liquid Amber / Gold Pill Badge (Crest Stars Accent) -->
-                <span class="inline-flex items-center gap-2 rounded-full liquid-badge-amber px-4 py-1 text-xs font-semibold mb-4 shadow-sm">
-                    <svg class="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" viewBox="0 0 20 20" fill="currentColor">
+                <span class="inline-flex items-center gap-1.5 rounded-full liquid-badge-amber px-3 sm:px-4 py-1 text-[11px] sm:text-xs font-semibold mb-4 shadow-sm max-w-full">
+                    <svg class="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
-                    <span>Ruang Baca Jurusan Akuntansi Polines</span>
+                    <span class="truncate">Ruang Baca Jurusan Akuntansi Polines</span>
                 </span>
 
                 <h2 class="text-2xl sm:text-[32px] font-bold tracking-tight text-slate-900 leading-snug">
@@ -105,13 +105,13 @@
 
     <!-- SECTION: BUKU POPULER MINGGU INI -->
     <section class="mt-10 sm:mt-12">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-[22px] font-bold tracking-tight text-slate-900">Buku Populer Minggu Ini</h2>
-            <a href="{{ route('katalog') }}" class="liquid-chip rounded-full px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+        <div class="flex items-center justify-between gap-3 mb-6">
+            <h2 class="text-[19px] sm:text-[22px] font-bold tracking-tight text-slate-900">Buku Populer Minggu Ini</h2>
+            <a href="{{ route('katalog') }}" class="liquid-chip shrink-0 whitespace-nowrap rounded-full px-3.5 sm:px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                 Lihat Semua &rarr;
             </a>
         </div>
-        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-2 gap-x-4 sm:gap-x-5 gap-y-8 sm:grid-cols-3 xl:grid-cols-4">
             @forelse($popularBooks as $book)
                 @include('front.components.book-card', ['book' => $book])
             @empty
@@ -122,13 +122,13 @@
 
     <!-- SECTION: KOLEKSI TERBARU -->
     <section class="mt-14 sm:mt-16">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-[22px] font-bold tracking-tight text-slate-900">Koleksi Terbaru</h2>
-            <a href="{{ route('katalog') }}" class="liquid-chip rounded-full px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+        <div class="flex items-center justify-between gap-3 mb-6">
+            <h2 class="text-[19px] sm:text-[22px] font-bold tracking-tight text-slate-900">Koleksi Terbaru</h2>
+            <a href="{{ route('katalog') }}" class="liquid-chip shrink-0 whitespace-nowrap rounded-full px-3.5 sm:px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                 Lihat Semua &rarr;
             </a>
         </div>
-        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-2 gap-x-4 sm:gap-x-5 gap-y-8 sm:grid-cols-3 xl:grid-cols-4">
             @forelse($newestBooks as $book)
                 @include('front.components.book-card', ['book' => $book])
             @empty

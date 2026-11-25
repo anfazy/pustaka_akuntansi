@@ -98,13 +98,13 @@
         }
 
         .glass-topbar {
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.68) 0%, rgba(240, 253, 244, 0.42) 50%, rgba(255, 255, 255, 0.68) 100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.84) 0%, rgba(240, 253, 244, 0.72) 50%, rgba(255, 255, 255, 0.84) 100%);
             backdrop-filter: blur(36px) saturate(220%) brightness(103%);
             -webkit-backdrop-filter: blur(36px) saturate(220%) brightness(103%);
-            border: 1px solid rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             border-top: 1.5px solid #ffffff;
             box-shadow: inset 0 1.5px 1px 0 #ffffff,
-                        0 16px 40px -16px rgba(6, 78, 59, 0.13),
+                        0 16px 40px -16px rgba(6, 78, 59, 0.14),
                         0 4px 12px -4px rgba(6, 78, 59, 0.06);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -138,13 +138,13 @@
         }
 
         .glass-field {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(240, 249, 244, 0.40) 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(240, 249, 244, 0.58) 100%);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-top: 1px solid rgba(255, 255, 255, 0.7);
-            border-bottom: 1.5px solid #ffffff;
-            box-shadow: inset 0 1.5px 3px 0 rgba(6, 78, 59, 0.06),
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.95);
+            box-shadow: inset 0 1.5px 3px 0 rgba(6, 78, 59, 0.05),
                         inset 0 0 0 1px rgba(255, 255, 255, 0.65),
                         0 2px 8px -2px rgba(6, 78, 59, 0.05);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -796,6 +796,14 @@
             background-color: rgba(255, 255, 255, 0.08) !important;
         }
 
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         /* Table Rows */
         html.dark tr:hover {
             background-color: rgba(255, 255, 255, 0.04) !important;
@@ -813,9 +821,9 @@
                 <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-md shadow-emerald-950/20 border border-white/60 dark:border-white/20 overflow-hidden">
                     <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </div>
-                <div class="sidebar-text">
-                    <span class="block text-[14px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan</span>
-                    <span class="block text-[15px] font-bold leading-tight tracking-tight text-emerald-800">Akuntansi</span>
+                <div class="sidebar-text min-w-0">
+                    <span class="block text-[11px] font-semibold leading-tight tracking-wide uppercase text-emerald-800 dark:text-emerald-400">Perpustakaan</span>
+                    <span class="block text-[13.5px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white whitespace-nowrap">Jurusan Akuntansi</span>
                 </div>
             </a>
 
@@ -920,44 +928,51 @@
     </aside>
 
     <!-- FLOATING GLASS TOPBAR -->
-    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-4 right-4 top-4 z-20 flex h-[72px] items-center gap-3 sm:gap-4 rounded-[26px] px-3 sm:px-4 lg:left-[300px] lg:right-6 lg:top-6 lg:px-6">
-        <!-- Mobile Logo Icon -->
-        <a href="{{ route('beranda') }}" class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white p-1 lg:hidden shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
-            <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
-        </a>
+    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2.5 rounded-[24px] p-2.5 sm:left-4 sm:right-4 sm:top-4 sm:h-[72px] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[26px] sm:px-4 sm:py-0 lg:left-[300px] lg:right-6 lg:top-6 lg:px-6">
+        <!-- Mobile Top Row (Logo + Action Controls) / Desktop Search & Actions -->
+        <div class="flex w-full items-center justify-between gap-2 sm:contents">
+            <!-- Mobile Logo + Compact Title -->
+            <a href="{{ route('beranda') }}" class="flex items-center gap-2 min-w-0 lg:hidden">
+                <span class="grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl sm:rounded-2xl bg-white p-1 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
+                    <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+                </span>
+                <span class="sm:hidden text-xs font-bold leading-tight text-slate-900 dark:text-white truncate">
+                    Perpus Akuntansi
+                </span>
+            </a>
 
-        <!-- Liquid Glass Search Capsule -->
-        <form action="{{ route('katalog') }}" method="GET" class="mx-auto w-full max-w-[580px]">
-            <div class="glass-field flex h-11 sm:h-12 items-center gap-3 rounded-full px-4">
-                <svg class="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-                <input
-                    type="search"
-                    name="q"
-                    value="{{ request('q') }}"
-                    placeholder="Cari judul, penulis, atau ISBN..."
-                    class="w-full bg-transparent text-[14px] sm:text-[15px] font-medium outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                >
-            </div>
-        </form>
+            <!-- Desktop/Tablet Liquid Glass Search Capsule -->
+            <form action="{{ route('katalog') }}" method="GET" class="hidden sm:block mx-auto w-full max-w-[580px]">
+                <div class="glass-field flex h-11 sm:h-12 items-center gap-3 rounded-full px-4">
+                    <svg class="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <input
+                        type="search"
+                        name="q"
+                        value="{{ request('q') }}"
+                        placeholder="Cari judul, penulis, atau ISBN..."
+                        class="w-full bg-transparent text-[14px] sm:text-[15px] font-medium outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    >
+                </div>
+            </form>
 
-        <!-- Right Side: Dark Mode Toggle + User Avatar / Login Pill -->
-        <div class="flex items-center gap-2 sm:gap-3">
-            <!-- DARK MODE LIQUID GLASS TOGGLE BUTTON -->
-            <button type="button"
-                    onclick="toggleDarkMode()"
-                    class="liquid-icon-btn grid h-10 w-10 shrink-0 place-items-center rounded-full text-slate-600 dark:text-amber-300"
-                    title="Ganti Mode Gelap / Terang">
-                <!-- Sun icon (shown when dark) -->
-                <svg class="hidden dark:block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                </svg>
-                <!-- Moon icon (shown when light) -->
-                <svg class="block dark:hidden h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                </svg>
-            </button>
+            <!-- Right Side: Dark Mode Toggle + Notification + User Avatar / Login Pills -->
+            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                <!-- DARK MODE LIQUID GLASS TOGGLE BUTTON -->
+                <button type="button"
+                        onclick="toggleDarkMode()"
+                        class="liquid-icon-btn grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-full text-slate-600 dark:text-amber-300"
+                        title="Ganti Mode Gelap / Terang">
+                    <!-- Sun icon (shown when dark) -->
+                    <svg class="hidden dark:block h-4 sm:h-5 w-4 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                    <!-- Moon icon (shown when light) -->
+                    <svg class="block dark:hidden h-4 sm:h-5 w-4 sm:w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                </button>
 
             <!-- Notification Bell with Apple Liquid Glass Popover (iPusnas style) -->
             @php
@@ -1028,20 +1043,20 @@
             <div class="relative" id="notifMenuWrapper">
                 <button type="button"
                         onclick="document.getElementById('notifDropdown').classList.toggle('hidden')"
-                        class="liquid-icon-btn relative grid h-10 w-10 place-items-center rounded-full text-slate-600 dark:text-slate-300"
+                        class="liquid-icon-btn relative grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full text-slate-600 dark:text-slate-300"
                         title="Notifikasi">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <svg class="h-4 sm:h-5 w-4 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                     </svg>
                     @if($unreadAlertCount > 0)
-                        <span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-900 animate-pulse">
+                        <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-900 animate-pulse">
                             {{ $unreadAlertCount }}
                         </span>
                     @endif
                 </button>
 
                 <!-- Solid-Tinted High Readability Dropdown (iPusnas style) -->
-                <div id="notifDropdown" class="absolute right-0 mt-2 hidden w-[340px] sm:w-[400px] rounded-[28px] p-5 shadow-2xl z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/90 dark:border-slate-700/80 ring-1 ring-black/5">
+                <div id="notifDropdown" class="absolute right-0 mt-2 hidden w-[calc(100vw-2rem)] max-w-[360px] sm:w-[400px] sm:max-w-none rounded-[28px] p-5 shadow-2xl z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/90 dark:border-slate-700/80 ring-1 ring-black/5">
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80 dark:border-slate-700/80">
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-slate-900 dark:text-white">Notifikasi</span>
@@ -1131,21 +1146,38 @@
                     </div>
                 </div>
             @else
-                <!-- Guest View: Button to Login (Single Clear Entry Point) -->
+                <!-- Guest View: Both Login & Register visible on Mobile & Desktop -->
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <a href="{{ route('masuk') }}" class="btn-emerald flex h-10 sm:h-11 items-center gap-2 rounded-full px-4 sm:px-5 text-[13px] sm:text-[14px] font-semibold">
+                    <a href="{{ route('masuk') }}" class="btn-emerald flex h-9 sm:h-11 items-center gap-1.5 rounded-full px-3.5 sm:px-5 text-[12.5px] sm:text-[14px] font-semibold whitespace-nowrap">
                         <span>Masuk</span>
                     </a>
-                    <a href="{{ route('daftar') }}" class="btn-amber-gold hidden sm:flex h-10 sm:h-11 items-center rounded-full px-4 sm:px-5 text-[13px] sm:text-[14px] font-semibold">
+                    <a href="{{ route('daftar') }}" class="btn-amber-gold flex h-9 sm:h-11 items-center rounded-full px-3.5 sm:px-5 text-[12.5px] sm:text-[14px] font-semibold whitespace-nowrap">
                         <span>Daftar</span>
                     </a>
                 </div>
             @endif
+            </div>
         </div>
+
+        <!-- Mobile Search Capsule (Full-width row inside header on < sm) -->
+        <form action="{{ route('katalog') }}" method="GET" class="w-full sm:hidden">
+            <div class="glass-field flex h-10 items-center gap-2.5 rounded-full px-3.5">
+                <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ request('q') }}"
+                    placeholder="Cari judul, penulis, atau ISBN..."
+                    class="w-full bg-transparent text-[13.5px] font-medium outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                >
+            </div>
+        </form>
     </header>
 
     <!-- MAIN CONTENT WRAPPER -->
-    <main id="appMain" class="sidebar-transition min-h-screen px-4 pb-24 pt-[100px] sm:px-6 lg:pl-[300px] lg:pr-8 lg:pt-[116px]">
+    <main id="appMain" class="sidebar-transition min-h-screen px-4 pb-28 pt-[132px] sm:px-6 sm:pt-[104px] lg:pb-14 lg:pl-[300px] lg:pr-8 lg:pt-[116px]">
         <div class="mx-auto max-w-[1200px]">
             <!-- FLASH NOTIFICATIONS -->
             @if(session('success'))
@@ -1178,10 +1210,16 @@
             @yield('content')
 
             <!-- APPLE LIQUID GLASS FOOTER (Tentang Kami & Statistik Koleksi) -->
+            @php
+                $footerTotalTitles = \App\Models\Book::count();
+                $footerAvailableCopies = (int) \App\Models\Book::sum('stok');
+                $footerBorrowedCopies = (int) \App\Models\Loan::whereIn('status', ['dipinjam', 'terlambat'])->count();
+                $footerTotalCopies = $footerAvailableCopies + $footerBorrowedCopies;
+            @endphp
             <footer class="mt-20 sm:mt-28 rounded-[36px] glass-card p-7 sm:p-10 shadow-2xl border border-white/80 dark:border-white/10 relative overflow-hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
-                    <!-- Col 1: Brand (5 cols) -->
-                    <div class="lg:col-span-5 space-y-3.5">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10">
+                    <!-- Col 1: Brand -->
+                    <div class="md:col-span-6 lg:col-span-5 space-y-3.5">
                         <div class="flex items-center gap-3">
                             <div class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-md border border-white/80 dark:border-white/20">
                                 <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo" class="h-full w-full object-contain">
@@ -1204,8 +1242,8 @@
                         </div>
                     </div>
 
-                    <!-- Col 2: Tentang Kami (4 cols) -->
-                    <div class="lg:col-span-4 space-y-3">
+                    <!-- Col 2: Tentang Kami -->
+                    <div class="md:col-span-6 lg:col-span-4 space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Tentang Kami</h4>
                         <p class="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed">
                             Perpustakaan Jurusan Akuntansi menyediakan koleksi buku akuntansi, perpajakan, audit, manajemen keuangan, serta literatur tugas akhir dan skripsi.
@@ -1217,21 +1255,21 @@
                         </div>
                     </div>
 
-                    <!-- Col 3: Statistik Koleksi (3 cols) -->
-                    <div class="lg:col-span-3 space-y-3">
+                    <!-- Col 3: Statistik Koleksi -->
+                    <div class="md:col-span-12 lg:col-span-3 space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Statistik Koleksi</h4>
-                        <div class="space-y-2 text-xs">
-                            <div class="flex items-center justify-between pb-1.5 border-b border-slate-200/50 dark:border-white/10">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5 text-xs">
+                            <div class="flex items-center justify-between pb-1.5 sm:pb-2.5 lg:pb-1.5 border-b sm:border-b-0 sm:rounded-2xl sm:bg-white/40 sm:dark:bg-white/5 sm:px-3.5 sm:py-2.5 lg:bg-transparent lg:dark:bg-transparent lg:px-0 lg:py-0 lg:rounded-none lg:border-b border-slate-200/50 dark:border-white/10">
                                 <span class="text-slate-500">Total Judul</span>
-                                <span class="font-bold text-slate-800 dark:text-slate-200">{{ \App\Models\Book::count() }} Judul</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-200">{{ $footerTotalTitles }} Judul</span>
                             </div>
-                            <div class="flex items-center justify-between pb-1.5 border-b border-slate-200/50 dark:border-white/10">
-                                <span class="text-slate-500">Total Stok</span>
-                                <span class="font-bold text-slate-800 dark:text-slate-200">{{ \App\Models\Book::sum('stok') }} Eksemplar</span>
+                            <div class="flex items-center justify-between pb-1.5 sm:pb-2.5 lg:pb-1.5 border-b sm:border-b-0 sm:rounded-2xl sm:bg-white/40 sm:dark:bg-white/5 sm:px-3.5 sm:py-2.5 lg:bg-transparent lg:dark:bg-transparent lg:px-0 lg:py-0 lg:rounded-none lg:border-b border-slate-200/50 dark:border-white/10">
+                                <span class="text-slate-500">Total Koleksi</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-200">{{ $footerTotalCopies }} Eksemplar</span>
                             </div>
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between sm:rounded-2xl sm:bg-white/40 sm:dark:bg-white/5 sm:px-3.5 sm:py-2.5 lg:bg-transparent lg:dark:bg-transparent lg:px-0 lg:py-0 lg:rounded-none">
                                 <span class="text-slate-500">Tersedia</span>
-                                <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ \App\Models\Book::where('stok', '>', 0)->sum('stok') }} Eksemplar</span>
+                                <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ $footerAvailableCopies }} Eksemplar</span>
                             </div>
                         </div>
                     </div>
@@ -1248,29 +1286,33 @@
         </div>
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION (Phone only) -->
-    <nav class="glass-topbar fixed bottom-4 left-4 right-4 z-30 flex h-16 items-center justify-around rounded-[24px] px-2 lg:hidden shadow-2xl">
-        <a href="{{ route('beranda') }}" class="flex flex-col items-center gap-1 text-xs font-semibold {{ request()->routeIs('beranda') ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}">
+    <!-- MOBILE BOTTOM NAVIGATION (iOS 27 Floating Liquid Tab Bar) -->
+    <nav class="glass-topbar fixed bottom-3 left-3 right-3 z-30 flex h-[64px] items-center justify-around rounded-[28px] px-2 lg:hidden shadow-2xl">
+        <a href="{{ route('beranda') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('beranda') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-            Beranda
+            <span>Beranda</span>
         </a>
-        <a href="{{ route('katalog') }}" class="flex flex-col items-center gap-1 text-xs font-semibold {{ request()->routeIs('katalog') ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}">
+        <a href="{{ route('katalog') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('katalog', 'buku.detail') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-            Katalog
+            <span>Katalog</span>
         </a>
         @if(session('student_id'))
-            <a href="{{ route('pinjaman') }}" class="flex flex-col items-center gap-1 text-xs font-semibold {{ request()->routeIs('pinjaman') ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}">
+            <a href="{{ route('pinjaman') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('pinjaman') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
-                Pinjaman
+                <span>Pinjaman</span>
             </a>
-            <a href="{{ route('riwayat') }}" class="flex flex-col items-center gap-1 text-xs font-semibold {{ request()->routeIs('riwayat') ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}">
+            <a href="{{ route('riwayat') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('riwayat') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Riwayat
+                <span>Riwayat</span>
             </a>
         @else
-            <a href="{{ route('masuk') }}" class="flex flex-col items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+            <a href="{{ route('tata-tertib') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('tata-tertib') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                <span>Aturan</span>
+            </a>
+            <a href="{{ route('masuk') }}" class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors {{ request()->routeIs('masuk', 'daftar') ? 'bg-white/95 text-emerald-800 shadow-xs dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400' }}">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                Masuk
+                <span>Masuk</span>
             </a>
         @endif
     </nav>

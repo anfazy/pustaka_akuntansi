@@ -477,11 +477,12 @@ class UserPortalController extends Controller
             'tahun_angkatan' => 'required|digits:4',
             'no_hp' => 'nullable|string|max:20',
             'email' => 'required|email|unique:anggotas,email|max:100',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:6|confirmed',
         ], [
             'nim_no_anggota.unique' => 'NIM ini sudah terdaftar sebagai anggota.',
             'email.unique' => 'Email kampus ini sudah terdaftar.',
             'password.min' => 'Kata sandi minimal 6 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
         $anggota = Anggota::create([
@@ -499,7 +500,7 @@ class UserPortalController extends Controller
 
         session(['student_id' => $anggota->id]);
 
-        return redirect()->route('beranda')->with('success', "Selamat datang di Pustaka Akuntansi, {$anggota->nama}! Akun Anda telah aktif.");
+        return redirect()->route('beranda')->with('success', "Selamat datang di Perpustakaan Jurusan Akuntansi, {$anggota->nama}! Akun Anda telah aktif.");
     }
 
     /**

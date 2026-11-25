@@ -17,7 +17,7 @@
                     <span>Hanya Stok Tersedia &times;</span>
                 </a>
             @else
-                <a href="{{ route('katalog', array_merge(request()->all(), ['tersedia' => '1'])) }}"
+                <a href="{{ route('katalog', array_merge(request()->except('page'), ['tersedia' => '1'])) }}"
                    class="inline-flex items-center gap-1.5 rounded-full liquid-chip px-4 py-2 text-xs font-medium">
                     <span class="h-2 w-2 rounded-full bg-slate-400"></span>
                     <span>Hanya Stok Tersedia</span>
@@ -27,7 +27,7 @@
     </div>
 
     <!-- CATEGORY FILTER CHIPS ONLY (5 Canonical Categories: Fiksi, Akuntansi, Perpajakan, TA/Skripsi, Laporan PKL) -->
-    <div class="no-scrollbar mb-8 -mx-4 px-4 flex items-center gap-2.5 overflow-x-auto pb-2 sm:mx-0 sm:px-0">
+    <div class="no-scrollbar mb-5 -mx-4 px-4 flex items-center gap-2.5 overflow-x-auto pt-2 pb-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:pb-4">
         <!-- Semua -->
         <a href="{{ route('katalog', array_merge(request()->except('kategori', 'page'), ['kategori' => 'semua'])) }}"
            class="inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-200 {{ $currentKategori === 'semua' ? 'btn-emerald' : 'liquid-chip' }}">
@@ -57,8 +57,8 @@
         </div>
 
         <!-- PAGINATION -->
-        <div class="mt-14 flex justify-center">
-            {{ $books->links() }}
+        <div class="mt-12">
+            {{ $books->links('vendor.pagination.liquid') }}
         </div>
     @else
         <!-- EMPTY STATE -->

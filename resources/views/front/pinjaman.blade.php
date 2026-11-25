@@ -26,7 +26,6 @@
         @if($activeTab === 'siap')
             @forelse($siapDiambil as $loan)
                 @php
-                    $rack = $loan->book?->book_code ? 'Rak ' . substr($loan->book->book_code, 0, 3) : 'Rak A-02';
                     $deadline = $loan->created_at ? $loan->created_at->addHours(24)->translatedFormat('d M, H:i') . ' WIB' : 'Besok 16.00 WIB';
                 @endphp
                 <article class="glass-card flex flex-col gap-6 rounded-[28px] p-6 sm:p-8 sm:flex-row sm:items-center animate-rise">
@@ -45,7 +44,7 @@
                             {{ $loan->booking_code }}
                         </h3>
                         <p class="mt-2 text-[16px] font-semibold text-slate-800">
-                            {{ $loan->book?->judul }} <span class="font-normal text-slate-500">({{ $rack }})</span>
+                            {{ $loan->book?->judul }}
                         </p>
                         <p class="mt-1 text-[13px] text-slate-500">
                             Batas ambil di perpustakaan: <strong class="text-slate-700">{{ $deadline }}</strong>
@@ -210,7 +209,6 @@
     @if($successBookingCode)
         @php
             $successLoan = \App\Models\Loan::with('book')->where('booking_code', $successBookingCode)->first();
-            $succRack = $successLoan?->book?->book_code ? 'Rak ' . substr($successLoan->book->book_code, 0, 3) : 'Rak A-02';
         @endphp
         <div id="bookingSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md" onclick="document.getElementById('bookingSuccessModal').classList.add('hidden')"></div>
@@ -223,7 +221,7 @@
 
                 <h3 class="text-[26px] font-bold tracking-tight text-slate-900">Booking Berhasil Dibuat</h3>
                 <p class="text-sm text-slate-500 mt-1">
-                    {{ $successLoan?->book?->judul ?? 'Buku Pilihan' }} • {{ $succRack }}
+                    {{ $successLoan?->book?->judul ?? 'Buku Pilihan' }}
                 </p>
 
                 <!-- QR Card -->

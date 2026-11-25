@@ -5,14 +5,13 @@
 @php
     $cover = $book->cover;
     $artIndex = abs(crc32($book->judul)) % 6;
-    $rack = $book->rak ?: ($book->collection_type === 'ta_skripsi' ? 'Rak TA-01' : 'Rak A-02');
     $loanDuration = $book->getLoanDurationWeekdays();
     $estReturn = today()->copy()->addWeekdays($loanDuration);
 @endphp
 
 @section('content')
     <!-- BREADCRUMB -->
-    <nav class="mb-8 flex items-center gap-2 text-sm text-slate-500">
+    <nav class="mb-6 sm:mb-8 flex items-center gap-2 text-sm text-slate-500">
         <a href="{{ route('katalog') }}" class="hover:text-emerald-800 dark:hover:text-emerald-400 hover:underline">Katalog</a>
         <span>/</span>
         <a href="{{ route('katalog', ['kategori' => $book->category?->slug ?? 'semua']) }}" class="hover:text-emerald-800 dark:hover:text-emerald-400 hover:underline">
@@ -23,10 +22,10 @@
     </nav>
 
     <!-- BOOK MAIN HERO SECTION -->
-    <div class="grid grid-cols-1 gap-10 md:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 gap-8 md:gap-10 md:grid-cols-12 lg:gap-14">
         <!-- LEFT: COVER & FAVORITE BUTTON -->
-        <div class="md:col-span-5 lg:col-span-4 flex flex-col items-center sm:items-start">
-            <div class="relative aspect-[5/7] w-full max-w-[320px] overflow-hidden rounded-[12px] book-shadow dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
+        <div class="md:col-span-5 lg:col-span-4 flex flex-col items-center md:items-start">
+            <div class="relative aspect-[5/7] w-full max-w-[200px] sm:max-w-[240px] md:max-w-[320px] overflow-hidden rounded-[12px] book-shadow dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
                 @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
                     <img src="{{ asset(ltrim($cover, '/')) }}" alt="Sampul {{ $book->judul }}" class="h-full w-full object-cover">
                 @else
@@ -89,12 +88,14 @@
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->isbn ?? $book->book_code ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-xs">No. Klasifikasi:</span>
+                        <span class="block text-slate-500 text-xs">Jenis Koleksi:</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->collection_type_label }}</span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-xs">Lokasi Rak:</span>
-                        <span class="font-medium text-slate-800 dark:text-slate-200">Lantai 2 • {{ $rack }} • Baris 2</span>
+                        <span class="block text-slate-500 text-xs">Ketersediaan Stok:</span>
+                        <span class="font-medium {{ $book->stok > 0 ? 'text-emerald-800 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                            {{ $book->stok > 0 ? "Tersedia {$book->stok} Eksemplar" : 'Sedang Habis' }}
+                        </span>
                     </div>
                     <div>
                         <span class="block text-slate-500 text-xs">Aturan Peminjaman:</span>
@@ -102,15 +103,11 @@
                     </div>
                 </div>
 
-                <!-- Availability Badge Pill (Liquid Glass Pill) -->
+                <!-- Availability Status Badge (Concise, Non-Redundant) -->
                 <div class="mt-6">
                     <div class="inline-flex items-center gap-2 rounded-full liquid-chip px-4 py-2 text-[13px] font-medium">
                         <span class="h-2 w-2 rounded-full {{ $book->stok > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                        <span>{{ $book->stok > 0 ? "Tersedia {$book->stok} dari {$book->stok} Eksemplar" : 'Stok sedang tidak tersedia' }}</span>
-                        <span class="text-slate-400">•</span>
-                        <span>{{ $rack }}</span>
-                        <span class="text-slate-400">•</span>
-                        <span>Maks. Pinjam {{ $loanDuration }} Hari</span>
+                        <span>{{ $book->stok > 0 ? 'Siap dipinjam di Ruang Baca Jurusan' : 'Stok sedang tidak tersedia' }}</span>
                     </div>
                 </div>
 
@@ -181,7 +178,7 @@
                     </div>
                     <div>
                         <h4 class="text-[16px] font-bold text-slate-900 leading-snug">{{ $book->judul }}</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ $book->penulis }} • {{ $rack }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ $book->penulis }}</p>
                     </div>
                 </div>
 

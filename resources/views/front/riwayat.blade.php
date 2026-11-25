@@ -111,8 +111,8 @@
                 </table>
             </div>
 
-            <div class="mt-6 border-t border-slate-100 pt-4 flex justify-center">
-                {{ $historyLoans->links() }}
+            <div class="mt-6 border-t border-slate-100 pt-4">
+                {{ $historyLoans->links('vendor.pagination.liquid') }}
             </div>
         </div>
     @else

@@ -113,7 +113,6 @@ class AdminDashboardController extends Controller
                     'dendaPerHari' => $dendaPerHari,
                     'isbn' => $b->isbn ?? '-',
                     'penerbit' => $b->penerbit ?? '-',
-                    'rak' => $b->rak ?? 'Rak Utama',
                     'sinopsis' => $b->sinopsis ?? '',
                 ];
             })->toArray();
@@ -181,7 +180,6 @@ class AdminDashboardController extends Controller
                     'jaminan' => $l->jaminan ?? 'KTM',
                     'judulBuku' => $l->book?->judul ?? 'Buku Perpustakaan',
                     'kategoriBuku' => $l->book?->category?->nama ?? 'Akuntansi',
-                    'rak' => $l->book?->rak ?? 'Rak Utama',
                     'tglPinjam' => $tglPinjam,
                     'jatuhTempo' => $jatuhTempo,
                     'catatanTempo' => $catatanTempo,
@@ -306,7 +304,6 @@ class AdminDashboardController extends Controller
             'kode' => 'nullable|string',
             'isbn' => 'nullable|string',
             'penerbit' => 'nullable|string',
-            'rak' => 'nullable|string',
             'sinopsis' => 'nullable|string',
             'cover_file' => 'nullable|image|max:3072',
         ]);
@@ -345,7 +342,6 @@ class AdminDashboardController extends Controller
                     'stok' => $validated['stok'],
                     'isbn' => $validated['isbn'] ?? $book->isbn,
                     'penerbit' => $validated['penerbit'] ?? $book->penerbit,
-                    'rak' => $validated['rak'] ?? $book->rak,
                     'sinopsis' => $validated['sinopsis'] ?? $book->sinopsis,
                 ];
                 if ($coverPath) {
@@ -374,7 +370,6 @@ class AdminDashboardController extends Controller
                 'stok' => $validated['stok'],
                 'isbn' => $validated['isbn'] ?? null,
                 'penerbit' => $validated['penerbit'] ?? 'Pustaka Akuntansi',
-                'rak' => $validated['rak'] ?? 'Rak Utama',
                 'sinopsis' => $validated['sinopsis'] ?? null,
                 'cover' => $coverPath ?? null,
             ]
@@ -532,7 +527,6 @@ class AdminDashboardController extends Controller
                 'jaminan' => $loan->jaminan ?? 'KTM',
                 'judulBuku' => $book?->judul ?? '-',
                 'kategoriBuku' => $book?->category?->nama ?? 'Akuntansi',
-                'rak' => $book?->rak ?? 'Rak Utama',
                 'stok' => $book?->stok ?? 0,
                 'batasAmbil' => $loan->created_at ? $loan->created_at->addHours(24)->translatedFormat('d M Y, H:i').' WIB' : '1×24 Jam',
             ],

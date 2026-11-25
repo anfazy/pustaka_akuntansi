@@ -24,7 +24,6 @@ class Book extends Model
         'isbn',
         'sinopsis',
         'stok',
-        'rak',
         'cover',
     ];
 

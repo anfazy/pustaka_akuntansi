@@ -15,7 +15,7 @@ class ActiveLoansWidget extends BaseWidget
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -62,10 +62,10 @@ class ActiveLoansWidget extends BaseWidget
 
                         $today = today();
                         if ($dueDate->copy()->startOfDay()->lt($today)) {
-                            return 'Lewat ' . $dueDate->diffForHumans($today, true);
+                            return 'Lewat '.$dueDate->diffForHumans($today, true);
                         }
 
-                        return 'Sisa ' . $today->diffForHumans($dueDate, true);
+                        return 'Sisa '.$today->diffForHumans($dueDate, true);
                     }),
 
                 Tables\Columns\TextColumn::make('status')
@@ -89,7 +89,7 @@ class ActiveLoansWidget extends BaseWidget
                     ->sortable(),
             ])
             ->emptyStateHeading('Tidak ada buku yang sedang dipinjam')
-            ->emptyStateDescription('Semua koleksi saat ini tersedia di rak Ruang Baca Polines.')
+            ->emptyStateDescription('Semua koleksi saat ini tersedia di Ruang Baca Polines.')
             ->emptyStateIcon('heroicon-o-check-badge');
     }
 }

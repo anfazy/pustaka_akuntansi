@@ -361,7 +361,7 @@
                             <ol class="space-y-1.5 text-xs text-gray-700 leading-relaxed list-decimal list-inside">
                                 <li><b>Ketentuan Peminjaman:</b> Maks. 2 buku aktif per NIM selama 7 hari kerja (TA/Skripsi 14 hari kerja). Perpanjangan mandiri 1×.</li>
                                 <li><b>Standar Entri Koleksi:</b> Pastikan nomor ISBN valid, kategori spesifik akuntansi, dan isi deskripsi buku.</li>
-                                <li><b>Verifikasi Stok Fisik:</b> Cek fisik buku di rak dan cocokkan dengan angka stok sebelum memverifikasi pengembalian.</li>
+                                <li><b>Verifikasi Stok Fisik:</b> Cek fisik buku dan cocokkan dengan angka stok sebelum memverifikasi pengembalian.</li>
                             </ol>
                         </div>
 
@@ -760,7 +760,6 @@
                                     <th class="py-3 px-3 whitespace-nowrap">Kode Buku</th>
                                     <th class="py-3 px-3 whitespace-nowrap">Judul Buku</th>
                                     <th class="py-3 px-3 whitespace-nowrap">Kategori</th>
-                                    <th class="py-3 px-3 whitespace-nowrap">Rak</th>
                                     <th class="py-3 px-3 whitespace-nowrap">Penulis</th>
                                     <th class="py-3 px-3 whitespace-nowrap">Tahun</th>
                                     <th class="py-3 px-3 whitespace-nowrap">Stok</th>
@@ -874,7 +873,7 @@
                             </p>
                         </div>
                         <div class="p-5">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label for="create-book-publisher" class="block text-xs font-semibold text-gray-700 mb-1.5">
                                         Penerbit<span class="text-rose-500">*</span>
@@ -887,13 +886,6 @@
                                         Tahun Terbit<span class="text-rose-500">*</span>
                                     </label>
                                     <input type="number" id="create-book-year" required min="1950" max="2030" placeholder="Contoh: 2025" class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-forest-600">
-                                </div>
-
-                                <div>
-                                    <label for="create-book-rack" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                                        Lokasi Rak Buku<span class="text-rose-500">*</span>
-                                    </label>
-                                    <input type="text" id="create-book-rack" required placeholder="Contoh: Rak A-02 / Rak Skripsi" class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-forest-600">
                                 </div>
 
                                 <div>
@@ -1525,15 +1517,9 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label for="book-penulis-input" class="block text-xs font-bold text-gray-700 mb-1">Penulis*</label>
-                        <input type="text" id="book-penulis-input" required placeholder="Nama penulis" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs">
-                    </div>
-                    <div>
-                        <label for="book-rak-input" class="block text-xs font-bold text-gray-700 mb-1">Lokasi Rak Buku*</label>
-                        <input type="text" id="book-rak-input" required placeholder="Contoh: Rak A-02 / Rak Skripsi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs">
-                    </div>
+                <div>
+                    <label for="book-penulis-input" class="block text-xs font-bold text-gray-700 mb-1">Penulis*</label>
+                    <input type="text" id="book-penulis-input" required placeholder="Nama penulis" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -1747,7 +1733,7 @@
                     <div class="pt-2 border-t border-forest-200/80">
                         <span class="text-[11px] text-gray-500 block">Koleksi Buku yang Diambil:</span>
                         <p id="handover-modal-buku" class="font-bold text-forest-950 text-sm">Seporsi Mie Ayam Sebelum Mati</p>
-                        <p id="handover-modal-kategori-rak" class="text-xs text-forest-700 font-medium mt-0.5">Kategori: Fiksi • Lokasi: Rak A-02</p>
+                        <p id="handover-modal-kategori-rak" class="text-xs text-forest-700 font-medium mt-0.5">Kategori: Fiksi</p>
                     </div>
                 </div>
 
@@ -2489,7 +2475,7 @@
             const filtered = booksData.filter(b => {
                 if (catFilter !== "ALL" && b.kategori !== catFilter) return false;
                 if (search) {
-                    return `${b.kode} ${b.judul} ${b.kategori} ${b.rak || ''} ${b.penulis} ${b.tahun}`.toLowerCase().includes(search);
+                    return `${b.kode} ${b.judul} ${b.kategori} ${b.penulis} ${b.tahun}`.toLowerCase().includes(search);
                 }
                 return true;
             });
@@ -2499,7 +2485,7 @@
                 `Showing ${filtered.length === 0 ? 0 : 1} to ${sliced.length} of ${filtered.length} results`;
 
             if (sliced.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="py-10 text-center text-gray-400">Tidak ada koleksi buku yang cocok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="py-10 text-center text-gray-400">Tidak ada koleksi buku yang cocok.</td></tr>`;
                 return;
             }
 
@@ -2521,9 +2507,6 @@
                     <td class="py-3 px-3 font-semibold text-gray-900">${b.judul}</td>
                     <td class="py-3 px-3 whitespace-nowrap">
                         <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-forest-50 text-forest-800 border border-forest-200">${b.kategori}</span>
-                    </td>
-                    <td class="py-3 px-3 whitespace-nowrap">
-                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">${b.rak || 'Rak Utama'}</span>
                     </td>
                     <td class="py-3 px-3 text-gray-700 whitespace-nowrap">${b.penulis}</td>
                     <td class="py-3 px-3 text-gray-600 whitespace-nowrap">${b.tahun}</td>
@@ -2628,7 +2611,6 @@
             document.getElementById("create-book-code").value = "";
             document.getElementById("create-book-publisher").value = "";
             document.getElementById("create-book-year").value = "";
-            document.getElementById("create-book-rack").value = "";
             document.getElementById("create-book-isbn").value = "";
             document.getElementById("create-book-stock").value = "1";
             document.getElementById("create-book-synopsis").value = "";
@@ -2673,7 +2655,6 @@
             const penerbit = document.getElementById("create-book-publisher").value.trim();
             const tahun = Number(document.getElementById("create-book-year").value);
             const stok = Number(document.getElementById("create-book-stock").value);
-            const rak = document.getElementById("create-book-rack").value.trim() || "Rak Utama";
             const isbn = document.getElementById("create-book-isbn").value.trim();
             const sinopsis = document.getElementById("create-book-synopsis").value.trim();
 
@@ -2694,7 +2675,6 @@
                 penulis: penulis,
                 penerbit: penerbit,
                 tahun: tahun,
-                rak: rak,
                 isbn: isbn,
                 sinopsis: sinopsis,
                 stok: stok,
@@ -2712,7 +2692,6 @@
             formData.append("penulis", penulis);
             formData.append("penerbit", penerbit);
             formData.append("tahun", tahun);
-            formData.append("rak", rak);
             formData.append("isbn", isbn);
             formData.append("sinopsis", sinopsis);
             formData.append("stok", stok);
@@ -2829,7 +2808,6 @@
                 syncModalBookDenda(b.kategori);
                 document.getElementById("book-penulis-input").value = b.penulis;
                 document.getElementById("book-tahun-input").value = b.tahun;
-                document.getElementById("book-rak-input").value = b.rak || "Rak Utama";
                 document.getElementById("book-isbn-input").value = (b.isbn && b.isbn !== "-") ? b.isbn : "";
                 document.getElementById("book-penerbit-input").value = (b.penerbit && b.penerbit !== "-") ? b.penerbit : "";
                 document.getElementById("book-stok-input").value = b.stok;
@@ -2862,7 +2840,6 @@
                 kategori: document.getElementById("book-kategori-input").value,
                 penulis: document.getElementById("book-penulis-input").value.trim(),
                 tahun: Number(document.getElementById("book-tahun-input").value) || 2024,
-                rak: document.getElementById("book-rak-input").value.trim() || "Rak Utama",
                 isbn: document.getElementById("book-isbn-input").value.trim(),
                 penerbit: document.getElementById("book-penerbit-input").value.trim() || "Pustaka Akuntansi",
                 stok: Number(document.getElementById("book-stok-input").value) || 0,
@@ -2882,7 +2859,6 @@
                 formData.append("kategori", payload.kategori);
                 formData.append("penulis", payload.penulis);
                 formData.append("tahun", payload.tahun);
-                formData.append("rak", payload.rak);
                 formData.append("isbn", payload.isbn);
                 formData.append("penerbit", payload.penerbit);
                 formData.append("stok", payload.stok);
@@ -2937,7 +2913,6 @@
                         <p class="text-xs text-gray-500 font-medium">${b.penulis}</p>
                         <div class="flex flex-wrap gap-1.5 pt-1">
                             <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-forest-50 text-forest-800 border border-forest-200">${b.kategori}</span>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">${b.rak || 'Rak Utama'}</span>
                         </div>
                     </div>
                 </div>
@@ -3022,7 +2997,6 @@
                         tahun: Number(cols[4]) || 2024,
                         stok: Number(cols[5]) || 1,
                         dipinjam: Number(cols[6]) || 0,
-                        rak: cols[7] || "Rak Utama",
                         isTA: isTACategory(cat)
                     });
                     added++;
@@ -3462,7 +3436,7 @@
             document.getElementById("handover-modal-nama").textContent = item.nama;
             document.getElementById("handover-modal-meta").textContent = `NIM: ${item.nim} • Kelas: ${item.kelas || '-'} • HP: ${item.hp || '-'}`;
             document.getElementById("handover-modal-buku").textContent = item.judulBuku;
-            document.getElementById("handover-modal-kategori-rak").textContent = `Kategori: ${item.kategoriBuku} • Lokasi: ${item.rak || 'Rak Utama'}`;
+            document.getElementById("handover-modal-kategori-rak").textContent = `Kategori: ${item.kategoriBuku}`;
 
             const isTA = isTACategory(item.kategoriBuku);
             document.getElementById("handover-modal-durasi").textContent = isTA ? "14 Hari Kerja (TA/Skripsi)" : "7 Hari Kerja (Buku Umum)";
