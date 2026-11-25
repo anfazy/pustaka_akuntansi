@@ -4,6 +4,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
+    /* Skala root proporsional untuk layar laptop (setara zoom ~87.5%) */
+    html {
+        font-size: 13px !important;
+    }
     /* =========================================================
        PERPUSTAKAAN JURUSAN AKUNTANSI - ADMIN PANEL THEME
        100% Kembar Identik dengan Portal User (Spacing Lega & Presisi)
