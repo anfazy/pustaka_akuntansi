@@ -35,6 +35,13 @@ Route::get('/masuk', [UserPortalController::class, 'masuk'])->name('masuk');
 Route::post('/masuk', [UserPortalController::class, 'prosesMasuk'])->name('masuk.proses');
 Route::get('/daftar', [UserPortalController::class, 'daftar'])->name('daftar');
 Route::post('/daftar', [UserPortalController::class, 'prosesDaftar'])->name('daftar.proses');
+Route::get('/verifikasi-email', [UserPortalController::class, 'verifikasiNotice'])->name('verifikasi.notice');
+Route::get('/verifikasi-email/{id}/{hash}', [UserPortalController::class, 'verifikasiEmail'])
+    ->middleware('signed')
+    ->name('verifikasi.email');
+Route::post('/verifikasi-email/kirim-ulang', [UserPortalController::class, 'kirimUlangVerifikasi'])
+    ->middleware('throttle:3,1')
+    ->name('verifikasi.resend');
 Route::match(['get', 'post'], '/keluar', [UserPortalController::class, 'keluar'])->name('keluar');
 
 // Admin Mockup (Arsip Prototype) & Redirect Dashboard

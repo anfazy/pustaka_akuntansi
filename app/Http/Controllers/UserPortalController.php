@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\VerifyAnggotaEmail;
 use App\Models\Anggota;
 use App\Models\Book;
 use App\Models\Category;
@@ -11,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
 class UserPortalController extends Controller
@@ -531,6 +534,16 @@ class UserPortalController extends Controller
             return back()->withInput()->with('error', 'Pendaftaran anggota Anda ditolak. Silakan hubungi meja sirkulasi perpustakaan.');
         }
 
+        if (! $student->hasVerifiedEmail()) {
+            session([
+                'pending_verification_email' => $student->email,
+                'pending_verification_name' => $student->nama,
+            ]);
+
+            return redirect()->route('verifikasi.notice')
+                ->with('warning', 'Email Anda belum diverifikasi. Silakan cek kotak masuk atau folder spam email Anda.');
+        }
+
         session(['student_id' => $student->id]);
 
         return redirect()->intended(route('beranda'))->with('success', "Selamat datang kembali, {$student->nama}!");
@@ -553,19 +566,31 @@ class UserPortalController extends Controller
      */
     public function prosesDaftar(Request $request): RedirectResponse
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+            'no_hp' => preg_replace('/[\s.\-()]+/', '', trim((string) $request->input('no_hp'))),
+        ]);
+
         $request->validate([
             'nama' => 'required|string|max:100',
             'nim_no_anggota' => 'required|string|unique:anggotas,nim_no_anggota|max:30',
             'kelas' => 'required|string|max:20',
             'program_studi' => 'required|string|max:80',
             'tahun_angkatan' => 'required|digits:4',
-            'no_hp' => 'nullable|string|max:20',
-            'email' => 'required|email|unique:anggotas,email|max:100',
-            'password' => 'required|string|min:6|confirmed',
+            'no_hp' => ['required', 'string', 'regex:/^(?:\+62|62|0)8[1-9][0-9]{7,11}$/'],
+            'email' => ['required', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@mhs\.polines\.ac\.id$/i', 'unique:anggotas,email', 'max:100'],
+            'alamat' => 'required|string|max:255',
+            'kota' => 'required|string|max:100',
+            'password' => 'required|string|min:8|confirmed',
         ], [
             'nim_no_anggota.unique' => 'NIM ini sudah terdaftar sebagai anggota.',
+            'no_hp.required' => 'Nomor WhatsApp wajib diisi.',
+            'no_hp.regex' => 'Format nomor WhatsApp tidak valid. Gunakan awalan 08, 628, atau +628 (10–14 digit).',
+            'email.regex' => 'Email harus menggunakan domain kampus @mhs.polines.ac.id.',
             'email.unique' => 'Email kampus ini sudah terdaftar.',
-            'password.min' => 'Kata sandi minimal 6 karakter.',
+            'alamat.required' => 'Alamat lengkap wajib diisi.',
+            'kota.required' => 'Kota / Kabupaten wajib diisi.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
@@ -577,14 +602,107 @@ class UserPortalController extends Controller
             'tahun_angkatan' => (int) $request->input('tahun_angkatan'),
             'no_hp' => $request->input('no_hp'),
             'email' => $request->input('email'),
+            'email_verified_at' => null,
             'password' => Hash::make($request->input('password')),
-            'status' => 'active', // default active so student can use web right away
-            'alamat' => $request->input('alamat', 'Kampus Tembalang Polines'),
+            'status' => 'active',
+            'alamat' => $request->input('alamat'),
+            'kota' => $request->input('kota'),
         ]);
 
+        $this->sendVerificationEmail($anggota);
+
+        session([
+            'pending_verification_email' => $anggota->email,
+            'pending_verification_name' => $anggota->nama,
+        ]);
+
+        return redirect()->route('verifikasi.notice')
+            ->with('success', 'Pendaftaran berhasil! Tautan verifikasi telah dikirim ke email kampus Anda.');
+    }
+
+    /**
+     * Halaman pemberitahuan untuk cek email verifikasi.
+     */
+    public function verifikasiNotice(): View|RedirectResponse
+    {
+        if ($this->getStudent()) {
+            return redirect()->route('beranda');
+        }
+
+        return view('front.verifikasi-email', [
+            'email' => session('pending_verification_email'),
+            'nama' => session('pending_verification_name'),
+        ]);
+    }
+
+    /**
+     * Proses verifikasi email dari tautan bertanda tangan.
+     */
+    public function verifikasiEmail(Request $request, int $id, string $hash): RedirectResponse
+    {
+        $anggota = Anggota::findOrFail($id);
+
+        if (! hash_equals(sha1($anggota->email), $hash)) {
+            abort(403, 'Tautan verifikasi tidak valid.');
+        }
+
+        if (! $anggota->hasVerifiedEmail()) {
+            $anggota->email_verified_at = now();
+            $anggota->save();
+        }
+
+        session()->forget(['pending_verification_email', 'pending_verification_name']);
         session(['student_id' => $anggota->id]);
 
-        return redirect()->route('beranda')->with('success', "Selamat datang di Perpustakaan Jurusan Akuntansi, {$anggota->nama}! Akun Anda telah aktif.");
+        return redirect()->route('beranda')
+            ->with('success', "Email berhasil diverifikasi! Selamat datang di Perpustakaan Jurusan Akuntansi, {$anggota->nama}.");
+    }
+
+    /**
+     * Kirim ulang email verifikasi anggota.
+     */
+    public function kirimUlangVerifikasi(Request $request): RedirectResponse
+    {
+        $email = strtolower(trim((string) ($request->input('email') ?: session('pending_verification_email'))));
+
+        if ($email === '') {
+            return redirect()->route('masuk')
+                ->with('error', 'Alamat email tidak ditemukan. Silakan masuk kembali.');
+        }
+
+        $anggota = Anggota::where('email', $email)->first();
+
+        if (! $anggota) {
+            return back()->with('error', 'Akun dengan email tersebut tidak ditemukan.');
+        }
+
+        if ($anggota->hasVerifiedEmail()) {
+            return redirect()->route('masuk')
+                ->with('success', 'Email Anda sudah terverifikasi. Silakan masuk.');
+        }
+
+        $this->sendVerificationEmail($anggota);
+
+        session([
+            'pending_verification_email' => $anggota->email,
+            'pending_verification_name' => $anggota->nama,
+        ]);
+
+        return back()->with('success', 'Email verifikasi baru telah dikirim. Silakan cek kotak masuk atau folder spam Anda.');
+    }
+
+    /**
+     * Kirim email verifikasi ke alamat kampus anggota.
+     */
+    protected function sendVerificationEmail(Anggota $anggota): void
+    {
+        $verificationUrl = URL::temporarySignedRoute(
+            'verifikasi.email',
+            now()->addHours(24),
+            ['id' => $anggota->id, 'hash' => sha1($anggota->email)]
+        );
+
+        Mail::to($anggota->email)->send(new VerifyAnggotaEmail($anggota, $verificationUrl));
     }
 
     /**

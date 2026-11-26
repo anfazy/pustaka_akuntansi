@@ -132,27 +132,47 @@
 
                 <!-- Nomor WhatsApp -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Nomor WhatsApp <span class="text-rose-500">*</span></label>
+                    <label for="noHpInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Nomor WhatsApp <span class="text-rose-500">*</span></label>
                     <div class="glass-field rounded-[16px] px-4 py-3">
-                        <input type="text" name="no_hp" value="{{ old('no_hp') }}" required placeholder="Contoh: 081234567890" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                        <input type="tel" id="noHpInput" name="no_hp" value="{{ old('no_hp') }}" required placeholder="Contoh: 081234567890" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                     </div>
+                    <p id="noHpHint" class="text-[11px] text-slate-500 mt-1">Gunakan nomor aktif berawalan 08, 628, atau +628 (10–14 digit).</p>
                     @error('no_hp') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Email Kampus -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Email Kampus <span class="text-rose-500">*</span></label>
+                    <label for="emailKampusInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Email Kampus <span class="text-rose-500">*</span></label>
                     <div class="glass-field rounded-[16px] px-4 py-3">
-                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="nama@mahasiswa.polines.ac.id" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                        <input type="email" id="emailKampusInput" name="email" value="{{ old('email') }}" required placeholder="nama@mhs.polines.ac.id" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                     </div>
+                    <p id="emailKampusHint" class="text-[11px] text-slate-500 mt-1">Wajib menggunakan domain <span class="font-semibold text-emerald-700 dark:text-emerald-400">@mhs.polines.ac.id</span> untuk verifikasi.</p>
                     @error('email') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Alamat Lengkap -->
+                <div>
+                    <label for="alamatInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Alamat Lengkap <span class="text-rose-500">*</span></label>
+                    <div class="glass-field rounded-[16px] px-4 py-3">
+                        <input type="text" id="alamatInput" name="alamat" value="{{ old('alamat') }}" required placeholder="Contoh: Jl. Prof. Sudarto, Tembalang" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                    </div>
+                    @error('alamat') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Kota / Kabupaten -->
+                <div>
+                    <label for="kotaInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Kota / Kabupaten <span class="text-rose-500">*</span></label>
+                    <div class="glass-field rounded-[16px] px-4 py-3">
+                        <input type="text" id="kotaInput" name="kota" value="{{ old('kota') }}" required placeholder="Contoh: Kota Semarang" class="w-full bg-transparent text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                    </div>
+                    @error('kota') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Kata Sandi -->
                 <div>
                     <label for="registerPasswordInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Buat Kata Sandi <span class="text-rose-500">*</span></label>
                     <div class="glass-field relative flex items-center rounded-[16px] px-4 py-3">
-                        <input type="password" name="password" id="registerPasswordInput" required placeholder="Minimal 6 karakter" class="w-full bg-transparent pr-10 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                        <input type="password" name="password" id="registerPasswordInput" minlength="8" required placeholder="Minimal 8 karakter" class="w-full bg-transparent pr-10 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                         <button type="button" onclick="togglePasswordVisibility('registerPasswordInput', this)" aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-1 grid h-11 w-11 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition">
                             <svg class="eye-open h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -163,6 +183,19 @@
                             </svg>
                         </button>
                     </div>
+                    <!-- Indikator Kekuatan Kata Sandi -->
+                    <div class="mt-2 space-y-1">
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <span id="pwSeg1" class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors duration-200"></span>
+                            <span id="pwSeg2" class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors duration-200"></span>
+                            <span id="pwSeg3" class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors duration-200"></span>
+                            <span id="pwSeg4" class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors duration-200"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span id="pwStrengthLabel" class="font-medium text-slate-500">Minimal 8 karakter</span>
+                            <span id="pwStrengthTips" class="text-slate-400">Huruf besar, angka & simbol</span>
+                        </div>
+                    </div>
                     @error('password') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
@@ -170,7 +203,7 @@
                 <div>
                     <label for="registerPasswordConfirmInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Konfirmasi Kata Sandi <span class="text-rose-500">*</span></label>
                     <div class="glass-field relative flex items-center rounded-[16px] px-4 py-3">
-                        <input type="password" name="password_confirmation" id="registerPasswordConfirmInput" required placeholder="Ulangi kata sandi" class="w-full bg-transparent pr-10 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                        <input type="password" name="password_confirmation" id="registerPasswordConfirmInput" minlength="8" required placeholder="Ulangi kata sandi" class="w-full bg-transparent pr-10 text-[14px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                         <button type="button" onclick="togglePasswordVisibility('registerPasswordConfirmInput', this)" aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi" class="absolute right-1 grid h-11 w-11 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition">
                             <svg class="eye-open h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -181,6 +214,7 @@
                             </svg>
                         </button>
                     </div>
+                    <p id="pwMatchHint" class="text-[11px] text-slate-500 mt-1.5">Pastikan kata sandi sama dengan kolom di sebelah.</p>
                 </div>
             </div>
 
@@ -259,6 +293,111 @@
                     closeDropdown();
                 }
             });
+
+            // Password strength & confirmation match indicator
+            const pwInput = document.getElementById('registerPasswordInput');
+            const pwConfirmInput = document.getElementById('registerPasswordConfirmInput');
+            const pwSegs = [1, 2, 3, 4].map(i => document.getElementById('pwSeg' + i));
+            const pwLabel = document.getElementById('pwStrengthLabel');
+            const pwTips = document.getElementById('pwStrengthTips');
+            const pwMatchHint = document.getElementById('pwMatchHint');
+
+            function updatePasswordStrength() {
+                if (!pwInput || !pwLabel) return;
+                const val = pwInput.value;
+                let score = 0;
+                if (val.length >= 8) score++;
+                if (/[a-z]/.test(val) && /[A-Z]/.test(val)) score++;
+                if (/\d/.test(val)) score++;
+                if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+                const configs = [
+                    { text: 'Minimal 8 karakter', color: 'bg-slate-200 dark:bg-slate-700', textColor: 'text-slate-500' },
+                    { text: 'Lemah', color: 'bg-rose-500', textColor: 'text-rose-600' },
+                    { text: 'Cukup', color: 'bg-amber-500', textColor: 'text-amber-600' },
+                    { text: 'Kuat', color: 'bg-emerald-500', textColor: 'text-emerald-600' },
+                    { text: 'Sangat Kuat', color: 'bg-emerald-600', textColor: 'text-emerald-700' },
+                ];
+
+                const level = val.length === 0 ? 0 : (val.length < 8 ? 1 : Math.max(1, score));
+                const cfg = configs[level];
+
+                pwSegs.forEach((seg, idx) => {
+                    if (!seg) return;
+                    seg.className = 'h-1.5 rounded-full transition-colors duration-200 ' + (idx < level && level > 0 ? cfg.color : 'bg-slate-200 dark:bg-slate-700');
+                });
+
+                pwLabel.textContent = val.length > 0 && val.length < 8 ? 'Terlalu pendek (min. 8 karakter)' : cfg.text;
+                pwLabel.className = 'font-semibold ' + (val.length > 0 && val.length < 8 ? 'text-rose-600' : cfg.textColor);
+                if (pwTips) {
+                    pwTips.textContent = val.length >= 8 ? (score >= 3 ? 'Kombinasi aman' : 'Tambahkan huruf besar/angka/simbol') : 'Huruf besar, angka & simbol';
+                }
+            }
+
+            function updatePasswordMatch() {
+                if (!pwConfirmInput || !pwInput || !pwMatchHint) return;
+                const cVal = pwConfirmInput.value;
+                if (!cVal) {
+                    pwMatchHint.textContent = 'Pastikan kata sandi sama dengan kolom di sebelah.';
+                    pwMatchHint.className = 'text-[11px] text-slate-500 mt-1.5';
+                    return;
+                }
+                if (cVal === pwInput.value) {
+                    pwMatchHint.textContent = 'Kata sandi cocok.';
+                    pwMatchHint.className = 'text-[11px] font-semibold text-emerald-600 mt-1.5';
+                } else {
+                    pwMatchHint.textContent = 'Konfirmasi kata sandi belum cocok.';
+                    pwMatchHint.className = 'text-[11px] font-semibold text-rose-600 mt-1.5';
+                }
+            }
+
+            if (pwInput) {
+                pwInput.addEventListener('input', () => {
+                    updatePasswordStrength();
+                    updatePasswordMatch();
+                });
+            }
+            if (pwConfirmInput) {
+                pwConfirmInput.addEventListener('input', updatePasswordMatch);
+            }
+
+            // Live email domain check (@mhs.polines.ac.id)
+            const emailInput = document.getElementById('emailKampusInput');
+            const emailHint = document.getElementById('emailKampusHint');
+            if (emailInput && emailHint) {
+                emailInput.addEventListener('input', function() {
+                    const v = this.value.trim().toLowerCase();
+                    if (!v) {
+                        emailHint.innerHTML = 'Wajib menggunakan domain <span class="font-semibold text-emerald-700 dark:text-emerald-400">@mhs.polines.ac.id</span> untuk verifikasi.';
+                        emailHint.className = 'text-[11px] text-slate-500 mt-1';
+                    } else if (/^[a-z0-9._%+-]+@mhs\.polines\.ac\.id$/.test(v)) {
+                        emailHint.textContent = 'Format email kampus valid.';
+                        emailHint.className = 'text-[11px] font-semibold text-emerald-600 mt-1';
+                    } else {
+                        emailHint.textContent = 'Email harus berakhiran @mhs.polines.ac.id';
+                        emailHint.className = 'text-[11px] font-semibold text-rose-600 mt-1';
+                    }
+                });
+            }
+
+            // Live WhatsApp format check
+            const noHpInput = document.getElementById('noHpInput');
+            const noHpHint = document.getElementById('noHpHint');
+            if (noHpInput && noHpHint) {
+                noHpInput.addEventListener('input', function() {
+                    const cleaned = this.value.replace(/[\s.\-()]+/g, '').trim();
+                    if (!cleaned) {
+                        noHpHint.textContent = 'Gunakan nomor aktif berawalan 08, 628, atau +628 (10–14 digit).';
+                        noHpHint.className = 'text-[11px] text-slate-500 mt-1';
+                    } else if (/^(?:\+62|62|0)8[1-9][0-9]{7,11}$/.test(cleaned)) {
+                        noHpHint.textContent = 'Format nomor WhatsApp valid.';
+                        noHpHint.className = 'text-[11px] font-semibold text-emerald-600 mt-1';
+                    } else {
+                        noHpHint.textContent = 'Format belum valid (contoh: 081234567890).';
+                        noHpHint.className = 'text-[11px] font-semibold text-rose-600 mt-1';
+                    }
+                });
+            }
         });
     </script>
 @endsection

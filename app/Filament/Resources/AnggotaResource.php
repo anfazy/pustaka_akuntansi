@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AnggotaResource\Pages;
-use App\Filament\Resources\AnggotaResource\RelationManagers;
 use App\Models\Anggota;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AnggotaResource extends Resource
 {
@@ -21,10 +18,13 @@ class AnggotaResource extends Resource
 
     // Mengatur nama menu dan label menjadi "Anggota"
     protected static ?string $navigationLabel = 'Anggota';
+
     protected static ?string $pluralModelLabel = 'Anggota';
+
     protected static ?string $modelLabel = 'Anggota';
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?int $navigationSort = 1;
 
     // Form Input / Edit Data Anggota (Semua kolom wajib diisi)
@@ -40,19 +40,19 @@ class AnggotaResource extends Resource
                     ->label('Nama Lengkap')
                     ->required(),
                 Forms\Components\Select::make('program_studi')
-                ->label('Program Studi')
-                ->options([
-                    'Komputerisasi Akuntansi (S. Tr)' => 'Komputerisasi Akuntansi (S. Tr)',
-                    'Perbankan Syariah (S. Tr)' => 'Perbankan Syariah (S. Tr)',
-                    'Analisis Keuangan (S. Tr)' => 'Analisis Keuangan (S. Tr)',
-                    'Akuntansi Manajerial (S. Tr)' => 'Akuntansi Manajerial (S. Tr)',
-                    'Akuntansi (D3)' => 'Akuntansi (D3)',
-                    'Keuangan dan Perbankan (D3)' => 'Keuangan dan Perbankan (D3)',
-                ])
-                ->required()
-                ->searchable() 
+                    ->label('Program Studi')
+                    ->options([
+                        'Komputerisasi Akuntansi (S. Tr)' => 'Komputerisasi Akuntansi (S. Tr)',
+                        'Perbankan Syariah (S. Tr)' => 'Perbankan Syariah (S. Tr)',
+                        'Analisis Keuangan (S. Tr)' => 'Analisis Keuangan (S. Tr)',
+                        'Akuntansi Manajerial (S. Tr)' => 'Akuntansi Manajerial (S. Tr)',
+                        'Akuntansi (D3)' => 'Akuntansi (D3)',
+                        'Keuangan dan Perbankan (D3)' => 'Keuangan dan Perbankan (D3)',
+                    ])
+                    ->required()
+                    ->searchable()
                 // Agar bisa diketik/dicari jika pilihannya banyak
-                ->native(false),
+                    ->native(false),
                 Forms\Components\TextInput::make('kelas')
                     ->label('Kelas')
                     ->required(),
@@ -72,9 +72,13 @@ class AnggotaResource extends Resource
                     ->unique(ignoreRecord: true),
                 // Diubah menjadi wajib diisi (required)
                 Forms\Components\Textarea::make('alamat')
-                    ->label('Alamat')
+                    ->label('Alamat Lengkap')
                     ->required()
                     ->columnSpanFull(),
+                Forms\Components\TextInput::make('kota')
+                    ->label('Kota / Kabupaten')
+                    ->required()
+                    ->maxLength(100),
             ]);
     }
 
@@ -110,6 +114,17 @@ class AnggotaResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),
+                Tables\Columns\IconColumn::make('email_verified_at')
+                    ->label('Terverifikasi')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('kota')
+                    ->label('Kota')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('alamat')
+                    ->label('Alamat')
+                    ->limit(35)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 // Filter berdasarkan Kelas, Prodi, dan Angkatan
