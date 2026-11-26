@@ -3,26 +3,26 @@
 @section('title', 'Verifikasi Email Anda — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[500px] rounded-[32px] p-6 sm:p-8 shadow-2xl animate-rise text-center">
+    <div class="glass-card w-full max-w-[390px] rounded-[22px] p-5 shadow-2xl animate-rise text-center">
         <!-- Brand Header -->
-        <div class="flex items-center justify-center gap-3 mb-6">
-            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-md shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
+        <div class="flex items-center justify-center gap-2.5 mb-4">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-1 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
                 <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
             </div>
             <div class="text-left">
-                <span class="block text-[16px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan Akuntansi</span>
-                <span class="block text-xs text-emerald-800 dark:text-emerald-400 font-medium">Ruang Baca Jurusan Polines</span>
+                <span class="block text-[13.5px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan Akuntansi</span>
+                <span class="block text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">Ruang Baca Jurusan Polines</span>
             </div>
         </div>
 
         <!-- Mail Icon Badge -->
-        <div class="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-inner">
-            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <div class="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-inner">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
             </svg>
         </div>
 
-        <h1 class="text-[24px] sm:text-[28px] font-bold tracking-tight text-slate-900">Verifikasi Email Anda</h1>
+        <h1 class="text-[20px] sm:text-[22px] font-bold tracking-tight text-slate-900">Verifikasi Email Anda</h1>
 
         @if(session('success'))
             <div class="mt-4 flex items-center gap-2.5 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-3 text-left text-xs font-medium text-emerald-800">

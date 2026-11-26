@@ -465,21 +465,21 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative">
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-4 relative">
 
-    <!-- FLOATING THEME TOGGLE (Top-Right, >=44x44pt & safe-area inset) -->
+    <!-- FLOATING THEME TOGGLE -->
     <div class="fixed z-20" style="top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right));">
         <button type="button"
                 onclick="toggleDarkMode()"
-                class="liquid-icon-btn grid h-11 w-11 place-items-center rounded-full text-slate-600 dark:text-amber-300 shadow-md hover:scale-105 transition-all"
+                class="liquid-icon-btn grid h-9 w-9 place-items-center rounded-full text-slate-600 dark:text-amber-300 shadow-md hover:scale-105 transition-all"
                 title="Ganti Mode Gelap / Terang"
                 aria-label="Ganti Mode Gelap atau Terang">
             <!-- Sun icon (shown when dark) -->
-            <svg class="hidden dark:block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="hidden dark:block h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
             </svg>
             <!-- Moon icon (shown when light) -->
-            <svg class="block dark:hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="block dark:hidden h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
             </svg>
         </button>

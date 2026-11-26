@@ -3,34 +3,34 @@
 @section('title', 'Katalog Buku — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-[34px] font-bold tracking-tight text-slate-900 dark:text-white">Katalog Buku</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Jelajahi {{ $books->total() }} koleksi buku dan referensi jurusan akuntansi.</p>
+            <h1 class="text-[21px] sm:text-[24px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">Katalog Buku</h1>
+            <p class="text-[12.5px] text-slate-500 dark:text-slate-400 mt-0.5">Jelajahi {{ $books->total() }} koleksi buku dan referensi jurusan akuntansi.</p>
         </div>
 
         <div>
             @if(request('tersedia') === '1')
                 <a href="{{ route('katalog', request()->except('tersedia', 'page')) }}"
-                   class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full liquid-badge-emerald px-4 text-xs font-semibold shadow-sm">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                   class="inline-flex min-h-[34px] items-center gap-1.5 rounded-full liquid-badge-emerald px-3 text-[11.5px] font-semibold shadow-sm">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                     <span>Hanya Stok Tersedia &times;</span>
                 </a>
             @else
                 <a href="{{ route('katalog', array_merge(request()->except('page'), ['tersedia' => '1'])) }}"
-                   class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full liquid-chip px-4 text-xs font-medium">
-                    <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                   class="inline-flex min-h-[34px] items-center gap-1.5 rounded-full liquid-chip px-3 text-[11.5px] font-medium">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
                     <span>Hanya Stok Tersedia</span>
                 </a>
             @endif
         </div>
     </div>
 
-    <!-- CATEGORY FILTER CHIPS (Apple HIG >=44px touch target pills) -->
-    <div class="no-scrollbar mb-5 -mx-4 px-4 flex items-center gap-2.5 overflow-x-auto pt-2 pb-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:pb-4">
+    <!-- CATEGORY FILTER CHIPS -->
+    <div class="no-scrollbar mb-4 -mx-4 px-4 flex items-center gap-2 overflow-x-auto pt-0.5 pb-3 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:pb-2.5">
         <!-- Semua -->
         <a href="{{ route('katalog', array_merge(request()->except('kategori', 'page'), ['kategori' => 'semua'])) }}"
-           class="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-semibold transition-all duration-200 {{ $currentKategori === 'semua' ? 'btn-emerald' : 'liquid-chip' }}">
+           class="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-all duration-200 {{ $currentKategori === 'semua' ? 'btn-emerald' : 'liquid-chip' }}">
             Semua Kategori
         </a>
 
@@ -39,9 +39,9 @@
                 $isActiveCat = ($currentKategori === $category->slug || $currentKategori === $category->nama);
             @endphp
             <a href="{{ route('katalog', array_merge(request()->except('kategori', 'page'), ['kategori' => $category->slug])) }}"
-               class="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-medium transition-all duration-200 {{ $isActiveCat ? 'btn-emerald' : 'liquid-chip' }}">
+               class="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-medium transition-all duration-200 {{ $isActiveCat ? 'btn-emerald' : 'liquid-chip' }}">
                 <span>{{ $category->nama }}</span>
-                <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $isActiveCat ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400' }}">
+                <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold {{ $isActiveCat ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400' }}">
                     {{ $category->books_count }}
                 </span>
             </a>
@@ -50,7 +50,7 @@
 
     <!-- BOOK GRID -->
     @if($books->count() > 0)
-        <div class="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-2 gap-x-3.5 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             @foreach($books as $book)
                 @include('front.components.book-card', ['book' => $book])
             @endforeach
