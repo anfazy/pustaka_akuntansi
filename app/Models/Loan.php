@@ -138,7 +138,7 @@ class Loan extends Model
     }
 
     /**
-     * Menghasilkan nomor urut transaksi berikutnya dengan format AKT-0001, AKT-0002, dst.
+     * Menghasilkan nomor urut transaksi & booking berikutnya mulai dari AKT-0001, AKT-0002, dst.
      */
     public static function generateNextSequentialCode(): string
     {
@@ -156,9 +156,7 @@ class Loan extends Model
             }
         }
 
-        // Pastikan nomor urut minimal mengikuti ID terakhir jika sudah ada data sebelumnya
-        $lastId = (int) static::max('id');
-        $nextNumber = max($maxNumber, $lastId) + 1;
+        $nextNumber = $maxNumber + 1;
 
         do {
             $candidate = 'AKT-' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
