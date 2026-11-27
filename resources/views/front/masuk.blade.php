@@ -135,7 +135,7 @@
             <div class="mt-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-4 text-xs space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-slate-500 font-medium">No. WhatsApp Admin:</span>
-                    <span class="font-bold text-emerald-900 dark:text-emerald-300 text-sm tracking-wide">08895627873</span>
+                    <span class="font-bold text-emerald-900 dark:text-emerald-300 text-sm tracking-wide">0895-3363-84919</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-slate-500 font-medium">Jam Pelayanan:</span>
@@ -148,7 +148,7 @@
 
             <!-- Direct WhatsApp CTA Button (Apple HIG vertical button stack: rounded-[14px], identical h-11 height) -->
             <div class="mt-6 space-y-2.5">
-                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines,%20saya%20ingin%20mengatur%20ulang%20kata%20sandi%20akun%20mahasiswa%20saya.%0A%0ANama:%20%0ANIM:%20"
+                <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines,%20saya%20ingin%20mengatur%20ulang%20kata%20sandi%20akun%20mahasiswa%20saya.%0A%0ANama:%20%0ANIM:%20"
                    target="_blank"
                    class="btn-emerald flex h-11 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-semibold shadow-md">
                     <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">

@@ -95,11 +95,10 @@ class UserPortalController extends Controller
             ->take(5)
             ->get();
 
-        $accountingBooks = Book::with('category')
+        $pelajaranBooks = Book::with('category')
             ->whereHas('category', function ($q): void {
-                $q->whereIn('slug', ['akuntansi', 'perpajakan'])
-                    ->orWhere('nama', 'like', '%Akuntansi%')
-                    ->orWhere('nama', 'like', '%Perpajakan%');
+                $q->where('slug', 'pelajaran')
+                    ->orWhere('nama', 'like', '%Pelajaran%');
             })
             ->latest()
             ->take(8)
@@ -117,9 +116,7 @@ class UserPortalController extends Controller
             ->get();
 
         $categories = Category::withCount('books')
-            ->orderByDesc('books_count')
             ->orderBy('nama')
-            ->take(6)
             ->get();
 
         $bookStats = Book::selectRaw('COUNT(*) as total_titles, COALESCE(SUM(stok), 0) as available_copies')->first();
@@ -194,7 +191,7 @@ class UserPortalController extends Controller
             'popularBooks' => $popularBooks,
             'newestBooks' => $newestBooks,
             'spotlightBooks' => $spotlightBooks,
-            'accountingBooks' => $accountingBooks,
+            'pelajaranBooks' => $pelajaranBooks,
             'thesisBooks' => $thesisBooks,
             'categories' => $categories,
             'librarySummary' => $librarySummary,

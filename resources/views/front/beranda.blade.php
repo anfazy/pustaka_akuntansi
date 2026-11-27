@@ -141,7 +141,7 @@
                             <span class="block text-[10.5px] font-medium text-slate-500">Eksemplar Siap</span>
                         </div>
                         <div class="rounded-[12px] bg-white/65 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-2">
-                            <span class="block text-base sm:text-lg font-bold tracking-tight text-slate-900">7 Hari</span>
+                            <span class="block text-base sm:text-lg font-bold tracking-tight text-slate-900">7&ndash;14 Hari</span>
                             <span class="block text-[10.5px] font-medium text-slate-500">Durasi Pinjam</span>
                         </div>
                     </div>
@@ -279,9 +279,9 @@
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
                         Terbaru
                     </button>
-                    <button type="button" onclick="switchBerandaShelf('akuntansi', this)" data-shelf-tab="akuntansi"
+                    <button type="button" onclick="switchBerandaShelf('pelajaran', this)" data-shelf-tab="pelajaran"
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
-                        Akuntansi &amp; Pajak
+                        Pelajaran
                     </button>
                     <button type="button" onclick="switchBerandaShelf('skripsi', this)" data-shelf-tab="skripsi"
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
@@ -300,7 +300,7 @@
             $shelves = [
                 'populer' => ['books' => $popularBooks->take(4), 'empty' => 'Belum ada data buku populer.'],
                 'terbaru' => ['books' => $newestBooks->take(4), 'empty' => 'Belum ada koleksi terbaru.'],
-                'akuntansi' => ['books' => ($accountingBooks ?? collect())->take(4), 'empty' => 'Belum ada buku Akuntansi & Perpajakan.'],
+                'pelajaran' => ['books' => ($pelajaranBooks ?? collect())->take(4), 'empty' => 'Belum ada koleksi kategori Pelajaran.'],
                 'skripsi' => ['books' => ($thesisBooks ?? collect())->take(4), 'empty' => 'Belum ada koleksi TA / Skripsi atau PKL.'],
             ];
         @endphp
@@ -330,7 +330,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
                 @foreach($categories as $cIdx => $cat)
                     <a href="{{ route('katalog', ['kategori' => $cat->slug]) }}"
                        style="--stagger: {{ $cIdx }}"
@@ -428,7 +428,7 @@
             </div>
 
             <div class="space-y-1.5">
-                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
+                <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
                    class="btn-glass flex min-h-[34px] w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400">
                     <span>Chat WhatsApp Admin</span>
                 </a>

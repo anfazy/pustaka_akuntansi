@@ -241,9 +241,9 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
+                        <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
                            class="btn-emerald inline-flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold">
-                            <span>WhatsApp 08895627873</span>
+                            <span>WhatsApp 0895-3363-84919</span>
                         </a>
                         <a href="{{ route('pinjaman') }}" class="btn-glass inline-flex min-h-[34px] items-center rounded-full px-3.5 text-[12px] font-semibold">
                             Pinjaman Saya
