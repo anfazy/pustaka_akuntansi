@@ -447,6 +447,22 @@ class AdminDashboardController extends Controller
             ], 422);
         }
 
+        if ($loan->isBookingExpired()) {
+            $loan->update(['status' => 'dibatalkan']);
+
+            return response()->json([
+                'success' => false,
+                'message' => "Booking {$loan->booking_code} sudah hangus karena melewati batas 1×24 jam.",
+            ], 422);
+        }
+
+        if (($loan->book?->stok ?? 0) <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menyerahkan buku karena stok saat ini 0.',
+            ], 422);
+        }
+
         $jaminan = $request->input('jaminan', 'KTM');
 
         $loan->status = 'dipinjam';

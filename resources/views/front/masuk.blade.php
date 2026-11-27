@@ -21,12 +21,12 @@
 
         <!-- Brand Header with Official HMJ Logo -->
         <div class="flex items-center gap-2.5">
-            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-1 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
-                <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
+                <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
             </div>
             <div>
                 <span class="block text-[13.5px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan Akuntansi</span>
-                <span class="block text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">Ruang Baca Jurusan Polines</span>
+                <span class="block text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">Politeknik Negeri Semarang</span>
             </div>
         </div>
 
@@ -135,7 +135,7 @@
             <div class="mt-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-4 text-xs space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-slate-500 font-medium">No. WhatsApp Admin:</span>
-                    <span class="font-bold text-emerald-900 dark:text-emerald-300 text-sm tracking-wide">0887895627873</span>
+                    <span class="font-bold text-emerald-900 dark:text-emerald-300 text-sm tracking-wide">08895627873</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-slate-500 font-medium">Jam Pelayanan:</span>
@@ -148,7 +148,7 @@
 
             <!-- Direct WhatsApp CTA Button (Apple HIG vertical button stack: rounded-[14px], identical h-11 height) -->
             <div class="mt-6 space-y-2.5">
-                <a href="https://wa.me/62887895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines,%20saya%20ingin%20mengatur%20ulang%20kata%20sandi%20akun%20mahasiswa%20saya.%0A%0ANama:%20%0ANIM:%20"
+                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines,%20saya%20ingin%20mengatur%20ulang%20kata%20sandi%20akun%20mahasiswa%20saya.%0A%0ANama:%20%0ANIM:%20"
                    target="_blank"
                    class="btn-emerald flex h-11 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-semibold shadow-md">
                     <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">

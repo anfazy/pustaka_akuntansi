@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>@yield('title', 'Masuk — Perpustakaan Jurusan Akuntansi')</title>
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-hmj-akuntansi.jpg') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -336,6 +336,47 @@
         }
 
         /* DARK MODE APPLE LIQUID GLASS STYLES */
+        html.dark {
+            color-scheme: dark;
+        }
+
+        /* Apple macOS-style Sleek Translucent Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(15, 23, 42, 0.16) transparent;
+        }
+        html.dark * {
+            scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 6px 0;
+        }
+        ::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(15, 23, 42, 0.16);
+            border-radius: 9999px;
+            border: 1px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(15, 23, 42, 0.30);
+        }
+        html.dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.22);
+        }
+        html.dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.36);
+        }
+
         html.dark body {
             background: radial-gradient(1200px 700px at 75% -10%, rgba(16, 185, 129, 0.14), transparent 60%),
                         radial-gradient(900px 550px at 75% 15%, rgba(245, 158, 11, 0.08), transparent 55%),
@@ -456,6 +497,29 @@
             color: #cbd5e1 !important;
             border: 1px solid rgba(255, 255, 255, 0.13) !important;
             border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .glass-popover-sheet {
+            background: linear-gradient(155deg, rgba(255, 255, 255, 0.97) 0%, rgba(244, 253, 247, 0.95) 55%, rgba(255, 255, 255, 0.96) 100%) !important;
+            backdrop-filter: blur(44px) saturate(210%) brightness(102%) !important;
+            -webkit-backdrop-filter: blur(44px) saturate(210%) brightness(102%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.96) !important;
+            border-top: 1.5px solid #ffffff !important;
+            box-shadow: inset 0 1.5px 1px 0 #ffffff,
+                        inset 0 -1px 1px 0 rgba(6, 78, 59, 0.05),
+                        0 24px 56px -14px rgba(6, 78, 59, 0.24),
+                        0 6px 16px -4px rgba(15, 23, 42, 0.08) !important;
+        }
+
+        html.dark .glass-popover-sheet {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 60%, rgba(16, 185, 129, 0.08) 100%),
+                        rgba(7, 18, 13, 0.96) !important;
+            backdrop-filter: blur(48px) saturate(210%) !important;
+            -webkit-backdrop-filter: blur(48px) saturate(210%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.16) !important;
+            border-top: 1.5px solid rgba(255, 255, 255, 0.34) !important;
+            box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.22),
+                        0 28px 64px -14px rgba(0, 0, 0, 0.90) !important;
         }
 
         html.dark .border-slate-200,

@@ -25,23 +25,23 @@
     </header>
 
     <!-- INSTANT 0ms SEGMENTED CONTROL WITH GLIDING LIQUID GLASS THUMB -->
-    <div id="pinjamanTabTrack" class="segment-track max-w-[580px] flex rounded-full p-1 mb-5 overflow-x-auto no-scrollbar">
+    <div id="pinjamanTabTrack" class="segment-track w-full sm:w-fit max-w-full flex flex-nowrap rounded-full mb-5 overflow-x-auto no-scrollbar">
         <button type="button"
                 onclick="switchPinjamanTab('siap', this)"
                 data-pinjaman-tab="siap"
-                class="{{ $activeTab === 'siap' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} flex-1 min-w-max inline-flex min-h-[32px] items-center justify-center px-3 sm:px-3.5 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'siap' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Siap Diambil &middot; {{ $siapDiambil->count() }}
         </button>
         <button type="button"
                 onclick="switchPinjamanTab('dipinjam', this)"
                 data-pinjaman-tab="dipinjam"
-                class="{{ $activeTab === 'dipinjam' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} flex-1 min-w-max inline-flex min-h-[32px] items-center justify-center px-3 sm:px-3.5 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'dipinjam' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Sedang Dipinjam &middot; {{ $sedangDipinjam->count() }}
         </button>
         <button type="button"
                 onclick="switchPinjamanTab('denda', this)"
                 data-pinjaman-tab="denda"
-                class="{{ $activeTab === 'denda' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} flex-1 min-w-max inline-flex min-h-[32px] items-center justify-center px-3 sm:px-3.5 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'denda' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Terlambat &amp; Denda &middot; {{ $terlambat->count() }}
         </button>
     </div>
@@ -52,7 +52,9 @@
     <div data-pinjaman-panel="siap" class="shelf-panel space-y-3.5 {{ $activeTab === 'siap' ? 'is-active block' : 'hidden' }}">
         @forelse($siapDiambil as $loan)
             @php
-                $deadline = $loan->created_at ? $loan->created_at->addHours(24)->translatedFormat('d M, H:i') . ' WIB' : 'Besok 16.00 WIB';
+                $deadline = $loan->booking_expires_at
+                    ? $loan->booking_expires_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB'
+                    : 'maks. 1×24 jam';
             @endphp
             <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                 <!-- QR Code Box -->
@@ -270,39 +272,42 @@
     @if($successBookingCode)
         @php
             $successLoan = \App\Models\Loan::with('book')->where('booking_code', $successBookingCode)->first();
+            $successDeadline = $successLoan?->booking_expires_at
+                ? $successLoan->booking_expires_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB'
+                : 'maks. 1×24 jam';
         @endphp
         <div id="bookingSuccessModal" class="apple-modal-root fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeAppleModal('bookingSuccessModal')"></div>
 
-            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[22px] p-5 text-center shadow-2xl border border-white/95">
-                <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-emerald-600 mb-3">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[390px] max-h-[90vh] overflow-y-auto rounded-[22px] p-4 sm:p-5 text-center shadow-2xl border border-white/95 dark:border-white/10">
+                <div class="mx-auto grid h-11 w-11 place-items-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-2.5">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
 
-                <h3 class="text-[18px] font-bold tracking-tight text-slate-900">Booking Berhasil Dibuat</h3>
-                <p class="text-[14px] text-slate-500 mt-1">
+                <h3 class="text-[17px] font-bold tracking-tight text-slate-900">Booking Berhasil Dibuat</h3>
+                <p class="text-[13px] text-slate-500 mt-0.5 line-clamp-2">
                     {{ $successLoan?->book?->judul ?? 'Buku Pilihan' }}
                 </p>
 
-                <div class="pearl-card mt-6 rounded-[20px] p-5 shadow-sm border border-slate-200">
-                    <div class="mx-auto grid h-36 w-36 place-items-center rounded-[12px] bg-white p-2">
+                <div class="pearl-card mt-4 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-white/10">
+                    <div class="mx-auto grid h-32 w-32 place-items-center rounded-[12px] bg-white p-2">
                         <canvas id="successQrCanvas" class="h-full w-full"></canvas>
                     </div>
-                    <div class="mt-4 text-[20px] font-bold tracking-tight text-slate-900 tabular-nums">
+                    <div class="mt-3 text-[18px] font-bold tracking-tight text-slate-900 tabular-nums">
                         Kode Booking: {{ $successBookingCode }}
                     </div>
-                    <p class="mt-2 text-[13px] leading-relaxed text-slate-500">
-                        Tunjukkan kode ini ke petugas di ruang baca sebelum besok 16.00 WIB.
+                    <p class="mt-1.5 text-[12px] leading-relaxed text-slate-500 dark:text-slate-300">
+                        Tunjukkan kode ini ke petugas di ruang baca sebelum <strong class="font-semibold text-slate-800 dark:text-slate-100">{{ $successDeadline }}</strong> (1&times;24 jam). Masa pinjam dimulai saat buku diambil.
                     </p>
                 </div>
 
-                <div class="mt-7 flex gap-3">
+                <div class="mt-4 flex gap-2.5">
                     <button type="button" onclick="closeAppleModal('bookingSuccessModal')"
-                            class="btn-glass flex-1 h-11 rounded-full text-sm font-semibold">
+                            class="btn-glass flex-1 h-10 rounded-full text-[13px] font-semibold">
                         Tutup
                     </button>
                     <button type="button" onclick="closeAppleModal('bookingSuccessModal'); switchPinjamanTab('siap', document.querySelector('[data-pinjaman-tab=siap]'))"
-                            class="btn-emerald flex-1 h-11 rounded-full text-sm font-semibold">
+                            class="btn-emerald flex-1 h-10 rounded-full text-[13px] font-semibold">
                         Lihat Siap Diambil
                     </button>
                 </div>

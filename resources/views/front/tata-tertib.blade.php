@@ -85,7 +85,7 @@
                         <h3 class="text-[13.5px] font-semibold text-slate-900">Ambil maksimal 1&times;24 jam</h3>
                     </div>
                     <p class="text-[12.5px] text-slate-600 dark:text-slate-300 leading-relaxed pl-8">
-                        Datang ke ruang baca paling lambat besok pukul <strong class="font-semibold text-slate-900 tabular-nums">16.00 WIB</strong>. Tunjukkan kode booking dan titipkan satu kartu jaminan. <strong class="font-semibold text-rose-600 dark:text-rose-400">Lewat batas waktu, booking hangus otomatis.</strong>
+                        Datang ke ruang baca maksimal <strong class="font-semibold text-slate-900">1&times;24 jam</strong> sesuai jam layanan (Senin–Kamis s/d 15.30 WIB, Jumat s/d 14.00 WIB). Tunjukkan kode booking dan titipkan satu kartu jaminan; masa pinjam <strong class="font-semibold text-slate-900">7 hari kerja</strong> (14 hari kerja untuk TA/Skripsi) dihitung sejak buku diambil. <strong class="font-semibold text-rose-600 dark:text-rose-400">Lewat batas waktu, booking hangus otomatis.</strong>
                     </p>
                 </article>
 
@@ -187,7 +187,7 @@
                         </tr>
                         <tr class="hover:bg-emerald-50/40 dark:hover:bg-slate-800/60 transition-colors">
                             <td class="py-2.5 px-4 font-semibold text-slate-900">Buku Umum</td>
-                            <td class="py-2.5 px-4">3 atau 7 hari kerja</td>
+                            <td class="py-2.5 px-4">7 hari kerja</td>
                             <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +3 hari</td>
                             <td class="py-2.5 px-4 font-semibold text-rose-600 dark:text-rose-400">Rp 200 / hari</td>
                             <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300">Ganti buku sama atau seharga</td>
@@ -241,9 +241,9 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <a href="https://wa.me/62887895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
+                        <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
                            class="btn-emerald inline-flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold">
-                            <span>WhatsApp 0887895627873</span>
+                            <span>WhatsApp 08895627873</span>
                         </a>
                         <a href="{{ route('pinjaman') }}" class="btn-glass inline-flex min-h-[34px] items-center rounded-full px-3.5 text-[12px] font-semibold">
                             Pinjaman Saya

@@ -17,10 +17,8 @@
         
         <!-- Brand Title: Perpustakaan Jurusan Akuntansi -->
         <a href="{{ route('filament.admin.pages.dashboard') }}" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105" style="background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%); color: #022c22; border: 1px solid rgba(253, 230, 138, 0.6); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
-                <svg class="w-5 h-5" style="stroke-width: 2.2;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5M3 21h18M5.25 9h13.5" />
-                </svg>
+            <div class="w-9 h-9 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-sm transition-transform group-hover:scale-105 overflow-hidden" style="border: 1.5px solid rgba(16, 185, 129, 0.7);">
+                <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="w-full h-full object-contain">
             </div>
             <div class="flex flex-col text-left">
                 <span class="font-bold text-base sm:text-lg tracking-tight text-white leading-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">

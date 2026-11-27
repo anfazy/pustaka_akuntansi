@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>@yield('title', 'Perpustakaan Jurusan Akuntansi — Ruang Baca Jurusan Akuntansi Polines')</title>
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-hmj-akuntansi.jpg') }}">
+    <title>@yield('title', 'Perpustakaan Jurusan Akuntansi — Politeknik Negeri Semarang')</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}">
     @stack('styles')
 
     <!-- Google Fonts: Inter -->
@@ -726,6 +726,8 @@
 
         /* Sliding Gliding Pill inside Segmented Controls */
         .segment-track {
+            display: flex;
+            align-items: center;
             position: relative;
         }
         .segment-thumb {
@@ -1089,6 +1091,43 @@
             background-color: rgba(255, 255, 255, 0.08) !important;
         }
 
+        /* Apple macOS-style Sleek Translucent Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(15, 23, 42, 0.16) transparent;
+        }
+        html.dark * {
+            scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 6px 0;
+        }
+        ::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(15, 23, 42, 0.16);
+            border-radius: 9999px;
+            border: 1px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(15, 23, 42, 0.30);
+        }
+        html.dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.22);
+        }
+        html.dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.36);
+        }
+
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -1130,13 +1169,13 @@
         <!-- Sidebar Brand Header -->
         <div class="sidebar-header flex items-center px-1">
             <a href="{{ route('beranda') }}" class="sidebar-brand-link group flex items-center gap-2.5 min-w-0 w-full transition-all duration-300 hover:opacity-90 active:scale-[0.98]">
-                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-1 shadow-md shadow-emerald-950/15 ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden transition-transform duration-300 group-hover:scale-105">
-                    <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-0.5 shadow-md shadow-emerald-950/15 ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                    <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </div>
                 <div class="sidebar-text min-w-0">
                     <span class="block text-[9px] font-bold leading-tight tracking-[0.12em] uppercase text-emerald-700 dark:text-emerald-400">Perpustakaan</span>
                     <span class="block text-[13px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white mt-0.5">Jurusan Akuntansi</span>
-                    <span class="block text-[10px] font-medium leading-tight text-slate-500 dark:text-slate-400 mt-0.5">Polines • Ruang Baca</span>
+                    <span class="block text-[9.5px] font-medium leading-tight text-slate-500 dark:text-slate-400 mt-0.5 truncate">Politeknik Negeri Semarang</span>
                 </div>
             </a>
         </div>
@@ -1256,8 +1295,8 @@
 
             <!-- Mobile Logo + Title -->
             <a href="{{ route('beranda') }}" class="flex min-h-[44px] items-center gap-2.5 min-w-0 lg:hidden active:scale-95 transition-transform">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-1 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
-                    <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-0.5 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
+                    <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </span>
                 <span class="hidden min-[460px]:inline sm:hidden text-xs font-bold leading-tight text-slate-900 dark:text-white truncate">
                     Perpus Akuntansi
@@ -1548,12 +1587,12 @@
                 <!-- Top Brand & Quick Actions Bar -->
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200/60 dark:border-white/10">
                     <div class="flex items-center gap-2.5">
-                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-1 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20">
-                            <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden">
+                            <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                         </div>
                         <div>
                             <span class="block text-[13.5px] sm:text-[14px] font-bold text-slate-900 leading-tight">Perpustakaan Jurusan Akuntansi</span>
-                            <span class="block text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">Ruang Baca Jurusan Akuntansi • Politeknik Negeri Semarang</span>
+                            <span class="block text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">Politeknik Negeri Semarang</span>
                         </div>
                     </div>
 
@@ -1595,8 +1634,8 @@
                                 <svg class="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                                 </svg>
-                                <a href="https://wa.me/62887895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank" class="font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
-                                    WA Pustakawan: 0887895627873
+                                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank" class="font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
+                                    WA Pustakawan: 08895627873
                                 </a>
                             </div>
                         </div>
@@ -1658,7 +1697,6 @@
                 <!-- Bottom Copyright Bar -->
                 <div class="relative z-10 mt-3.5 pt-3 border-t border-slate-200/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
                     <p>© {{ date('Y') }} Perpustakaan Jurusan Akuntansi — Politeknik Negeri Semarang.</p>
-                    <p class="font-medium text-slate-400">Layanan Sirkulasi &amp; Katalog Mahasiswa</p>
                 </div>
             </footer>
         </div>
@@ -1785,6 +1823,10 @@
 
         function moveSegmentThumb(track, targetEl, animate) {
             if (!track || !targetEl) return;
+            const left = targetEl.offsetLeft;
+            const width = targetEl.offsetWidth;
+            if (width <= 0) return;
+
             let thumb = track.querySelector('.segment-thumb');
             if (!thumb) {
                 thumb = document.createElement('span');
@@ -1792,8 +1834,7 @@
                 track.classList.add('has-thumb');
                 track.prepend(thumb);
             }
-            const left = targetEl.offsetLeft;
-            const width = targetEl.offsetWidth;
+            track._activeSegmentEl = targetEl;
             if (!animate) {
                 const prevTrans = thumb.style.transition;
                 thumb.style.transition = 'none';
@@ -1882,10 +1923,41 @@
             });
         }
 
+        function syncAllSegmentThumbs() {
+            document.querySelectorAll('.segment-track').forEach(function(track) {
+                const activeEl = track.querySelector('a.bg-white, button.is-active');
+                if (activeEl) moveSegmentThumb(track, activeEl, false);
+            });
+        }
+
         function initAppleSegments(animateFromPrev) {
+            if (typeof ResizeObserver !== 'undefined' && !window._appleSegmentResizeObs) {
+                window._appleSegmentResizeObs = new ResizeObserver(function(entries) {
+                    const seenTracks = new Set();
+                    entries.forEach(function(entry) {
+                        const track = entry.target.classList && entry.target.classList.contains('segment-track')
+                            ? entry.target
+                            : (entry.target.closest ? entry.target.closest('.segment-track') : null);
+                        if (track && !seenTracks.has(track)) {
+                            seenTracks.add(track);
+                            const activeEl = track.querySelector('a.bg-white, button.is-active');
+                            if (activeEl) moveSegmentThumb(track, activeEl, false);
+                        }
+                    });
+                });
+            }
+
             document.querySelectorAll('.segment-track').forEach(function(track, idx) {
                 const activeLink = track.querySelector('a.bg-white, button.is-active');
                 if (!activeLink) return;
+
+                if (window._appleSegmentResizeObs) {
+                    window._appleSegmentResizeObs.observe(track);
+                    track.querySelectorAll(':scope > a, :scope > button').forEach(function(btn) {
+                        window._appleSegmentResizeObs.observe(btn);
+                    });
+                }
+
                 const storageKey = 'apple_seg_prev_' + window.location.pathname + '_' + idx;
                 const prevLeft = sessionStorage.getItem(storageKey);
 
@@ -1911,6 +1983,16 @@
                     moveSegmentThumb(track, activeLink, Boolean(animateFromPrev));
                 }
 
+                // Re-sync after Tailwind Play CDN JIT classes & webfonts settle on first load / PJAX swap
+                requestAnimationFrame(function() {
+                    const currentActive = track.querySelector('a.bg-white, button.is-active');
+                    if (currentActive) moveSegmentThumb(track, currentActive, false);
+                });
+                setTimeout(function() {
+                    const currentActive = track.querySelector('a.bg-white, button.is-active');
+                    if (currentActive) moveSegmentThumb(track, currentActive, false);
+                }, 120);
+
                 track.querySelectorAll('a').forEach(function(link) {
                     link.addEventListener('click', function() {
                         const currentActive = track.querySelector('a.bg-white');
@@ -1923,6 +2005,12 @@
                     });
                 });
             });
+
+            if (document.fonts && document.fonts.ready && !window._appleSegmentFontsHooked) {
+                window._appleSegmentFontsHooked = true;
+                document.fonts.ready.then(syncAllSegmentThumbs);
+                window.addEventListener('load', syncAllSegmentThumbs);
+            }
         }
 
         function initAppleReveals() {

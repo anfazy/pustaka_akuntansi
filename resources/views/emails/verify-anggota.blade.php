@@ -14,7 +14,7 @@
                     <tr>
                         <td style="background:linear-gradient(135deg, #064e3b 0%, #059669 100%); padding:28px 32px; text-align:center;">
                             <div style="font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#a7f3d0; margin-bottom:6px;">
-                                Ruang Baca Jurusan Polines
+                                Politeknik Negeri Semarang
                             </div>
                             <div style="font-size:20px; font-weight:700; color:#ffffff; line-height:1.3;">
                                 Perpustakaan Jurusan Akuntansi
