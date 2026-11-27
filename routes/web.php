@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
+use App\Models\BookCover;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 | Backend Admin / Pustakawan: /admin (Filament Panel)
 */
 
-// Penyaji File Cover & Storage Publik (mendukung folder permanen uploads & storage)
+// Penyaji File Cover & Storage Publik (mendukung uploads, storage public, dan pemulihan dari DB book_covers)
 Route::get('/storage-file/{path}', function (string $path) {
     $cleanPath = ltrim(str_replace('..', '', $path), '/');
 
@@ -22,9 +23,19 @@ Route::get('/storage-file/{path}', function (string $path) {
         return Storage::disk('uploads')->response($cleanPath);
     }
 
-    abort_unless(Storage::disk('public')->exists($cleanPath), 404);
+    if (Storage::disk('public')->exists($cleanPath)) {
+        return Storage::disk('public')->response($cleanPath);
+    }
 
-    return Storage::disk('public')->response($cleanPath);
+    $restored = BookCover::restoreToPublicDisk($cleanPath);
+    if ($restored !== null) {
+        return response($restored['binary'], 200, [
+            'Content-Type' => $restored['mime'],
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+
+    abort(404);
 })->where('path', '.*')->name('storage.file');
 
 // Public / Guest & Student Browsing
