@@ -6,6 +6,7 @@ use App\Mail\VerifyAnggotaEmail;
 use App\Models\Anggota;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -160,5 +161,29 @@ class StudentRegistrationAndVerificationTest extends TestCase
         $verifyResponse->assertRedirect(route('beranda'));
         $this->assertNotNull($anggota->fresh()->email_verified_at);
         $this->assertEquals($anggota->id, session('student_id'));
+    }
+
+    public function test_verification_email_uses_https_webhook_when_configured(): void
+    {
+        config([
+            'services.mail_webhook.url' => 'https://script.google.com/macros/s/test-deploy/exec',
+            'services.mail_webhook.secret' => 'secret-token',
+        ]);
+        Http::fake(['https://script.google.com/*' => Http::response(['ok' => true], 200)]);
+        Mail::fake();
+
+        $this->post(route('daftar.proses'), $this->validPayload([
+            'nim_no_anggota' => '4.41.24.0.98',
+            'email' => 'webhook.test@mhs.polines.ac.id',
+        ]))->assertRedirect(route('verifikasi.notice'))
+            ->assertSessionHas('success');
+
+        Http::assertSent(function ($request): bool {
+            return $request->url() === 'https://script.google.com/macros/s/test-deploy/exec'
+                && $request['to'] === 'webhook.test@mhs.polines.ac.id'
+                && $request['secret'] === 'secret-token'
+                && str_contains((string) $request['html'], '/verifikasi-email/');
+        });
+        Mail::assertNothingSent();
     }
 }

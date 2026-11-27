@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
@@ -649,12 +650,23 @@ class UserPortalController extends Controller
             'kota' => $request->input('kota'),
         ]);
 
-        $this->sendVerificationEmail($anggota);
+        $mailWarning = null;
+        try {
+            $this->sendVerificationEmail($anggota);
+        } catch (\Throwable $e) {
+            report($e);
+            $mailWarning = 'Pendaftaran berhasil, namun pengiriman email verifikasi gagal (port SMTP diblokir server atau konfigurasi email belum aktif).';
+        }
 
         session([
             'pending_verification_email' => $anggota->email,
             'pending_verification_name' => $anggota->nama,
         ]);
+
+        if ($mailWarning !== null) {
+            return redirect()->route('verifikasi.notice')
+                ->with('warning', $mailWarning);
+        }
 
         return redirect()->route('verifikasi.notice')
             ->with('success', 'Pendaftaran berhasil! Tautan verifikasi telah dikirim ke email kampus Anda.');
@@ -721,12 +733,18 @@ class UserPortalController extends Controller
                 ->with('success', 'Email Anda sudah terverifikasi. Silakan masuk.');
         }
 
-        $this->sendVerificationEmail($anggota);
-
         session([
             'pending_verification_email' => $anggota->email,
             'pending_verification_name' => $anggota->nama,
         ]);
+
+        try {
+            $this->sendVerificationEmail($anggota);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('warning', 'Pengiriman ulang email verifikasi gagal (port SMTP diblokir server atau konfigurasi email belum aktif).');
+        }
 
         return back()->with('success', 'Email verifikasi baru telah dikirim. Silakan cek kotak masuk atau folder spam Anda.');
     }
@@ -741,6 +759,26 @@ class UserPortalController extends Controller
             now()->addHours(24),
             ['id' => $anggota->id, 'hash' => sha1($anggota->email)]
         );
+
+        $webhookUrl = config('services.mail_webhook.url');
+        if (! empty($webhookUrl)) {
+            $html = view('emails.verify-anggota', [
+                'anggota' => $anggota,
+                'verificationUrl' => $verificationUrl,
+            ])->render();
+
+            Http::timeout(15)
+                ->acceptJson()
+                ->post($webhookUrl, [
+                    'secret' => config('services.mail_webhook.secret'),
+                    'to' => $anggota->email,
+                    'subject' => 'Verifikasi Email Anggota — Perpustakaan Jurusan Akuntansi Polines',
+                    'html' => $html,
+                ])
+                ->throw();
+
+            return;
+        }
 
         Mail::to($anggota->email)->send(new VerifyAnggotaEmail($anggota, $verificationUrl));
     }

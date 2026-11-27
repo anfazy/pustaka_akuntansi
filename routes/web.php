@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
+use App\Models\Book;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,12 +15,23 @@ use Illuminate\Support\Facades\Storage;
 | Backend Admin / Pustakawan: /admin (Filament Panel)
 */
 
-// Penyaji File Storage Publik (mengatasi symlink yang tidak aktif di lokal/Railway)
+// Penyaji File Storage Publik (memulihkan dari DB jika filesystem container Railway ter-reset)
 Route::get('/storage-file/{path}', function (string $path) {
     $cleanPath = ltrim(str_replace('..', '', $path), '/');
-    abort_unless(Storage::disk('public')->exists($cleanPath), 404);
 
-    return Storage::disk('public')->response($cleanPath);
+    if (Storage::disk('public')->exists($cleanPath)) {
+        return Storage::disk('public')->response($cleanPath);
+    }
+
+    $restored = Book::restoreCoverFromDatabase($cleanPath);
+    if ($restored !== null) {
+        return response($restored['binary'], 200, [
+            'Content-Type' => $restored['mime'],
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+
+    abort(404);
 })->where('path', '.*')->name('storage.file');
 
 // Public / Guest & Student Browsing

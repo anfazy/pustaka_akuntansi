@@ -125,7 +125,7 @@ class BookResource extends Resource
                                                 if ($category->books()->exists()) {
                                                     Notification::make()
                                                         ->title('Kategori Tidak Bisa Dihapus')
-                                                        ->body('Masih ada buku yang menggunakan kategori "' . $category->nama . '". Hapus atau pindahkan bukunya terlebih dahulu.')
+                                                        ->body('Masih ada buku yang menggunakan kategori "'.$category->nama.'". Hapus atau pindahkan bukunya terlebih dahulu.')
                                                         ->danger()
                                                         ->send();
 
@@ -138,7 +138,7 @@ class BookResource extends Resource
 
                                                 Notification::make()
                                                     ->title('Kategori Berhasil Dihapus')
-                                                    ->body('Kategori "' . $namaKategori . '" telah dihapus.')
+                                                    ->body('Kategori "'.$namaKategori.'" telah dihapus.')
                                                     ->success()
                                                     ->send();
                                             })
@@ -200,7 +200,7 @@ class BookResource extends Resource
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null)
                                     ->live(onBlur: true)
                                     ->suffixAction(
-                                        Forms\Components\Actions\Action::make('searchIsbn')
+                                        Action::make('searchIsbn')
                                             ->icon('heroicon-m-magnifying-glass')
                                             ->tooltip('Cari data buku berdasarkan ISBN')
                                             ->action(function (Forms\Get $get, Forms\Set $set, ?string $state) {
@@ -240,7 +240,7 @@ class BookResource extends Resource
                                                         ->connectTimeout(8)
                                                         ->timeout(15)
                                                         ->get('https://www.googleapis.com/books/v1/volumes', [
-                                                            'q' => 'isbn:' . $cleanIsbn,
+                                                            'q' => 'isbn:'.$cleanIsbn,
                                                         ]);
 
                                                     if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
@@ -248,7 +248,7 @@ class BookResource extends Resource
 
                                                         $title = $volumeInfo['title'] ?? null;
                                                         if (! empty($volumeInfo['subtitle'])) {
-                                                            $title .= ': ' . $volumeInfo['subtitle'];
+                                                            $title .= ': '.$volumeInfo['subtitle'];
                                                         }
 
                                                         if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
@@ -274,13 +274,13 @@ class BookResource extends Resource
                                                             ->connectTimeout(8)
                                                             ->timeout(15)
                                                             ->get('https://openlibrary.org/api/books', [
-                                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
+                                                                'bibkeys' => 'ISBN:'.$cleanIsbn,
                                                                 'format' => 'json',
                                                                 'jscmd' => 'data',
                                                             ]);
 
                                                         if ($openLibraryResponse->successful()) {
-                                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
+                                                            $bookData = $openLibraryResponse->json('ISBN:'.$cleanIsbn);
                                                             if (! empty($bookData)) {
                                                                 $title = $title ?? ($bookData['title'] ?? null);
 
@@ -371,6 +371,10 @@ class BookResource extends Resource
                                     ->fetchFileInformation(false)
                                     ->getUploadedFileUsing(function (string $file): ?array {
                                         if (! Storage::disk('public')->exists($file)) {
+                                            Book::restoreCoverFromDatabase(ltrim($file, '/'));
+                                        }
+
+                                        if (! Storage::disk('public')->exists($file)) {
                                             return null;
                                         }
 
@@ -403,9 +407,7 @@ class BookResource extends Resource
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\ImageEntry::make('cover')
-                                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
-                                        ? route('storage.file', ['path' => $record->cover])
-                                        : null)
+                                    ->getStateUsing(fn (Book $record): ?string => $record->cover_url)
                                     ->placeholder('Belum ada cover')
                                     ->label('Cover Buku')
                                     ->columnSpan(1),
@@ -457,9 +459,7 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
-                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
-                        ? route('storage.file', ['path' => $record->cover])
-                        : null)
+                    ->getStateUsing(fn (Book $record): ?string => $record->cover_url)
                     ->placeholder('-')
                     ->label('Cover')
                     ->square()

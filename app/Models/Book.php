@@ -26,6 +26,11 @@ class Book extends Model
         'sinopsis',
         'stok',
         'cover',
+        'cover_data',
+    ];
+
+    protected $hidden = [
+        'cover_data',
     ];
 
     protected $casts = [
@@ -57,11 +62,119 @@ class Book extends Model
                     }
                 }
             }
+
+            if ($book->isDirty('cover')) {
+                $book->syncCoverDataFromDisk();
+            }
         });
     }
 
     /**
-     * Get the public URL for the book cover (supporting Storage public disk, public/ files, and external URLs).
+     * Persist uploaded public-disk cover bytes into the database so covers survive ephemeral container deploys.
+     */
+    public function syncCoverDataFromDisk(): void
+    {
+        $cover = trim((string) $this->cover);
+        if ($cover === '' || str_starts_with($cover, 'http://') || str_starts_with($cover, 'https://')) {
+            $this->cover_data = null;
+
+            return;
+        }
+
+        $cleanPath = ltrim($cover, '/');
+        $storagePath = str_starts_with($cleanPath, 'storage/')
+            ? substr($cleanPath, strlen('storage/'))
+            : $cleanPath;
+
+        if (! Storage::disk('public')->exists($storagePath)) {
+            return;
+        }
+
+        $binary = Storage::disk('public')->get($storagePath);
+        if ($binary === null || $binary === '') {
+            return;
+        }
+
+        $mime = Storage::disk('public')->mimeType($storagePath) ?: 'image/jpeg';
+
+        // Compress oversized uploads (> 350 KB) into crisp 720px JPEG thumbnails when GD is available
+        if (strlen($binary) > 350 * 1024 && function_exists('imagecreatefromstring')) {
+            $img = @imagecreatefromstring($binary);
+            if ($img !== false) {
+                $origW = imagesx($img);
+                $origH = imagesy($img);
+                $targetW = $origW > 720 ? 720 : $origW;
+                $targetH = (int) round($origH * ($targetW / max(1, $origW)));
+                $canvas = imagecreatetruecolor($targetW, max(1, $targetH));
+                if ($canvas !== false) {
+                    $white = imagecolorallocate($canvas, 255, 255, 255);
+                    imagefill($canvas, 0, 0, $white);
+                    imagecopyresampled($canvas, $img, 0, 0, 0, 0, $targetW, max(1, $targetH), $origW, $origH);
+                    ob_start();
+                    imagejpeg($canvas, null, 84);
+                    $compressed = ob_get_clean();
+                    imagedestroy($canvas);
+                    if (is_string($compressed) && $compressed !== '') {
+                        $binary = $compressed;
+                        $mime = 'image/jpeg';
+                    }
+                }
+                imagedestroy($img);
+            }
+        }
+
+        $this->cover_data = 'data:'.$mime.';base64,'.base64_encode($binary);
+    }
+
+    /**
+     * Decode stored cover_data URI back into MIME type and raw binary bytes.
+     *
+     * @return array{mime: string, binary: string}|null
+     */
+    public function decodeCoverBinary(): ?array
+    {
+        if (empty($this->cover_data)) {
+            return null;
+        }
+
+        if (! preg_match('#^data:([^;]+);base64,(.+)$#s', $this->cover_data, $matches)) {
+            return null;
+        }
+
+        $binary = base64_decode($matches[2], true);
+        if ($binary === false) {
+            return null;
+        }
+
+        return [
+            'mime' => $matches[1],
+            'binary' => $binary,
+        ];
+    }
+
+    /**
+     * Restore a missing public-disk cover file from PostgreSQL cover_data cache.
+     *
+     * @return array{mime: string, binary: string}|null
+     */
+    public static function restoreCoverFromDatabase(string $cleanPath): ?array
+    {
+        $book = static::where('cover', $cleanPath)
+            ->orWhere('cover', '/'.$cleanPath)
+            ->first(['id', 'cover', 'cover_data']);
+
+        $decoded = $book?->decodeCoverBinary();
+        if (! $decoded) {
+            return null;
+        }
+
+        Storage::disk('public')->put($cleanPath, $decoded['binary']);
+
+        return $decoded;
+    }
+
+    /**
+     * Get the public URL for the book cover (supporting Storage public disk, DB cover_data, public/ files, and external URLs).
      */
     public function getCoverUrlAttribute(): ?string
     {
@@ -79,7 +192,7 @@ class Book extends Model
             ? substr($cleanPath, strlen('storage/'))
             : $cleanPath;
 
-        if (Storage::disk('public')->exists($storagePath)) {
+        if (Storage::disk('public')->exists($storagePath) || ! empty($this->cover_data)) {
             return route('storage.file', ['path' => $storagePath]);
         }
 
