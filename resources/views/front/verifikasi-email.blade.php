@@ -6,12 +6,12 @@
     <div class="glass-card w-full max-w-[390px] rounded-[22px] p-5 shadow-2xl animate-rise text-center">
         <!-- Brand Header -->
         <div class="flex items-center justify-center gap-2.5 mb-4">
-            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-1 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
-                <img src="{{ asset('images/logo-hmj-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
+                <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
             </div>
             <div class="text-left">
                 <span class="block text-[13.5px] font-bold leading-tight tracking-tight text-slate-900">Perpustakaan Jurusan Akuntansi</span>
-                <span class="block text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">Ruang Baca Jurusan Polines</span>
+                <span class="block text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">Politeknik Negeri Semarang</span>
             </div>
         </div>
 

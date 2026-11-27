@@ -19,11 +19,7 @@
     <!-- TOP EDITORIAL HEADER WITH LIVE LIBRARY PULSE -->
     <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-            <span class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-400">
-                <span class="h-1.5 w-1.5 rounded-full {{ $isLibraryOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' }}"></span>
-                Perpustakaan Jurusan Akuntansi • Polines
-            </span>
-            <h1 class="mt-0.5 text-[21px] sm:text-[24px] font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 class="text-[21px] sm:text-[24px] font-bold tracking-tight text-slate-900 leading-tight">
                 Beranda
             </h1>
         </div>
@@ -432,7 +428,7 @@
             </div>
 
             <div class="space-y-1.5">
-                <a href="https://wa.me/62887895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
+                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
                    class="btn-glass flex min-h-[34px] w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400">
                     <span>Chat WhatsApp Admin</span>
                 </a>

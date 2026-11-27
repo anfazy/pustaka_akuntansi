@@ -7,6 +7,7 @@
     $artIndex = abs(crc32($book->judul)) % 6;
     $loanDuration = $book->getLoanDurationWeekdays();
     $estReturn = today()->copy()->addWeekdays($loanDuration);
+    $availableToBook = max(0, $book->stok - ($activeBookingsCount ?? 0));
 @endphp
 
 @section('content')
@@ -93,33 +94,51 @@
                     </div>
                     <div>
                         <span class="block text-slate-500 text-[10.5px]">Ketersediaan Stok</span>
-                        <span class="font-medium {{ $book->stok > 0 ? 'text-emerald-800 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                            {{ $book->stok > 0 ? "Tersedia {$book->stok} Eksemplar" : 'Sedang Habis' }}
+                        <span class="font-medium {{ $availableToBook > 0 ? 'text-emerald-800 dark:text-emerald-400' : ($book->stok > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') }}">
+                            @if($availableToBook > 0)
+                                Tersedia {{ $availableToBook }} Eksemplar
+                            @elseif($book->stok > 0)
+                                Sedang Di-booking ({{ $book->stok }} Eksemplar)
+                            @else
+                                Sedang Habis
+                            @endif
                         </span>
                     </div>
                     <div>
                         <span class="block text-slate-500 text-[10.5px]">Aturan Peminjaman</span>
-                        <span class="font-medium text-slate-800 dark:text-slate-200">Maks. {{ $loanDuration }} Hari Kerja • Denda Rp {{ $book->collection_type === 'ta_skripsi' ? '300' : '200' }}/hari</span>
+                        <span class="font-medium text-slate-800 dark:text-slate-200">{{ $loanDuration }} Hari Kerja • Denda Rp {{ $book->collection_type === 'ta_skripsi' ? '300' : '200' }}/hari</span>
                     </div>
                 </div>
 
                 <!-- Availability Status Badge -->
                 <div class="mt-3.5">
                     <div class="inline-flex items-center gap-2 rounded-full liquid-chip px-3 py-1 text-[11.5px] font-medium">
-                        <span class="h-1.5 w-1.5 rounded-full {{ $book->stok > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                        <span>{{ $book->stok > 0 ? 'Siap dipinjam di Ruang Baca Jurusan' : 'Stok sedang tidak tersedia' }}</span>
+                        <span class="h-1.5 w-1.5 rounded-full {{ $availableToBook > 0 ? 'bg-emerald-500' : ($book->stok > 0 ? 'bg-amber-500' : 'bg-rose-500') }}"></span>
+                        <span>
+                            @if($availableToBook > 0)
+                                Siap dipinjam di Ruang Baca Jurusan
+                            @elseif($book->stok > 0)
+                                Seluruh eksemplar sedang menunggu pengambilan booking
+                            @else
+                                Stok sedang tidak tersedia
+                            @endif
+                        </span>
                     </div>
                 </div>
 
                 <!-- Action Button Section -->
                 <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
                     @if(session('student_id'))
-                        @if($book->stok > 0)
+                        @if($availableToBook > 0)
                             <button type="button" onclick="openAppleModal('bookingModal')"
                                     class="btn-emerald h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto">
                                 Ajukan Pinjam Buku
                             </button>
-                            <span class="text-[11.5px] text-slate-500 font-medium">Ambil fisik di ruang baca jurusan (maks. 1&times;24 jam)</span>
+                            <span class="text-[11.5px] text-slate-500 font-medium">Durasi {{ $loanDuration }} hari kerja • Ambil maks. 1&times;24 jam</span>
+                        @elseif($book->stok > 0)
+                            <button type="button" disabled class="h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-amber-100/80 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 cursor-not-allowed">
+                                Sedang Di-booking Mahasiswa Lain
+                            </button>
                         @else
                             <button type="button" disabled class="h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed">
                                 Stok Buku Sedang Habis
@@ -130,7 +149,7 @@
                         <a href="{{ route('masuk') }}" class="btn-amber-gold flex h-9.5 min-h-[38px] items-center justify-center rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto shadow-md">
                             Masuk untuk Meminjam Buku
                         </a>
-                        <span class="text-[11.5px] text-slate-500 font-medium">Ambil fisik di ruang baca jurusan (maks. 1&times;24 jam)</span>
+                        <span class="text-[11.5px] text-slate-500 font-medium">Durasi {{ $loanDuration }} hari kerja • Ambil fisik di ruang baca</span>
                     @endif
                 </div>
             </div>
@@ -162,66 +181,70 @@
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeAppleModal('bookingModal')"></div>
 
             <!-- Dialog Window -->
-            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[420px] max-h-[90vh] overflow-y-auto rounded-[22px] p-5 shadow-2xl border border-white/95 dark:border-white/10">
-                <h3 class="text-[18px] font-bold tracking-tight text-slate-900">Konfirmasi Peminjaman Fisik</h3>
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[22px] p-4 sm:p-5 shadow-2xl border border-white/95 dark:border-white/10">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <span class="block text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Booking Fisik</span>
+                        <h3 class="text-[17px] font-bold tracking-tight text-slate-900 leading-snug mt-0.5">Konfirmasi Peminjaman</h3>
+                    </div>
+                    <button type="button" onclick="closeAppleModal('bookingModal')" aria-label="Tutup" class="liquid-icon-btn grid h-7 w-7 shrink-0 place-items-center rounded-full text-slate-500">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
 
                 <!-- Mini Book Info -->
-                <div class="mt-6 flex items-center gap-4">
-                    <div class="relative aspect-[5/7] w-14 shrink-0 overflow-hidden rounded-[6px] book-shadow">
+                <div class="mt-3.5 flex items-center gap-3 rounded-[14px] bg-white/60 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5">
+                    <div class="relative aspect-[5/7] w-11 shrink-0 overflow-hidden rounded-[6px] book-shadow">
                         @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
                             <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $book->judul }}" class="h-full w-full object-cover">
                         @else
-                            <div class="cover-art-{{ $artIndex }} h-full w-full p-1.5 flex flex-col justify-end">
-                                <span class="font-serif text-[7px] font-bold leading-tight">{{ $book->judul }}</span>
+                            <div class="cover-art-{{ $artIndex }} h-full w-full p-1 flex flex-col justify-end">
+                                <span class="font-serif text-[6.5px] font-bold leading-tight line-clamp-3">{{ $book->judul }}</span>
                             </div>
                         @endif
                     </div>
-                    <div>
-                        <h4 class="text-[16px] font-bold text-slate-900 leading-snug">{{ $book->judul }}</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ $book->penulis }}</p>
+                    <div class="min-w-0 flex-1">
+                        <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-semibold mb-1">{{ $book->collection_type_label }}</span>
+                        <h4 class="text-[13.5px] font-bold text-slate-900 leading-snug line-clamp-2">{{ $book->judul }}</h4>
+                        <p class="text-[11.5px] text-slate-500 truncate mt-0.5">{{ $book->penulis }}</p>
                     </div>
                 </div>
 
                 <!-- Form Action -->
-                <form action="{{ route('buku.booking', $book->id) }}" method="POST" class="mt-6">
+                <form action="{{ route('buku.booking', $book->id) }}" method="POST" class="mt-3.5">
                     @csrf
 
-                    <!-- Segmented Duration Toggle -->
-                    <div class="segment-track flex rounded-full mb-4">
-                        <label class="flex-1 text-center cursor-pointer">
-                            <input type="radio" name="duration" value="3" class="sr-only peer" onchange="updateDueDate(3)">
-                            <div class="py-2 text-xs font-semibold rounded-full peer-checked:bg-white dark:peer-checked:bg-emerald-500/20 peer-checked:text-emerald-800 dark:peer-checked:text-emerald-300 peer-checked:shadow-sm text-slate-600 dark:text-slate-400 transition-all">
-                                3 Hari
-                            </div>
-                        </label>
-                        <label class="flex-1 text-center cursor-pointer">
-                            <input type="radio" name="duration" value="{{ $loanDuration }}" checked class="sr-only peer" onchange="updateDueDate({{ $loanDuration }})">
-                            <div class="py-2 text-xs font-semibold rounded-full peer-checked:bg-white dark:peer-checked:bg-emerald-500/20 peer-checked:text-emerald-800 dark:peer-checked:text-emerald-300 peer-checked:shadow-sm text-slate-600 dark:text-slate-400 transition-all">
-                                {{ $loanDuration }} Hari (Standar)
-                            </div>
-                        </label>
-                    </div>
-
-                    <!-- Return Date Preview -->
-                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        Kembali maks: <span id="dueDateText" class="text-emerald-800 dark:text-emerald-400">{{ $estReturn->translatedFormat('d F Y') }}</span>
-                    </p>
-
-                    <!-- Pearl Info Box -->
-                    <div class="pearl-card mt-6 rounded-[20px] p-4 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
-                        <strong class="text-slate-800 dark:text-slate-100">Ketentuan Booking:</strong><br>
-                        Batas ambil: <strong class="text-emerald-800 dark:text-emerald-400">Besok 16.00 WIB</strong> (1x24 jam).<br>
-                        Denda keterlambatan: <strong>Rp {{ $book->collection_type === 'ta_skripsi' ? '300' : '200' }}/hari kerja</strong>.
+                    <!-- Ketentuan Pinjam Summary -->
+                    <div class="pearl-card rounded-[16px] p-3.5 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 border border-white/80 dark:border-white/10">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-500 dark:text-slate-400">Durasi Pinjam</span>
+                            <span class="font-semibold text-slate-900 dark:text-white tabular-nums">{{ $loanDuration }} hari kerja (+3 hari perpanjangan)</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-500 dark:text-slate-400">Estimasi Kembali*</span>
+                            <span class="font-semibold text-emerald-800 dark:text-emerald-400 tabular-nums">{{ $estReturn->locale('id')->translatedFormat('d F Y') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-500 dark:text-slate-400">Batas Ambil</span>
+                            <span class="font-semibold text-amber-700 dark:text-amber-400 tabular-nums">Maks. 1&times;24 jam</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-500 dark:text-slate-400">Denda Telat</span>
+                            <span class="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">Rp {{ $book->collection_type === 'ta_skripsi' ? '300' : '200' }} / hari kerja</span>
+                        </div>
+                        <p class="pt-1.5 mt-1 border-t border-slate-200/60 dark:border-white/10 text-[11px] text-slate-500 dark:text-slate-400">
+                            *Masa pinjam mulai berjalan saat buku diambil di ruang baca dengan menitipkan 1 kartu jaminan (KTM/KTP/Asuransi).
+                        </p>
                     </div>
 
                     <!-- Modal Actions -->
-                    <div class="mt-8 flex gap-3">
+                    <div class="mt-4 flex gap-2.5">
                         <button type="button" onclick="closeAppleModal('bookingModal')"
-                                class="btn-glass w-32 h-11 rounded-full text-sm font-semibold">
+                                class="btn-glass w-28 h-10 rounded-full text-[13px] font-semibold">
                             Batal
                         </button>
                         <button type="submit"
-                                class="btn-emerald flex-1 h-11 rounded-full text-sm font-semibold">
+                                class="btn-emerald flex-1 h-10 rounded-full text-[13px] font-semibold">
                             Konfirmasi Pinjam
                         </button>
                     </div>
@@ -230,18 +253,6 @@
         </div>
 
         <script>
-            function updateDueDate(days) {
-                const now = new Date();
-                let added = 0;
-                while (added < days) {
-                    now.setDate(now.getDate() + 1);
-                    const day = now.getDay();
-                    if (day !== 0 && day !== 6) added++;
-                }
-                const options = { day: 'numeric', month: 'long', year: 'numeric' };
-                document.getElementById('dueDateText').textContent = now.toLocaleDateString('id-ID', options);
-            }
-
             function toggleFavoriteBook(bookId) {
                 const btn = document.getElementById('btnToggleFav');
                 const label = document.getElementById('favTextLabel');

@@ -11,6 +11,7 @@ use App\Models\Loan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -253,6 +254,16 @@ class UserPortalController extends Controller
         $student = $this->getStudent();
         $book = Book::with('category')->findOrFail($id);
 
+        // Hanguskan booking buku ini yang sudah melewati batas 1x24 jam agar stok booking akurat
+        Loan::where('book_id', $book->id)
+            ->where('status', 'booked')
+            ->where('created_at', '<', now()->subHours(24))
+            ->update(['status' => 'dibatalkan']);
+
+        $activeBookingsCount = Loan::where('book_id', $book->id)
+            ->where('status', 'booked')
+            ->count();
+
         $relatedBooks = Book::with('category')
             ->where('id', '!=', $book->id)
             ->where('category_id', $book->category_id)
@@ -269,6 +280,7 @@ class UserPortalController extends Controller
         return view('front.buku', [
             'student' => $student,
             'book' => $book,
+            'activeBookingsCount' => $activeBookingsCount,
             'relatedBooks' => $relatedBooks,
         ]);
     }
@@ -283,52 +295,76 @@ class UserPortalController extends Controller
             return redirect()->route('masuk')->with('error', 'Silakan masuk dengan NIM Anda terlebih dahulu untuk meminjam buku.');
         }
 
-        $book = Book::findOrFail($id);
+        if ($student->status !== 'active') {
+            return back()->with('error', 'Status keanggotaan Anda belum aktif untuk melakukan peminjaman.');
+        }
 
         $this->syncStudentLoansStatus($student);
 
-        if ($book->stok <= 0) {
-            return back()->with('error', 'Maaf, stok eksemplar buku ini sedang habis.');
+        $result = DB::transaction(function () use ($student, $id): array {
+            $book = Book::whereKey($id)->lockForUpdate()->firstOrFail();
+
+            // Hanguskan booking > 24 jam untuk buku ini agar perhitungan kuota booking akurat
+            Loan::where('book_id', $book->id)
+                ->where('status', 'booked')
+                ->where('created_at', '<', now()->subHours(24))
+                ->update(['status' => 'dibatalkan']);
+
+            if ($book->stok <= 0) {
+                return ['error' => 'Maaf, stok eksemplar buku ini sedang habis.'];
+            }
+
+            $activeBookingsForBook = Loan::where('book_id', $book->id)
+                ->where('status', 'booked')
+                ->count();
+
+            if (($book->stok - $activeBookingsForBook) <= 0) {
+                return ['error' => 'Maaf, seluruh eksemplar buku ini sedang di-booking oleh mahasiswa lain.'];
+            }
+
+            // Check active loans count (max 2 books)
+            $activeLoansCount = Loan::where(function ($q) use ($student) {
+                $q->where('member_nim', $student->nim_no_anggota)
+                    ->orWhere('anggota_id', $student->id);
+            })
+                ->whereIn('status', ['booked', 'dipinjam', 'terlambat'])
+                ->count();
+
+            if ($activeLoansCount >= 2) {
+                return ['error' => 'Anda telah mencapai kuota maksimal peminjaman (2 buku). Selesaikan pinjaman sebelumnya terlebih dahulu.'];
+            }
+
+            // Check if already booked / borrowed this exact book
+            $alreadyHasBook = Loan::where(function ($q) use ($student) {
+                $q->where('member_nim', $student->nim_no_anggota)
+                    ->orWhere('anggota_id', $student->id);
+            })
+                ->where('book_id', $book->id)
+                ->whereIn('status', ['booked', 'dipinjam', 'terlambat'])
+                ->exists();
+
+            if ($alreadyHasBook) {
+                return ['error' => 'Anda sudah memiliki transaksi aktif (booking atau pinjam) untuk buku ini.'];
+            }
+
+            $loan = Loan::create([
+                'book_id' => $book->id,
+                'anggota_id' => $student->id,
+                'member_nim' => $student->nim_no_anggota,
+                'card_type' => 'KTM',
+                'status' => 'booked',
+                'tanggal_pinjam' => today()->toDateString(),
+            ]);
+
+            return ['loan' => $loan];
+        });
+
+        if (isset($result['error'])) {
+            return back()->with('error', $result['error']);
         }
 
-        // Check active loans count (max 2 books)
-        $activeLoansCount = Loan::where(function ($q) use ($student) {
-            $q->where('member_nim', $student->nim_no_anggota)
-                ->orWhere('anggota_id', $student->id);
-        })
-            ->whereIn('status', ['booked', 'dipinjam', 'terlambat'])
-            ->count();
-
-        if ($activeLoansCount >= 2) {
-            return back()->with('error', 'Anda telah mencapai kuota maksimal peminjaman (2 buku). Selesaikan pinjaman sebelumnya terlebih dahulu.');
-        }
-
-        // Check if already booked / borrowed this exact book
-        $alreadyHasBook = Loan::where(function ($q) use ($student) {
-            $q->where('member_nim', $student->nim_no_anggota)
-                ->orWhere('anggota_id', $student->id);
-        })
-            ->where('book_id', $book->id)
-            ->whereIn('status', ['booked', 'dipinjam', 'terlambat'])
-            ->exists();
-
-        if ($alreadyHasBook) {
-            return back()->with('error', 'Anda sudah memiliki transaksi aktif (booking atau pinjam) untuk buku ini.');
-        }
-
-        $duration = (int) $request->input('duration', 7);
-        if (! in_array($duration, [3, 7, 14])) {
-            $duration = 7;
-        }
-
-        $loan = Loan::create([
-            'book_id' => $book->id,
-            'anggota_id' => $student->id,
-            'member_nim' => $student->nim_no_anggota,
-            'card_type' => 'KTM',
-            'status' => 'booked',
-            'tanggal_pinjam' => today()->toDateString(),
-        ]);
+        /** @var Loan $loan */
+        $loan = $result['loan'];
 
         return redirect()->route('pinjaman', ['tab' => 'siap', 'success_booking' => $loan->booking_code])
             ->with('success', "Booking berhasil dibuat dengan kode {$loan->booking_code}!");
@@ -360,9 +396,13 @@ class UserPortalController extends Controller
             return $loan->isOverdue();
         });
 
-        $activeTab = $request->get('tab', 'siap');
+        $activeTab = $request->get('tab');
         if (! in_array($activeTab, ['siap', 'dipinjam', 'denda'])) {
-            $activeTab = $siapDiambil->isNotEmpty() ? 'siap' : ($sedangDipinjam->isNotEmpty() ? 'dipinjam' : 'denda');
+            $activeTab = $siapDiambil->isNotEmpty()
+                ? 'siap'
+                : ($sedangDipinjam->isNotEmpty()
+                    ? 'dipinjam'
+                    : ($terlambat->isNotEmpty() ? 'denda' : 'siap'));
         }
 
         return view('front.pinjaman', [

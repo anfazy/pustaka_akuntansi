@@ -1,9 +1,9 @@
 <div class="flex items-center gap-3">
     <img
-        src="{{ asset('images/logo-hmj-akuntansi.jpg') }}"
+        src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}"
         alt="Logo Perpustakaan Jurusan Akuntansi"
-        class="h-9 w-9 rounded-full object-cover shadow-sm"
-        style="border: 2px solid #10b981;"
+        class="h-9 w-9 rounded-[10px] bg-white p-0.5 object-contain shadow-sm"
+        style="border: 1.5px solid #10b981;"
     >
     <div class="flex flex-col leading-tight">
         <span class="pa-brand-title text-sm font-extrabold tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">

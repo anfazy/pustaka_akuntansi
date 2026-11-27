@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Perpustakaan Jurusan Akuntansi')
             ->brandLogo(fn () => view('filament.components.brand'))
             ->brandLogoHeight('2.75rem')
-            ->favicon(fn () => asset('images/logo-hmj-akuntansi.jpg'))
+            ->favicon(fn () => asset('images/logo-perpustakaan-akuntansi.jpg'))
             ->font('Plus Jakarta Sans')
             ->colors([
                 'primary' => [
