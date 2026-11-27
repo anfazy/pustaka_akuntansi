@@ -394,6 +394,7 @@ class BookResource extends Resource
                                     ->directory('covers')
                                     ->visibility('public')
                                     ->maxSize(2048)
+                                    ->previewable(false)
                                     ->fetchFileInformation(false)
                                     ->getUploadedFileUsing(function (string $file): ?array {
                                         if (Storage::disk('uploads')->exists($file)) {
