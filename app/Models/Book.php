@@ -61,11 +61,23 @@ class Book extends Model
     }
 
     /**
-     * Get the public URL for the book cover via storage route.
+     * Get the public URL for the book cover (permanen di public/uploads atau fallback storage).
      */
     public function getCoverUrlAttribute(): ?string
     {
-        if ($this->cover && Storage::disk('public')->exists($this->cover)) {
+        if (blank($this->cover)) {
+            return null;
+        }
+
+        if (str_starts_with($this->cover, 'http://') || str_starts_with($this->cover, 'https://')) {
+            return $this->cover;
+        }
+
+        if (Storage::disk('uploads')->exists($this->cover)) {
+            return asset('uploads/' . ltrim($this->cover, '/'));
+        }
+
+        if (Storage::disk('public')->exists($this->cover)) {
             return route('storage.file', ['path' => $this->cover]);
         }
 

@@ -14,9 +14,14 @@ use Illuminate\Support\Facades\Storage;
 | Backend Admin / Pustakawan: /admin (Filament Panel)
 */
 
-// Penyaji File Storage Publik (mengatasi symlink yang tidak aktif di lokal/Railway)
+// Penyaji File Cover & Storage Publik (mendukung folder permanen uploads & storage)
 Route::get('/storage-file/{path}', function (string $path) {
     $cleanPath = ltrim(str_replace('..', '', $path), '/');
+
+    if (Storage::disk('uploads')->exists($cleanPath)) {
+        return Storage::disk('uploads')->response($cleanPath);
+    }
+
     abort_unless(Storage::disk('public')->exists($cleanPath), 404);
 
     return Storage::disk('public')->response($cleanPath);

@@ -58,6 +58,31 @@ class BookResource extends Resource
             || str_contains($nama, 'proposal');
     }
 
+    /**
+     * Resolve URL gambar cover dari disk 'uploads' (permanen di public/uploads)
+     * atau fallback ke disk 'public' jika masih ada file lama.
+     */
+    protected static function resolveCoverUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (Storage::disk('uploads')->exists($path)) {
+            return asset('uploads/' . ltrim($path, '/'));
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return route('storage.file', ['path' => $path]);
+        }
+
+        return null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -364,22 +389,31 @@ class BookResource extends Resource
                                     ->label('Cover Buku (Opsional)')
                                     ->helperText('Format JPG/PNG/WebP maksimal 2 MB. Boleh dikosongkan jika tidak ada gambar sampul.')
                                     ->image()
-                                    ->disk('public')
+                                    ->disk('uploads')
                                     ->directory('covers')
                                     ->visibility('public')
                                     ->maxSize(2048)
                                     ->fetchFileInformation(false)
                                     ->getUploadedFileUsing(function (string $file): ?array {
-                                        if (! Storage::disk('public')->exists($file)) {
-                                            return null;
+                                        if (Storage::disk('uploads')->exists($file)) {
+                                            return [
+                                                'name' => basename($file),
+                                                'size' => Storage::disk('uploads')->size($file),
+                                                'type' => Storage::disk('uploads')->mimeType($file),
+                                                'url' => asset('uploads/' . ltrim($file, '/')),
+                                            ];
                                         }
 
-                                        return [
-                                            'name' => basename($file),
-                                            'size' => Storage::disk('public')->size($file),
-                                            'type' => Storage::disk('public')->mimeType($file),
-                                            'url' => route('storage.file', ['path' => $file]),
-                                        ];
+                                        if (Storage::disk('public')->exists($file)) {
+                                            return [
+                                                'name' => basename($file),
+                                                'size' => Storage::disk('public')->size($file),
+                                                'type' => Storage::disk('public')->mimeType($file),
+                                                'url' => route('storage.file', ['path' => $file]),
+                                            ];
+                                        }
+
+                                        return null;
                                     })
                                     ->nullable(),
                             ]),
@@ -403,9 +437,7 @@ class BookResource extends Resource
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\ImageEntry::make('cover')
-                                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
-                                        ? route('storage.file', ['path' => $record->cover])
-                                        : null)
+                                    ->getStateUsing(fn (Book $record): ?string => self::resolveCoverUrl($record->cover))
                                     ->placeholder('Belum ada cover')
                                     ->label('Cover Buku')
                                     ->columnSpan(1),
@@ -457,9 +489,7 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
-                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
-                        ? route('storage.file', ['path' => $record->cover])
-                        : null)
+                    ->getStateUsing(fn (Book $record): ?string => self::resolveCoverUrl($record->cover))
                     ->placeholder('-')
                     ->label('Cover')
                     ->square()
