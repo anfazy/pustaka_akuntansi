@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class UserPortalController extends Controller
@@ -657,7 +658,7 @@ class UserPortalController extends Controller
             $this->sendVerificationEmail($anggota);
         } catch (\Throwable $e) {
             report($e);
-            $mailWarning = 'Pendaftaran berhasil, namun pengiriman email verifikasi gagal (port SMTP diblokir server atau konfigurasi email belum aktif).';
+            $mailWarning = $this->formatMailFailureWarning($e, 'Pendaftaran berhasil, namun pengiriman email verifikasi gagal');
         }
 
         session([
@@ -745,10 +746,22 @@ class UserPortalController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('warning', 'Pengiriman ulang email verifikasi gagal (port SMTP diblokir server atau konfigurasi email belum aktif).');
+            return back()->with('warning', $this->formatMailFailureWarning($e, 'Pengiriman ulang email verifikasi gagal'));
         }
 
         return back()->with('success', 'Email verifikasi baru telah dikirim. Silakan cek kotak masuk atau folder spam Anda.');
+    }
+
+    /**
+     * Format a clear diagnostic warning message without exposing sensitive credentials or full URLs.
+     */
+    protected function formatMailFailureWarning(\Throwable $e, string $prefix): string
+    {
+        if (filled(config('services.mail_webhook.url'))) {
+            return "{$prefix} via Mail Webhook (".Str::limit($e->getMessage(), 120).').';
+        }
+
+        return "{$prefix} (port SMTP diblokir server dan MAIL_WEBHOOK_URL belum terpasang di Railway).";
     }
 
     /**
@@ -769,8 +782,9 @@ class UserPortalController extends Controller
                 'verificationUrl' => $verificationUrl,
             ])->render();
 
-            Http::timeout(15)
+            $response = Http::timeout(15)
                 ->acceptJson()
+                ->asJson()
                 ->post($webhookUrl, [
                     'secret' => config('services.mail_webhook.secret'),
                     'to' => $anggota->email,
@@ -778,6 +792,14 @@ class UserPortalController extends Controller
                     'html' => $html,
                 ])
                 ->throw();
+
+            $body = trim($response->body());
+            if ($body === 'Unauthorized') {
+                throw new \RuntimeException('Secret webhook tidak cocok dengan Apps Script.');
+            }
+            if (str_starts_with(strtolower($body), '<!doctype') || str_starts_with(strtolower($body), '<html')) {
+                throw new \RuntimeException('Apps Script mengembalikan halaman login/error HTML. Pastikan akses Web App disetel ke Anyone.');
+            }
 
             return;
         }
