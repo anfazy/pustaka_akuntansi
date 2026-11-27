@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Book extends Model
 {
@@ -57,6 +58,18 @@ class Book extends Model
                 }
             }
         });
+    }
+
+    /**
+     * Get the public URL for the book cover via storage route.
+     */
+    public function getCoverUrlAttribute(): ?string
+    {
+        if ($this->cover && Storage::disk('public')->exists($this->cover)) {
+            return route('storage.file', ['path' => $this->cover]);
+        }
+
+        return null;
     }
 
     /**

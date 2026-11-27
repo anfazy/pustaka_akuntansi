@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
@@ -239,7 +240,7 @@ class BookResource extends Resource
                                                         ->connectTimeout(8)
                                                         ->timeout(15)
                                                         ->get('https://www.googleapis.com/books/v1/volumes', [
-                                                            'q' => 'isbn:'.$cleanIsbn,
+                                                            'q' => 'isbn:' . $cleanIsbn,
                                                         ]);
 
                                                     if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
@@ -247,7 +248,7 @@ class BookResource extends Resource
 
                                                         $title = $volumeInfo['title'] ?? null;
                                                         if (! empty($volumeInfo['subtitle'])) {
-                                                            $title .= ': '.$volumeInfo['subtitle'];
+                                                            $title .= ': ' . $volumeInfo['subtitle'];
                                                         }
 
                                                         if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
@@ -273,13 +274,13 @@ class BookResource extends Resource
                                                             ->connectTimeout(8)
                                                             ->timeout(15)
                                                             ->get('https://openlibrary.org/api/books', [
-                                                                'bibkeys' => 'ISBN:'.$cleanIsbn,
+                                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
                                                                 'format' => 'json',
                                                                 'jscmd' => 'data',
                                                             ]);
 
                                                         if ($openLibraryResponse->successful()) {
-                                                            $bookData = $openLibraryResponse->json('ISBN:'.$cleanIsbn);
+                                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
                                                             if (! empty($bookData)) {
                                                                 $title = $title ?? ($bookData['title'] ?? null);
 
@@ -361,10 +362,13 @@ class BookResource extends Resource
 
                                 Forms\Components\FileUpload::make('cover')
                                     ->label('Cover Buku (Opsional)')
-                                    ->helperText('Boleh dikosongkan jika tidak ada gambar sampul.')
+                                    ->helperText('Format JPG/PNG/WebP maksimal 2 MB. Boleh dikosongkan jika tidak ada gambar sampul.')
                                     ->image()
-                                    ->directory('covers')
                                     ->disk('public')
+                                    ->directory('covers')
+                                    ->visibility('public')
+                                    ->maxSize(2048)
+                                    ->fetchFileInformation(false)
                                     ->nullable(),
                             ]),
 
@@ -387,8 +391,10 @@ class BookResource extends Resource
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\ImageEntry::make('cover')
-                                    ->disk('public')
-                                    ->defaultImageUrl(asset('images/logo-hmj-akuntansi.jpg'))
+                                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
+                                        ? route('storage.file', ['path' => $record->cover])
+                                        : null)
+                                    ->placeholder('Belum ada cover')
                                     ->label('Cover Buku')
                                     ->columnSpan(1),
                                 Infolists\Components\Grid::make(2)
@@ -439,8 +445,10 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
-                    ->disk('public')
-                    ->defaultImageUrl(asset('images/logo-hmj-akuntansi.jpg'))
+                    ->getStateUsing(fn (Book $record): ?string => ($record->cover && Storage::disk('public')->exists($record->cover))
+                        ? route('storage.file', ['path' => $record->cover])
+                        : null)
+                    ->placeholder('-')
                     ->label('Cover')
                     ->square()
                     ->size(48),

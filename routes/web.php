@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AnggotaTemplateController;
 use App\Http\Controllers\UserPortalController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +13,14 @@ use Illuminate\Support\Facades\Route;
 | Frontend User / Mahasiswa: /
 | Backend Admin / Pustakawan: /admin (Filament Panel)
 */
+
+// Penyaji File Storage Publik (mengatasi symlink yang tidak aktif di lokal/Railway)
+Route::get('/storage-file/{path}', function (string $path) {
+    $cleanPath = ltrim(str_replace('..', '', $path), '/');
+    abort_unless(Storage::disk('public')->exists($cleanPath), 404);
+
+    return Storage::disk('public')->response($cleanPath);
+})->where('path', '.*')->name('storage.file');
 
 // Public / Guest & Student Browsing
 Route::get('/', [UserPortalController::class, 'beranda'])->name('beranda');
