@@ -369,6 +369,18 @@ class BookResource extends Resource
                                     ->visibility('public')
                                     ->maxSize(2048)
                                     ->fetchFileInformation(false)
+                                    ->getUploadedFileUsing(function (string $file): ?array {
+                                        if (! Storage::disk('public')->exists($file)) {
+                                            return null;
+                                        }
+
+                                        return [
+                                            'name' => basename($file),
+                                            'size' => Storage::disk('public')->size($file),
+                                            'type' => Storage::disk('public')->mimeType($file),
+                                            'url' => route('storage.file', ['path' => $file]),
+                                        ];
+                                    })
                                     ->nullable(),
                             ]),
 
