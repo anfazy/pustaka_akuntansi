@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Loan;
 use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class LoanAndBookEnhancementTest extends TestCase
@@ -230,5 +231,29 @@ class LoanAndBookEnhancementTest extends TestCase
             ->get(route('pinjaman'))
             ->assertOk()
             ->assertViewHas('activeTab', 'dipinjam');
+    }
+
+    public function test_uploaded_public_disk_book_cover_renders_in_user_portal_and_serves_file(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('covers/test-upload.jpg', 'fake-image-bytes');
+
+        $book = Book::factory()->create([
+            'cover' => 'covers/test-upload.jpg',
+        ]);
+
+        $expectedUrl = route('storage.file', ['path' => 'covers/test-upload.jpg']);
+        $this->assertEquals($expectedUrl, $book->cover_url);
+
+        $this->get(route('katalog'))
+            ->assertOk()
+            ->assertSee($expectedUrl, false);
+
+        $this->get(route('buku.detail', $book->id))
+            ->assertOk()
+            ->assertSee($expectedUrl, false);
+
+        $this->get($expectedUrl)
+            ->assertOk();
     }
 }

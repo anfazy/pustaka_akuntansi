@@ -79,14 +79,7 @@ class AdminDashboardController extends Controller
                 $catName = $b->category?->nama ?? 'Akuntansi';
                 $dipinjamCount = (int) ($b->dipinjam_count ?? 0);
 
-                $coverUrl = '';
-                if ($b->cover) {
-                    if (str_starts_with($b->cover, 'http')) {
-                        $coverUrl = $b->cover;
-                    } else {
-                        $coverUrl = asset(ltrim($b->cover, '/'));
-                    }
-                }
+                $coverUrl = $b->cover_url ?? '';
 
                 $catSlug = strtolower($b->category?->slug ?? '');
                 $catNameLower = strtolower($catName);
@@ -349,7 +342,7 @@ class AdminDashboardController extends Controller
                 }
                 $book->update($updateData);
 
-                $coverUrl = $book->cover ? (str_starts_with($book->cover, 'http') ? $book->cover : asset(ltrim($book->cover, '/'))) : '';
+                $coverUrl = $book->cover_url ?? '';
 
                 return response()->json([
                     'success' => true,

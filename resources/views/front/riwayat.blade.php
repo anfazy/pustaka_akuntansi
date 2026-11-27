@@ -52,7 +52,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @foreach($historyLoans as $loan)
                             @php
-                                $cover = $loan->book?->cover;
+                                $coverUrl = $loan->book?->cover_url;
                                 $artIndex = abs(crc32($loan->book?->judul ?? 'buku')) % 6;
                                 $isLate = $loan->fine_amount > 0;
                             @endphp
@@ -61,8 +61,8 @@
                                 <td class="py-4 pl-4">
                                     <div class="flex items-center gap-3.5">
                                         <div class="relative aspect-[5/7] w-10 shrink-0 overflow-hidden rounded-[4px] book-shadow">
-                                            @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
-                                                <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
+                                            @if($coverUrl)
+                                                <img src="{{ $coverUrl }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
                                             @else
                                                 <div class="cover-art-{{ $artIndex }} h-full w-full p-1 flex flex-col justify-end">
                                                     <span class="font-serif text-[6px] font-bold leading-tight">{{ $loan->book?->judul }}</span>

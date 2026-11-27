@@ -61,12 +61,30 @@ class Book extends Model
     }
 
     /**
-     * Get the public URL for the book cover via storage route.
+     * Get the public URL for the book cover (supporting Storage public disk, public/ files, and external URLs).
      */
     public function getCoverUrlAttribute(): ?string
     {
-        if ($this->cover && Storage::disk('public')->exists($this->cover)) {
-            return route('storage.file', ['path' => $this->cover]);
+        $cover = trim((string) $this->cover);
+        if ($cover === '') {
+            return null;
+        }
+
+        if (str_starts_with($cover, 'http://') || str_starts_with($cover, 'https://')) {
+            return $cover;
+        }
+
+        $cleanPath = ltrim($cover, '/');
+        $storagePath = str_starts_with($cleanPath, 'storage/')
+            ? substr($cleanPath, strlen('storage/'))
+            : $cleanPath;
+
+        if (Storage::disk('public')->exists($storagePath)) {
+            return route('storage.file', ['path' => $storagePath]);
+        }
+
+        if (file_exists(public_path($cleanPath))) {
+            return asset($cleanPath);
         }
 
         return null;
