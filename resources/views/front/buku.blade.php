@@ -3,7 +3,7 @@
 @section('title', $book->judul . ' — Perpustakaan Jurusan Akuntansi')
 
 @php
-    $cover = $book->cover;
+    $coverUrl = $book->cover_url;
     $artIndex = abs(crc32($book->judul)) % 6;
     $loanDuration = $book->getLoanDurationWeekdays();
     $estReturn = today()->copy()->addWeekdays($loanDuration);
@@ -27,8 +27,8 @@
         <!-- LEFT: COVER & FAVORITE BUTTON -->
         <div class="md:col-span-4 lg:col-span-3 flex flex-col items-center md:items-start">
             <div class="relative aspect-[5/7] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] overflow-hidden rounded-[11px] book-shadow dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
-                @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
-                    <img src="{{ asset(ltrim($cover, '/')) }}" alt="Sampul {{ $book->judul }}" class="h-full w-full object-cover">
+                @if($coverUrl)
+                    <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" class="h-full w-full object-cover">
                 @else
                     <div class="cover-art-{{ $artIndex }} flex h-full w-full flex-col justify-between p-4">
                         <div class="font-serif text-[17px] sm:text-[19px] font-semibold leading-[1.12] tracking-tight">
@@ -195,8 +195,8 @@
                 <!-- Mini Book Info -->
                 <div class="mt-3.5 flex items-center gap-3 rounded-[14px] bg-white/60 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5">
                     <div class="relative aspect-[5/7] w-11 shrink-0 overflow-hidden rounded-[6px] book-shadow">
-                        @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
-                            <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $book->judul }}" class="h-full w-full object-cover">
+                        @if($coverUrl)
+                            <img src="{{ $coverUrl }}" alt="{{ $book->judul }}" class="h-full w-full object-cover">
                         @else
                             <div class="cover-art-{{ $artIndex }} h-full w-full p-1 flex flex-col justify-end">
                                 <span class="font-serif text-[6.5px] font-bold leading-tight line-clamp-3">{{ $book->judul }}</span>

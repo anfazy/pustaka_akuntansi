@@ -122,7 +122,7 @@
     <div data-pinjaman-panel="dipinjam" class="shelf-panel space-y-3.5 {{ $activeTab === 'dipinjam' ? 'is-active block' : 'hidden' }}">
         @forelse($sedangDipinjam as $loan)
             @php
-                $cover = $loan->book?->cover;
+                $coverUrl = $loan->book?->cover_url;
                 $artIndex = abs(crc32($loan->book?->judul ?? 'buku')) % 6;
                 $today = today();
                 $due = $loan->jatuh_tempo ? $loan->jatuh_tempo->copy()->startOfDay() : null;
@@ -133,8 +133,8 @@
             <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                 <!-- Book Cover -->
                 <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[7px] book-shadow">
-                    @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
-                        <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
+                    @if($coverUrl)
+                        <img src="{{ $coverUrl }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
                     @else
                         <div class="cover-art-{{ $artIndex }} h-full w-full p-1.5 flex flex-col justify-end">
                             <span class="font-serif text-[6.5px] font-bold leading-tight line-clamp-3">{{ $loan->book?->judul }}</span>
@@ -215,7 +215,7 @@
     <div data-pinjaman-panel="denda" class="shelf-panel space-y-3.5 {{ $activeTab === 'denda' ? 'is-active block' : 'hidden' }}">
         @forelse($terlambat as $loan)
             @php
-                $cover = $loan->book?->cover;
+                $coverUrl = $loan->book?->cover_url;
                 $artIndex = abs(crc32($loan->book?->judul ?? 'buku')) % 6;
                 $lateFine = $loan->calculateLateFine(today());
                 $daysDiff = $loan->calculateOverdueWeekdays(today());
@@ -223,8 +223,8 @@
             <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4 border-rose-200/80 dark:border-rose-500/25">
                 <!-- Consistent Book Cover -->
                 <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[7px] book-shadow">
-                    @if($cover && (file_exists(public_path(ltrim($cover, '/'))) || str_starts_with($cover, 'http')))
-                        <img src="{{ asset(ltrim($cover, '/')) }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
+                    @if($coverUrl)
+                        <img src="{{ $coverUrl }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
                     @else
                         <div class="cover-art-{{ $artIndex }} h-full w-full p-1.5 flex flex-col justify-end">
                             <span class="font-serif text-[6.5px] font-bold leading-tight line-clamp-3">{{ $loan->book?->judul }}</span>

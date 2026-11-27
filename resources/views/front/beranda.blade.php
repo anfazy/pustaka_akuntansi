@@ -183,15 +183,15 @@
             <div id="spotlightDeck" class="relative flex-1 flex items-center">
                 @forelse($spotlightList as $idx => $sBook)
                     @php
-                        $sCover = $sBook->cover;
+                        $sCoverUrl = $sBook->cover_url;
                         $sArt = abs(crc32($sBook->judul)) % 6;
                     @endphp
                     <div data-spotlight-slide="{{ $idx }}" class="spotlight-slide {{ $idx === 0 ? 'is-active flex' : 'hidden' }} w-full items-center gap-4">
                         <!-- Angled 3D Book Cover -->
                         <a href="{{ route('buku.detail', $sBook->id) }}" class="apple-press shrink-0 w-[82px] sm:w-[94px]">
                             <div class="spotlight-cover-3d aspect-[5/7] w-full overflow-hidden rounded-[9px] book-shadow border border-white/40 dark:border-white/10">
-                                @if($sCover && (file_exists(public_path(ltrim($sCover, '/'))) || str_starts_with($sCover, 'http')))
-                                    <img src="{{ asset(ltrim($sCover, '/')) }}" alt="{{ $sBook->judul }}" class="h-full w-full object-cover">
+                                @if($sCoverUrl)
+                                    <img src="{{ $sCoverUrl }}" alt="{{ $sBook->judul }}" class="h-full w-full object-cover">
                                 @else
                                     <div class="cover-art-{{ $sArt }} flex h-full w-full flex-col justify-between p-3.5">
                                         <div class="font-serif text-[13px] font-semibold leading-tight line-clamp-4">{{ $sBook->judul }}</div>
