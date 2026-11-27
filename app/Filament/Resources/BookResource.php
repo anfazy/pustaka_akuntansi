@@ -389,24 +389,34 @@ class BookResource extends Resource
                                 Forms\Components\FileUpload::make('cover')
                                     ->label('Cover Buku (Opsional)')
                                     ->helperText('Format JPG/PNG/WebP maksimal 2 MB. Boleh dikosongkan jika tidak ada gambar sampul.')
-                                    ->image()
                                     ->disk('uploads')
                                     ->directory('covers')
                                     ->visibility('public')
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(2048)
                                     ->previewable(false)
                                     ->fetchFileInformation(false)
+                                    ->saveUploadedFileUsing(function ($file): string {
+                                        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+                                        $filename = 'covers/' . Str::random(40) . '.' . $ext;
+
+                                        Storage::disk('uploads')->put($filename, file_get_contents($file->getRealPath()));
+                                        BookCover::persistFromPublicDisk($filename);
+
+                                        return $filename;
+                                    })
                                     ->getUploadedFileUsing(function (string $file): ?array {
-                                        if (Storage::disk('uploads')->exists($file)) {
+                                        $cleanFile = ltrim($file, '/');
+
+                                        if (Storage::disk('uploads')->exists($cleanFile)) {
                                             return [
-                                                'name' => basename($file),
-                                                'size' => Storage::disk('uploads')->size($file),
-                                                'type' => Storage::disk('uploads')->mimeType($file),
-                                                'url' => asset('uploads/'.ltrim($file, '/')),
+                                                'name' => basename($cleanFile),
+                                                'size' => Storage::disk('uploads')->size($cleanFile),
+                                                'type' => Storage::disk('uploads')->mimeType($cleanFile),
+                                                'url' => asset('uploads/' . $cleanFile),
                                             ];
                                         }
 
-                                        $cleanFile = ltrim($file, '/');
                                         if (! Storage::disk('public')->exists($cleanFile)) {
                                             BookCover::restoreToPublicDisk($cleanFile);
                                         }
