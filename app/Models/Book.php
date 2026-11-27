@@ -58,27 +58,61 @@ class Book extends Model
                 }
             }
         });
+
+        static::saved(function (Book $book): void {
+            if ($book->wasChanged('cover') || $book->wasRecentlyCreated) {
+                $book->syncCoverToDatabase();
+            }
+        });
     }
 
     /**
-     * Get the public URL for the book cover (permanen di public/uploads atau fallback storage).
+     * Persist uploaded cover bytes into the book_covers table so covers survive container deploys.
+     */
+    public function syncCoverToDatabase(): void
+    {
+        $cover = trim((string) $this->cover);
+        if ($cover === '' || str_starts_with($cover, 'http://') || str_starts_with($cover, 'https://')) {
+            return;
+        }
+
+        $cleanPath = ltrim($cover, '/');
+        $storagePath = str_starts_with($cleanPath, 'storage/')
+            ? substr($cleanPath, strlen('storage/'))
+            : $cleanPath;
+
+        BookCover::persistFromPublicDisk($storagePath);
+    }
+
+    /**
+     * Get the public URL for the book cover (supporting uploads, public disk, DB book_covers, public/ files, and external URLs).
      */
     public function getCoverUrlAttribute(): ?string
     {
-        if (blank($this->cover)) {
+        $cover = trim((string) $this->cover);
+        if ($cover === '') {
             return null;
         }
 
-        if (str_starts_with($this->cover, 'http://') || str_starts_with($this->cover, 'https://')) {
-            return $this->cover;
+        if (str_starts_with($cover, 'http://') || str_starts_with($cover, 'https://')) {
+            return $cover;
         }
 
-        if (Storage::disk('uploads')->exists($this->cover)) {
-            return asset('uploads/' . ltrim($this->cover, '/'));
+        $cleanPath = ltrim($cover, '/');
+        $storagePath = str_starts_with($cleanPath, 'storage/')
+            ? substr($cleanPath, strlen('storage/'))
+            : $cleanPath;
+
+        if (Storage::disk('uploads')->exists($storagePath)) {
+            return asset('uploads/'.$storagePath);
         }
 
-        if (Storage::disk('public')->exists($this->cover)) {
-            return route('storage.file', ['path' => $this->cover]);
+        if (Storage::disk('public')->exists($storagePath) || BookCover::existsForPath($storagePath)) {
+            return route('storage.file', ['path' => $storagePath]);
+        }
+
+        if (file_exists(public_path($cleanPath))) {
+            return asset($cleanPath);
         }
 
         return null;

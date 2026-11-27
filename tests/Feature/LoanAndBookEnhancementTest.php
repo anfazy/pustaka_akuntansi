@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Anggota;
 use App\Models\Book;
+use App\Models\BookCover;
 use App\Models\Category;
 use App\Models\Loan;
 use App\Models\Member;
@@ -256,8 +257,8 @@ class LoanAndBookEnhancementTest extends TestCase
         $this->get($expectedUrl)
             ->assertOk();
 
-        // Simulasikan container redeploy yang menghapus disk storage sementara: file harus otomatis pulih dari cover_data DB
-        $this->assertNotNull($book->fresh()->cover_data);
+        // Simulasikan container redeploy yang menghapus disk storage sementara: file harus otomatis pulih dari tabel book_covers
+        $this->assertTrue(BookCover::where('path', 'covers/test-upload.jpg')->exists());
         Storage::disk('public')->delete('covers/test-upload.jpg');
         $this->assertFalse(Storage::disk('public')->exists('covers/test-upload.jpg'));
 

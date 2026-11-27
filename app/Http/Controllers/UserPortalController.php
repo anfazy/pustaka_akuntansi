@@ -121,9 +121,11 @@ class UserPortalController extends Controller
             ->take(6)
             ->get();
 
+        $bookStats = Book::selectRaw('COUNT(*) as total_titles, COALESCE(SUM(stok), 0) as available_copies')->first();
+
         $librarySummary = [
-            'total_titles' => Book::count(),
-            'available_copies' => (int) Book::sum('stok'),
+            'total_titles' => (int) ($bookStats?->total_titles ?? 0),
+            'available_copies' => (int) ($bookStats?->available_copies ?? 0),
             'active_loans' => (int) Loan::whereIn('status', ['dipinjam', 'terlambat'])->count(),
         ];
 

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BookResource\Pages;
 use App\Models\Book;
+use App\Models\BookCover;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
@@ -400,16 +401,21 @@ class BookResource extends Resource
                                                 'name' => basename($file),
                                                 'size' => Storage::disk('uploads')->size($file),
                                                 'type' => Storage::disk('uploads')->mimeType($file),
-                                                'url' => asset('uploads/' . ltrim($file, '/')),
+                                                'url' => asset('uploads/'.ltrim($file, '/')),
                                             ];
                                         }
 
-                                        if (Storage::disk('public')->exists($file)) {
+                                        $cleanFile = ltrim($file, '/');
+                                        if (! Storage::disk('public')->exists($cleanFile)) {
+                                            BookCover::restoreToPublicDisk($cleanFile);
+                                        }
+
+                                        if (Storage::disk('public')->exists($cleanFile)) {
                                             return [
-                                                'name' => basename($file),
-                                                'size' => Storage::disk('public')->size($file),
-                                                'type' => Storage::disk('public')->mimeType($file),
-                                                'url' => route('storage.file', ['path' => $file]),
+                                                'name' => basename($cleanFile),
+                                                'size' => Storage::disk('public')->size($cleanFile),
+                                                'type' => Storage::disk('public')->mimeType($cleanFile),
+                                                'url' => route('storage.file', ['path' => $cleanFile]),
                                             ];
                                         }
 
@@ -437,7 +443,7 @@ class BookResource extends Resource
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\ImageEntry::make('cover')
-                                    ->getStateUsing(fn (Book $record): ?string => self::resolveCoverUrl($record->cover))
+                                    ->getStateUsing(fn (Book $record): ?string => $record->cover_url ?? self::resolveCoverUrl($record->cover))
                                     ->placeholder('Belum ada cover')
                                     ->label('Cover Buku')
                                     ->columnSpan(1),
@@ -489,7 +495,7 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
-                    ->getStateUsing(fn (Book $record): ?string => self::resolveCoverUrl($record->cover))
+                    ->getStateUsing(fn (Book $record): ?string => $record->cover_url ?? self::resolveCoverUrl($record->cover))
                     ->placeholder('-')
                     ->label('Cover')
                     ->square()
