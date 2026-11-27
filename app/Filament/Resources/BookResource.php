@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,7 +75,7 @@ class BookResource extends Resource
         }
 
         if (Storage::disk('uploads')->exists($path)) {
-            return asset('uploads/' . ltrim($path, '/'));
+            return asset('uploads/'.ltrim($path, '/'));
         }
 
         if (Storage::disk('public')->exists($path)) {
@@ -151,7 +152,7 @@ class BookResource extends Resource
                                                 if ($category->books()->exists()) {
                                                     Notification::make()
                                                         ->title('Kategori Tidak Bisa Dihapus')
-                                                        ->body('Masih ada buku yang menggunakan kategori "' . $category->nama . '". Hapus atau pindahkan bukunya terlebih dahulu.')
+                                                        ->body('Masih ada buku yang menggunakan kategori "'.$category->nama.'". Hapus atau pindahkan bukunya terlebih dahulu.')
                                                         ->danger()
                                                         ->send();
 
@@ -164,7 +165,7 @@ class BookResource extends Resource
 
                                                 Notification::make()
                                                     ->title('Kategori Berhasil Dihapus')
-                                                    ->body('Kategori "' . $namaKategori . '" telah dihapus.')
+                                                    ->body('Kategori "'.$namaKategori.'" telah dihapus.')
                                                     ->success()
                                                     ->send();
                                             })
@@ -226,7 +227,7 @@ class BookResource extends Resource
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? trim($state) : null)
                                     ->live(onBlur: true)
                                     ->suffixAction(
-                                        Forms\Components\Actions\Action::make('searchIsbn')
+                                        Action::make('searchIsbn')
                                             ->icon('heroicon-m-magnifying-glass')
                                             ->tooltip('Cari data buku berdasarkan ISBN')
                                             ->action(function (Forms\Get $get, Forms\Set $set, ?string $state) {
@@ -266,7 +267,7 @@ class BookResource extends Resource
                                                         ->connectTimeout(8)
                                                         ->timeout(15)
                                                         ->get('https://www.googleapis.com/books/v1/volumes', [
-                                                            'q' => 'isbn:' . $cleanIsbn,
+                                                            'q' => 'isbn:'.$cleanIsbn,
                                                         ]);
 
                                                     if ($googleResponse->successful() && $googleResponse->json('totalItems', 0) > 0) {
@@ -274,7 +275,7 @@ class BookResource extends Resource
 
                                                         $title = $volumeInfo['title'] ?? null;
                                                         if (! empty($volumeInfo['subtitle'])) {
-                                                            $title .= ': ' . $volumeInfo['subtitle'];
+                                                            $title .= ': '.$volumeInfo['subtitle'];
                                                         }
 
                                                         if (! empty($volumeInfo['authors']) && is_array($volumeInfo['authors'])) {
@@ -300,13 +301,13 @@ class BookResource extends Resource
                                                             ->connectTimeout(8)
                                                             ->timeout(15)
                                                             ->get('https://openlibrary.org/api/books', [
-                                                                'bibkeys' => 'ISBN:' . $cleanIsbn,
+                                                                'bibkeys' => 'ISBN:'.$cleanIsbn,
                                                                 'format' => 'json',
                                                                 'jscmd' => 'data',
                                                             ]);
 
                                                         if ($openLibraryResponse->successful()) {
-                                                            $bookData = $openLibraryResponse->json('ISBN:' . $cleanIsbn);
+                                                            $bookData = $openLibraryResponse->json('ISBN:'.$cleanIsbn);
                                                             if (! empty($bookData)) {
                                                                 $title = $title ?? ($bookData['title'] ?? null);
 
@@ -388,17 +389,41 @@ class BookResource extends Resource
 
                                 Forms\Components\FileUpload::make('cover')
                                     ->label('Cover Buku (Opsional)')
-                                    ->helperText('Format JPG/PNG/WebP maksimal 2 MB. Boleh dikosongkan jika tidak ada gambar sampul.')
+                                    ->helperText('Format JPG/PNG/WebP/BMP maksimal 5 MB. Boleh dikosongkan jika tidak ada gambar sampul.')
                                     ->disk('uploads')
                                     ->directory('covers')
                                     ->visibility('public')
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                    ->maxSize(2048)
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/bmp'])
+                                    ->maxSize(5120)
                                     ->previewable(false)
-                                    ->fetchFileInformation(false)
+                                    ->afterStateHydrated(function (Forms\Components\FileUpload $component, string|array|null $state): void {
+                                        if (blank($state)) {
+                                            $component->state([]);
+
+                                            return;
+                                        }
+
+                                        $files = collect(Arr::wrap($state))
+                                            ->filter(function (string $file): bool {
+                                                if (blank($file)) {
+                                                    return false;
+                                                }
+
+                                                $cleanFile = ltrim($file, '/');
+                                                if (Storage::disk('uploads')->exists($cleanFile) || Storage::disk('public')->exists($cleanFile)) {
+                                                    return true;
+                                                }
+
+                                                return BookCover::restoreToPublicDisk($cleanFile) !== null;
+                                            })
+                                            ->mapWithKeys(static fn (string $file): array => [((string) Str::uuid()) => ltrim($file, '/')])
+                                            ->all();
+
+                                        $component->state($files);
+                                    })
                                     ->saveUploadedFileUsing(function ($file): string {
                                         $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
-                                        $filename = 'covers/' . Str::random(40) . '.' . $ext;
+                                        $filename = 'covers/'.Str::random(40).'.'.$ext;
 
                                         Storage::disk('uploads')->put($filename, file_get_contents($file->getRealPath()));
                                         BookCover::persistFromPublicDisk($filename);

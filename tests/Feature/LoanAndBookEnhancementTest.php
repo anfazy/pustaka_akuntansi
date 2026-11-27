@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\BookResource\Pages\EditBook;
 use App\Models\Anggota;
 use App\Models\Book;
 use App\Models\BookCover;
 use App\Models\Category;
 use App\Models\Loan;
 use App\Models\Member;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class LoanAndBookEnhancementTest extends TestCase
@@ -267,5 +271,38 @@ class LoanAndBookEnhancementTest extends TestCase
             ->assertOk()
             ->assertContent('fake-image-bytes');
         $this->assertTrue(Storage::disk('public')->exists('covers/test-upload.jpg'));
+    }
+
+    public function test_admin_edit_book_can_upload_cover_even_when_old_cover_file_is_missing(): void
+    {
+        Storage::fake('uploads');
+        Storage::fake('public');
+
+        $admin = User::factory()->create();
+        $category = Category::factory()->create([
+            'nama' => 'Akuntansi Keuangan',
+            'slug' => 'akuntansi-keuangan',
+        ]);
+        $book = Book::factory()->create([
+            'category_id' => $category->id,
+            'book_code' => 'AKK-999',
+            'cover' => 'covers/missing-legacy-file.png',
+        ]);
+
+        $newFile = UploadedFile::fake()->image('new-cover.png', 200, 300);
+
+        $this->actingAs($admin);
+
+        Livewire::test(EditBook::class, ['record' => $book->getRouteKey()])
+            ->fillForm([
+                'cover' => $newFile,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $freshBook = $book->fresh();
+        $this->assertNotNull($freshBook->cover);
+        $this->assertNotEquals('covers/missing-legacy-file.png', $freshBook->cover);
+        $this->assertTrue(BookCover::where('path', $freshBook->cover)->exists());
     }
 }
