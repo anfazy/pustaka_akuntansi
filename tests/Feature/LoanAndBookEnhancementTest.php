@@ -255,5 +255,16 @@ class LoanAndBookEnhancementTest extends TestCase
 
         $this->get($expectedUrl)
             ->assertOk();
+
+        // Simulasikan container redeploy yang menghapus disk storage sementara: file harus otomatis pulih dari cover_data DB
+        $this->assertNotNull($book->fresh()->cover_data);
+        Storage::disk('public')->delete('covers/test-upload.jpg');
+        $this->assertFalse(Storage::disk('public')->exists('covers/test-upload.jpg'));
+
+        $this->assertEquals($expectedUrl, $book->fresh()->cover_url);
+        $this->get($expectedUrl)
+            ->assertOk()
+            ->assertContent('fake-image-bytes');
+        $this->assertTrue(Storage::disk('public')->exists('covers/test-upload.jpg'));
     }
 }

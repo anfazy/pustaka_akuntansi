@@ -308,10 +308,7 @@ class AdminDashboardController extends Controller
 
         $coverPath = null;
         if ($request->hasFile('cover_file')) {
-            $file = $request->file('cover_file');
-            $fileName = 'cover_'.time().'_'.Str::random(6).'.'.$file->getClientOriginalExtension();
-            $file->move(public_path('covers'), $fileName);
-            $coverPath = '/covers/'.$fileName;
+            $coverPath = $request->file('cover_file')->store('covers', 'public');
         }
 
         $catLower = strtolower($validated['kategori']);

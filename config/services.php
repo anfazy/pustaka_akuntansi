@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mail_webhook' => [
+        'url' => env('MAIL_WEBHOOK_URL'),
+        'secret' => env('MAIL_WEBHOOK_SECRET'),
+    ],
+
 ];
