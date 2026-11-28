@@ -20,21 +20,21 @@ function setFlag(k,on){
 }
 
 const tasks=new Set(),winF=[];
-let raf=0,lastT=0;
+let raf=0,lastT=0,cont=0;
 function loop(now){
   raf=0;
   const raw=lastT?now-lastT:16.67;lastT=now;
-  if(tier==='full'&&raw<=1200){
-    winF.push(raw>20.5?1:0);if(winF.length>8)winF.shift();
-    if(winF.length===8&&winF.reduce((a,b)=>a+b,0)>=4){tier='lite';r.dataset.motionTier='lite';}
+  if(cont&&tier==='full'&&raw<=400){
+    winF.push(raw>22?1:0);if(winF.length>10)winF.shift();
+    if(winF.length===10&&winF.reduce((a,b)=>a+b,0)>=7){tier='lite';r.dataset.motionTier='lite';}
   }
   const dt=Math.min(raw,34)/1000,list=Array.from(tasks);
   for(let i=0;i<list.length;i++)if(list[i].read)list[i].read(dt);
   for(let i=0;i<list.length;i++){const t=list[i];if(t.step&&!t.step(dt)){tasks.delete(t);if(t.done)t.done();}}
   for(let i=0;i<list.length;i++)if(list[i].write)list[i].write(dt);
-  if(tasks.size)raf=requestAnimationFrame(loop);else lastT=0;
+  if(tasks.size){cont=1;raf=requestAnimationFrame(loop);}else{cont=0;lastT=0;}
 }
-function enqueue(t){tasks.add(t);if(!raf){lastT=performance.now();raf=requestAnimationFrame(loop);}return t;}
+function enqueue(t){tasks.add(t);if(!raf){cont=0;lastT=performance.now();raf=requestAnimationFrame(loop);}return t;}
 
 function stepPhys(s,tgt,p,dt){
   const n=Math.max(1,Math.ceil(dt/0.008)),h=dt/n;
