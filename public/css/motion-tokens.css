@@ -1,0 +1,119 @@
+/* ============================================================================
+   APPLE LIQUID GLASS MOTION TOKENS (iOS 26 / macOS Tahoe Motion Grammar)
+   Single-variable feature switches + spring linear() & progressive fallbacks
+   ============================================================================ */
+
+:root {
+    /* ------------------------------------------------------------------------
+       1. SINGLE-VARIABLE FEATURE KILL SWITCHES (Set to 0 to disable per effect)
+       ------------------------------------------------------------------------ */
+    --lg-motion-enabled: 1;
+    --lg-blur-scale: 1;
+    --lg-specular-opacity: 1;
+    --lg-tilt-strength: 1;
+    --lg-press-lift: 1;
+    --lg-morph-stretch: 1;
+    --lg-scroll-condense: 1;
+    --lg-reveal-enabled: 1;
+    --lg-countup-enabled: 1;
+    --lg-view-transitions: 1;
+    --lg-spotlight-inertia: 1;
+
+    /* Dynamic Scroll & Interaction State Variables (Written via shared rAF) */
+    --lg-scroll-p: 0;
+    --lg-specular-x: 50%;
+    --lg-specular-y: 0%;
+
+    /* ------------------------------------------------------------------------
+       2. SPRING TIMING CONSTANTS & CUBIC FALLBACKS
+       ------------------------------------------------------------------------ */
+    --lg-dur-snappy: calc(520ms * var(--lg-motion-enabled));
+    --lg-dur-base: calc(620ms * var(--lg-motion-enabled));
+    --lg-dur-soft: calc(750ms * var(--lg-motion-enabled));
+    --lg-dur-materialize: calc(220ms * var(--lg-motion-enabled));
+    --lg-dur-exit: calc(145ms * var(--lg-motion-enabled));
+    --lg-dur-ring: calc(260ms * var(--lg-motion-enabled));
+
+    /* Materialize Blur Budget (<250ms, small elements only, 0 in lite/reduced) */
+    --lg-blur-materialize: calc(6px * var(--lg-blur-scale));
+    --lg-blur-vt: calc(5px * var(--lg-blur-scale));
+
+    /* Fallback curves for browsers without linear() support */
+    --lg-spring-snappy: cubic-bezier(0.22, 1.32, 0.36, 1);
+    --lg-spring-base: cubic-bezier(0.22, 1.36, 0.36, 1);
+    --lg-spring-soft: cubic-bezier(0.28, 1.08, 0.32, 1);
+    --lg-ease-exit: cubic-bezier(0.32, 0, 0.24, 1);
+    --lg-ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Genuine physically simulated damped harmonic spring curves via CSS linear() */
+@supports (transition-timing-function: linear(0, 1)) {
+    :root {
+        /* response 0.36s, damping 0.80 -> ~1.5% crisp overshoot */
+        --lg-spring-snappy: linear(
+            0, 0.0588 4.2%, 0.1912 8.3%, 0.3497 12.5%, 0.5054 16.7%, 0.643 20.8%,
+            0.7561 25%, 0.8437 29.2%, 0.9082 33.3%, 0.953 37.5%, 0.9825 41.7%,
+            1.0004 45.8%, 1.0101 50%, 1.0144 54.2%, 1.0151 58.3%, 1.0139 62.5%,
+            1.0118 66.7%, 1.0094 70.8%, 1.007 75%, 1.005 79.2%, 1.0034 83.3%,
+            1.0021 87.5%, 1.0012 91.7%, 1.0006 95.8%, 1
+        );
+        /* response 0.43s, damping 0.75 -> ~2.8% fluid overshoot */
+        --lg-spring-base: linear(
+            0, 0.0594 4.2%, 0.1952 8.3%, 0.3594 12.5%, 0.5218 16.7%, 0.6657 20.8%,
+            0.7833 25%, 0.8735 29.2%, 0.9382 33.3%, 0.9815 37.5%, 1.0081 41.7%,
+            1.0222 45.8%, 1.0278 50%, 1.0279 54.2%, 1.025 58.3%, 1.0206 62.5%,
+            1.0159 66.7%, 1.0115 70.8%, 1.0078 75%, 1.0048 79.2%, 1.0026 83.3%,
+            1.0011 87.5%, 1.0001 91.7%, 0.9995 95.8%, 1
+        );
+        /* response 0.52s, damping 0.84 -> <1% calm editorial settle */
+        --lg-spring-soft: linear(
+            0, 0.0582 4.2%, 0.1881 8.3%, 0.3423 12.5%, 0.493 16.7%, 0.626 20.8%,
+            0.7357 25%, 0.8215 29.2%, 0.8856 33.3%, 0.9315 37.5%, 0.963 41.7%,
+            0.9836 45.8%, 0.9961 50%, 1.0032 54.2%, 1.0066 58.3%, 1.0077 62.5%,
+            1.0075 66.7%, 1.0066 70.8%, 1.0054 75%, 1.0042 79.2%, 1.0031 83.3%,
+            1.0022 87.5%, 1.0015 91.7%, 1.001 95.8%, 1
+        );
+    }
+}
+
+/* ============================================================================
+   AUTO LITE MODE (Weak CPUs / <=4 cores / <=4GB RAM / saveData / >20ms frames)
+   Disables tilt, pointer specular & blur materialize; keeps crisp transform fades
+   ============================================================================ */
+html[data-motion-tier="lite"] {
+    --lg-blur-scale: 0;
+    --lg-specular-opacity: 0;
+    --lg-tilt-strength: 0;
+    --lg-morph-stretch: 0.4;
+    --lg-dur-snappy: 220ms;
+    --lg-dur-base: 260ms;
+    --lg-dur-soft: 300ms;
+    --lg-dur-materialize: 150ms;
+    --lg-dur-exit: 110ms;
+}
+
+/* ============================================================================
+   ACCESSIBILITY: PREFERS REDUCED MOTION (Calm brief opacity fade, zero scale/tilt)
+   ============================================================================ */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --lg-blur-scale: 0;
+        --lg-specular-opacity: 0;
+        --lg-tilt-strength: 0;
+        --lg-press-lift: 0;
+        --lg-morph-stretch: 0;
+        --lg-scroll-condense: 0;
+        --lg-reveal-enabled: 0;
+        --lg-countup-enabled: 0;
+        --lg-view-transitions: 0;
+        --lg-spotlight-inertia: 0;
+        --lg-dur-snappy: 120ms;
+        --lg-dur-base: 140ms;
+        --lg-dur-soft: 140ms;
+        --lg-dur-materialize: 120ms;
+        --lg-dur-exit: 90ms;
+        --lg-spring-snappy: ease-out;
+        --lg-spring-base: ease-out;
+        --lg-spring-soft: ease-out;
+    }
+}

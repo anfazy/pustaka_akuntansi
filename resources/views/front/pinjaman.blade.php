@@ -282,7 +282,7 @@
 
             <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[390px] max-h-[90vh] overflow-y-auto rounded-[32px] p-4 text-center shadow-2xl border border-white/95 dark:border-white/10">
                 <div class="mx-auto grid h-11 w-11 place-items-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-2.5">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path class="lg-check-stroke" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
 
                 <h3 class="text-[17px] font-bold tracking-tight text-slate-900">Booking Berhasil Dibuat</h3>

@@ -630,22 +630,6 @@
             color: #065f46 !important;
         }
 
-        nav a:not(.bg-white\/95):hover {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.70) 0%, rgba(240, 253, 244, 0.40) 100%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            border-top: 1.5px solid #ffffff !important;
-            box-shadow: inset 0 1px 1px 0 #ffffff, 0 4px 12px -4px rgba(6, 78, 59, 0.08) !important;
-            color: #064e3b !important;
-        }
-
-        .segment-track a.bg-white {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.85) 100%) !important;
-            border: 1px solid rgba(167, 243, 208, 0.9) !important;
-            border-top: 1.5px solid #ffffff !important;
-            box-shadow: inset 0 1.5px 1px 0 #ffffff, 0 4px 14px -4px rgba(6, 78, 59, 0.16) !important;
-            color: #065f46 !important;
-        }
-
         .book-shadow {
             box-shadow: 0 14px 30px -14px rgba(15, 23, 42, 0.38), 0 2px 6px rgba(15, 23, 42, 0.1);
         }
@@ -1179,6 +1163,9 @@
             background-color: rgba(255, 255, 255, 0.04) !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/motion-tokens.css') }}?v={{ filemtime(public_path('css/motion-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/motion.css') }}?v={{ filemtime(public_path('css/motion.css')) }}">
+    <script defer src="{{ asset('js/motion.js') }}?v={{ filemtime(public_path('js/motion.js')) }}"></script>
 </head>
 <body class="min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-400 relative">
     <div id="appleNavProgress"></div>
@@ -2148,6 +2135,9 @@
                             s.textContent = oldScript.textContent;
                             oldScript.replaceWith(s);
                         });
+                        if (window.LiquidGlassMotion) {
+                            window.LiquidGlassMotion.initPage();
+                        }
                     };
 
                     if (stage.querySelector('canvas[id^="qr_"], #successQrCanvas') && typeof window.QRious === 'undefined') {
@@ -2158,6 +2148,9 @@
                     } else {
                         executeScripts();
                     }
+            }
+            if (!isSoftSwap && window.LiquidGlassMotion) {
+                window.LiquidGlassMotion.initPage();
             }
         }
 
@@ -2235,12 +2228,21 @@
             // Instant 0ms optimistic tab feedback so mobile feels instantaneous
             updateActiveChromeLinks(targetObj.pathname);
 
+            const lgm = window.LiquidGlassMotion;
+            if (lgm) {
+                lgm.prepareSharedCoverTransition(targetObj.href);
+                const prevVt = lgm.getActiveVt();
+                if (prevVt && typeof prevVt.skipTransition === 'function') {
+                    try { prevVt.skipTransition(); } catch (_) {}
+                }
+            }
+
             let barTimer = null;
             if (!hasInstantHit) {
                 barTimer = setTimeout(function() {
                     if (bar) {
                         bar.style.opacity = '1';
-                        bar.style.width = '72%';
+                        if (lgm) lgm.setNavProgress(0.72);
                     }
                 }, 60);
                 stage.classList.add('apple-stage-leaving');
@@ -2261,40 +2263,59 @@
                     history.pushState({ appleUrl: parsedUrl.href }, '', parsedUrl.href);
                 }
 
-                document.title = doc.title || document.title;
-                document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
-                    oldModal.remove();
-                });
-                stage.innerHTML = nextStage.innerHTML;
-                stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
-                void stage.offsetWidth;
-                stage.classList.add('apple-stage-enter');
+                const performSwap = function() {
+                    document.title = doc.title || document.title;
+                    document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
+                        oldModal.remove();
+                    });
+                    stage.innerHTML = nextStage.innerHTML;
+                    stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
+                    if (lgm) lgm.applyIncomingCoverName();
 
-                const nextQ = parsedUrl.searchParams.get('q') || '';
-                document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
-                    inp.value = nextQ;
-                });
+                    const nextQ = parsedUrl.searchParams.get('q') || '';
+                    document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
+                        inp.value = nextQ;
+                    });
 
-                updateActiveChromeLinks(parsedUrl.pathname);
+                    updateActiveChromeLinks(parsedUrl.pathname);
 
-                if (parsedUrl.hash) {
-                    const anchor = document.querySelector(parsedUrl.hash);
-                    if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+                    if (parsedUrl.hash) {
+                        const anchor = document.querySelector(parsedUrl.hash);
+                        if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        window.scrollTo(0, 0);
+                    }
+
+                    initCurrentPage(true);
+                };
+
+                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const canVt = lgm && lgm.flags.viewTransitions && typeof document.startViewTransition === 'function' && !reduced;
+                if (canVt) {
+                    stage.classList.remove('apple-stage-leaving');
+                    const vt = document.startViewTransition(performSwap);
+                    lgm.setActiveVt(vt);
+                    vt.finished.catch(function() {}).finally(function() {
+                        if (lgm.getActiveVt() === vt) lgm.setActiveVt(null);
+                        document.querySelectorAll('[data-lg-vt-cover]').forEach(function(el) {
+                            el.style.viewTransitionName = '';
+                            el.removeAttribute('data-lg-vt-cover');
+                        });
+                    });
                 } else {
-                    window.scrollTo(0, 0);
+                    performSwap();
+                    stage.classList.add('apple-stage-enter');
                 }
-
-                initCurrentPage(true);
             } catch (_) {
                 window.location.href = targetUrl;
                 return;
             } finally {
                 if (barTimer) clearTimeout(barTimer);
                 if (bar) {
-                    bar.style.width = '100%';
+                    if (lgm) lgm.setNavProgress(1);
                     setTimeout(function() {
                         bar.style.opacity = '0';
-                        setTimeout(function() { bar.style.width = '0%'; }, 160);
+                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 160);
                     }, 80);
                 }
                 isNavigating = false;
@@ -2317,7 +2338,7 @@
 
             initCurrentPage(false);
 
-            // Warm-cache primary tabs right after first paint so Beranda <-> Katalog <-> Aturan switch in < 0.25s!
+            // Warm-cache primary tabs shortly after idle so Beranda <-> Katalog <-> Aturan switch in < 0.25s without competing with first paint
             setTimeout(function() {
                 document.querySelectorAll('#appSidebar nav a[href], #mobileTabBar a[href]').forEach(function(a) {
                     try {
@@ -2327,17 +2348,23 @@
                         }
                     } catch (_) {}
                 });
-            }, 250);
+            }, 900);
 
-            // Pre-fetch the instant a finger touches or mouse enters any portal link (~100ms network head start)
-            const warmHandler = function(e) {
+            // Pre-fetch on pointerdown immediately or intentional hover (>75ms) to avoid hover storms
+            let hoverWarmTimer = null;
+            document.addEventListener('pointerdown', function(e) {
                 if (!e.target || typeof e.target.closest !== 'function') return;
                 const link = e.target.closest('a[href]');
                 if (!link || link.target === '_blank' || link.hasAttribute('data-no-pjax')) return;
                 prefetchAppleUrl(link.href);
-            };
-            document.addEventListener('pointerdown', warmHandler, { passive: true });
-            document.addEventListener('mouseenter', warmHandler, { capture: true, passive: true });
+            }, { passive: true });
+            document.addEventListener('mouseenter', function(e) {
+                if (!e.target || typeof e.target.closest !== 'function') return;
+                const link = e.target.closest('a[href]');
+                if (!link || link.target === '_blank' || link.hasAttribute('data-no-pjax')) return;
+                clearTimeout(hoverWarmTimer);
+                hoverWarmTimer = setTimeout(function() { prefetchAppleUrl(link.href); }, 75);
+            }, { capture: true, passive: true });
 
             window.addEventListener('resize', function() {
                 document.querySelectorAll('.segment-track').forEach(function(track) {

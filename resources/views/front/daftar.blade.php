@@ -367,6 +367,7 @@
                 } else {
                     emailHint.textContent = 'Gunakan email domain @mhs.polines.ac.id';
                     emailHint.className = 'text-[11px] font-semibold text-rose-600 mt-1';
+                    if (strict && window.lgShakeField) window.lgShakeField(emailInput.closest('.glass-field'));
                 }
             }
             if (emailInput && emailHint) {
@@ -391,6 +392,7 @@
                 } else {
                     noHpHint.textContent = 'Format WhatsApp tidak valid (contoh: 081234567890).';
                     noHpHint.className = 'text-[11px] font-semibold text-rose-600 mt-1';
+                    if (strict && window.lgShakeField) window.lgShakeField(noHpInput.closest('.glass-field'));
                 }
             }
             if (noHpInput && noHpHint) {

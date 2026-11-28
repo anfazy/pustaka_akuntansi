@@ -77,7 +77,7 @@
                                 <span class="text-emerald-800 dark:text-emerald-400">{{ $stats['active_count'] }} dari {{ $stats['max_quota'] }} Buku</span>
                             </div>
                             <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800">
-                                <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 ease-out" style="width: {{ $quotaPercent }}%"></div>
+                                <div class="h-full w-full origin-left rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-transform duration-700" style="transform: scaleX({{ number_format($quotaPercent / 100, 3, '.', '') }})"></div>
                             </div>
                         </div>
                     </div>
@@ -86,13 +86,13 @@
                     <div class="grid grid-cols-3 gap-2">
                         <a href="{{ route('pinjaman', ['tab' => 'dipinjam']) }}" class="apple-press rounded-[12px] bg-white/70 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5 hover:bg-white/95 dark:hover:bg-white/10 transition-all">
                             <span class="block text-[11px] font-medium text-slate-500">Dipinjam</span>
-                            <span class="mt-0.5 block text-base sm:text-lg font-bold text-slate-900">{{ $stats['borrowed_count'] }}</span>
+                            <span data-lg-countup="{{ $stats['borrowed_count'] }}" class="mt-0.5 block text-base sm:text-lg font-bold text-slate-900 tabular-nums">{{ $stats['borrowed_count'] }}</span>
                         </a>
 
                         <a href="{{ route('pinjaman', ['tab' => 'siap']) }}" class="apple-press rounded-[12px] bg-white/70 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5 hover:bg-white/95 dark:hover:bg-white/10 transition-all">
                             <span class="block text-[11px] font-medium text-slate-500">Siap Diambil</span>
                             <div class="mt-0.5 flex items-center gap-1 flex-wrap">
-                                <span class="text-base sm:text-lg font-bold text-slate-900">{{ $stats['booked_count'] }}</span>
+                                <span data-lg-countup="{{ $stats['booked_count'] }}" class="text-base sm:text-lg font-bold text-slate-900 tabular-nums">{{ $stats['booked_count'] }}</span>
                                 @if($stats['booked_count'] > 0 && $stats['latest_booking_code'])
                                     <span class="liquid-badge-amber rounded-full px-1.5 py-0.5 text-[11px] font-bold">{{ $stats['latest_booking_code'] }}</span>
                                 @endif
@@ -133,11 +133,11 @@
                     <!-- Micro Editorial Stats Row -->
                     <div class="grid grid-cols-3 gap-2">
                         <div class="rounded-[12px] bg-white/65 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-2">
-                            <span class="block text-base sm:text-lg font-bold tracking-tight text-slate-900">{{ $librarySummary['total_titles'] ?? $popularBooks->count() }}</span>
+                            <span data-lg-countup="{{ $librarySummary['total_titles'] ?? $popularBooks->count() }}" class="block text-base sm:text-lg font-bold tracking-tight text-slate-900 tabular-nums">{{ $librarySummary['total_titles'] ?? $popularBooks->count() }}</span>
                             <span class="block text-[11px] font-medium text-slate-500">Judul Koleksi</span>
                         </div>
                         <div class="rounded-[12px] bg-white/65 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-2">
-                            <span class="block text-base sm:text-lg font-bold tracking-tight text-emerald-800 dark:text-emerald-400">{{ $librarySummary['available_copies'] ?? 0 }}</span>
+                            <span data-lg-countup="{{ $librarySummary['available_copies'] ?? 0 }}" class="block text-base sm:text-lg font-bold tracking-tight text-emerald-800 dark:text-emerald-400 tabular-nums">{{ $librarySummary['available_copies'] ?? 0 }}</span>
                             <span class="block text-[11px] font-medium text-slate-500">Eksemplar Siap</span>
                         </div>
                         <div class="rounded-[12px] bg-white/65 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-2">
@@ -270,7 +270,7 @@
 
             <div class="flex flex-wrap items-center gap-2">
                 <!-- Gliding Apple Segment Track (Buttons handled smoothly in JS) -->
-                <div id="berandaShelfTabs" class="segment-track inline-flex rounded-full p-1 overflow-x-auto no-scrollbar max-w-full">
+                <div id="berandaShelfTabs" class="segment-track lg-momentum-rail inline-flex rounded-full p-1 overflow-x-auto no-scrollbar max-w-full">
                     <button type="button" onclick="switchBerandaShelf('populer', this)" data-shelf-tab="populer"
                             class="is-active inline-flex min-h-[44px] sm:min-h-[32px] items-center rounded-full px-3.5 sm:px-3 text-[12px] sm:text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300 transition-colors whitespace-nowrap">
                         Populer
@@ -305,6 +305,7 @@
             ];
         @endphp
 
+        <div class="lg-shelf-stage">
         @foreach($shelves as $shelfKey => $shelfData)
             <div data-shelf-panel="{{ $shelfKey }}" class="shelf-panel {{ $shelfKey === 'populer' ? 'is-active grid' : 'hidden' }} grid-cols-2 gap-x-3.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
                 @forelse($shelfData['books'] as $book)
@@ -316,6 +317,7 @@
                 @endforelse
             </div>
         @endforeach
+        </div>
     </section>
 
     <!-- ================================================================
@@ -334,7 +336,7 @@
                 @foreach($categories as $cIdx => $cat)
                     <a href="{{ route('katalog', ['kategori' => $cat->slug]) }}"
                        style="--stagger: {{ $cIdx }}"
-                       class="apple-reveal glass-card glass-card-hover apple-press group rounded-[20px] p-3 flex flex-col justify-between min-h-[82px]">
+                       class="apple-reveal lg-view-timeline-reveal lg-bento-card glass-card glass-card-hover apple-press group rounded-[20px] p-3 flex flex-col justify-between min-h-[82px]">
                         <div class="flex items-center justify-between gap-2">
                             <span class="grid h-7 w-7 place-items-center rounded-[8px] bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-transform duration-300 group-hover:scale-110">
                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">

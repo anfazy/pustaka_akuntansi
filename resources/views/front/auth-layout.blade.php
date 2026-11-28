@@ -528,6 +528,9 @@
             border-color: rgba(255, 255, 255, 0.1) !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/motion-tokens.css') }}?v={{ filemtime(public_path('css/motion-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/motion.css') }}?v={{ filemtime(public_path('css/motion.css')) }}">
+    <script defer src="{{ asset('js/motion.js') }}?v={{ filemtime(public_path('js/motion.js')) }}"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center p-3 sm:p-4 relative">
 

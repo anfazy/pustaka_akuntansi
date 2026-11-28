@@ -5,11 +5,12 @@
     $artIndex = abs(crc32($book->judul)) % 6;
 @endphp
 
-<a href="{{ route('buku.detail', $book->id) }}" class="apple-press group flex h-full flex-col gap-2 rounded-2xl p-0.5 transition-all duration-400 ease-[cubic-bezier(0.22,1.36,0.36,1)] hover:-translate-y-1.5 active:scale-[0.96]">
+<a href="{{ route('buku.detail', $book->id) }}" data-book-id="{{ $book->id }}" class="lg-book-card apple-press group relative flex h-full flex-col gap-2 rounded-2xl p-0.5">
+    <span class="lg-specular-sheen" aria-hidden="true"></span>
     <!-- Book Cover -->
-    <div class="relative aspect-[5/7] w-full overflow-hidden rounded-[10px] book-shadow shrink-0 transition-all duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:shadow-2xl group-hover:scale-[1.015] dark:shadow-[0_12px_28px_-10px_rgba(0,0,0,0.7)]">
+    <div data-cover-box="{{ $book->id }}" class="relative aspect-[5/7] w-full overflow-hidden rounded-[10px] book-shadow shrink-0 dark:shadow-[0_12px_28px_-10px_rgba(0,0,0,0.7)]">
         @if($coverUrl)
-            <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" loading="lazy" class="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.04]">
+            <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.035]">
         @else
             <!-- Typographic Fallback Cover Apple Style -->
             <div class="cover-art-{{ $artIndex }} flex h-full w-full flex-col justify-between p-3">

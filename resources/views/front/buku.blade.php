@@ -26,7 +26,7 @@
     <div class="grid grid-cols-1 gap-6 md:gap-7 md:grid-cols-12 lg:gap-8">
         <!-- LEFT: COVER & FAVORITE BUTTON -->
         <div class="md:col-span-4 lg:col-span-3 flex flex-col items-center md:items-start">
-            <div class="relative aspect-[5/7] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] overflow-hidden rounded-[11px] book-shadow dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
+            <div data-detail-cover="{{ $book->id }}" class="relative aspect-[5/7] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] overflow-hidden rounded-[11px] book-shadow dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
                 @if($coverUrl)
                     <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" class="h-full w-full object-cover">
                 @else
@@ -290,11 +290,13 @@
                             icon.setAttribute('fill', 'currentColor');
                             icon.className = 'h-3.5 w-3.5 shrink-0 text-amber-700 fill-amber-600';
                             label.textContent = 'Tersimpan di Favorit';
+                            if (window.lgToast) window.lgToast('Disimpan ke buku favorit', 'success');
                         } else {
                             btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-3.5 flex min-h-[44px] sm:min-h-[38px] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
                             icon.setAttribute('fill', 'none');
                             icon.className = 'h-3.5 w-3.5 shrink-0 text-amber-500';
                             label.textContent = 'Simpan ke Favorit';
+                            if (window.lgToast) window.lgToast('Dihapus dari daftar favorit', 'success');
                         }
                     }
                 })

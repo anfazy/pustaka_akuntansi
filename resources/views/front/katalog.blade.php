@@ -7,25 +7,26 @@
         .catalog-prodi-collapse {
             grid-template-rows: 1fr;
             opacity: 1;
-            margin-top: 0.625rem;
-            transition: grid-template-rows 0.26s var(--apple-ease), opacity 0.22s ease, margin-top 0.26s var(--apple-ease);
+            transform: translate3d(0, 0, 0);
+            transition: grid-template-rows 260ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), opacity 220ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), transform 320ms var(--lg-spring-base, cubic-bezier(0.22, 1.36, 0.36, 1));
         }
         .catalog-prodi-collapse.is-collapsed {
             grid-template-rows: 0fr;
             opacity: 0;
-            margin-top: 0;
+            transform: translate3d(0, -6px, 0);
             pointer-events: none;
         }
         .catalog-prodi-collapse.is-collapsed > div {
             overflow: hidden !important;
         }
         @keyframes catalogCardFadeIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.985); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.92); filter: blur(var(--lg-blur-materialize, 0px)); }
+            to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
         .catalog-card-stagger {
-            animation: catalogCardFadeIn 0.34s var(--apple-ease) both;
-            animation-delay: calc(min(var(--card-idx, 0), 11) * 26ms);
+            contain: layout paint;
+            animation: catalogCardFadeIn var(--lg-dur-base, 420ms) var(--lg-spring-base, cubic-bezier(0.22, 1.36, 0.36, 1)) both;
+            animation-delay: calc(min(var(--card-idx, 0), 7) * 45ms);
         }
         @keyframes catalogSkeletonPulse {
             0%, 100% { opacity: 0.55; }
@@ -338,6 +339,7 @@
                 } finally {
                     if (skeletonEl) skeletonEl.classList.add('hidden');
                     if (resultsEl) resultsEl.classList.remove('hidden');
+                    if (window.LiquidGlassMotion) window.LiquidGlassMotion.initPage();
                 }
             }
 

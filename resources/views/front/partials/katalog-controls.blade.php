@@ -7,7 +7,7 @@
 <div class="glass-card overflow-hidden sm:overflow-visible rounded-[36px] sm:rounded-[30px] p-0 sm:p-3.5 shadow-sm">
     <!-- BARIS 1: KATEGORI CHIPS (Horizontal scrollable + edge fade di HP) -->
     <div class="relative">
-        <div class="catalog-chip-strip no-scrollbar flex items-center gap-1.5 overflow-x-auto pl-3.5 pr-9 pt-3.5 {{ $hasActiveStrip ? 'pb-3' : 'pb-3.5' }} sm:p-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-34px),transparent)] sm:[mask-image:none]">
+        <div class="catalog-chip-strip lg-momentum-rail no-scrollbar flex items-center gap-1.5 overflow-x-auto pl-3.5 pr-9 pt-3.5 {{ $hasActiveStrip ? 'pb-3' : 'pb-3.5' }} sm:p-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-34px),transparent)] sm:[mask-image:none]">
             <a href="{{ $allCategoriesUrl }}"
                aria-pressed="{{ $currentKategori === 'semua' ? 'true' : 'false' }}"
                data-catalog-nav
@@ -51,6 +51,7 @@
          class="catalog-prodi-collapse hidden sm:grid {{ $showProdiSubfilter ? '' : 'is-collapsed' }}"
          aria-hidden="{{ $showProdiSubfilter ? 'false' : 'true' }}">
         <div class="overflow-visible min-h-0">
+            <div class="pt-2.5">
             <div class="pt-2.5 border-t border-slate-200/70 dark:border-white/10 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <div class="flex flex-wrap items-center gap-1.5">
                     <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-0.5">Program Studi:</span>
@@ -162,6 +163,7 @@
                         @endforeach
                     </ul>
                 </div>
+            </div>
             </div>
         </div>
     </div>
