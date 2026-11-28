@@ -7,11 +7,13 @@
         .catalog-prodi-collapse {
             grid-template-rows: 1fr;
             opacity: 1;
-            transition: grid-template-rows 0.26s var(--apple-ease), opacity 0.22s ease;
+            margin-top: 0.625rem;
+            transition: grid-template-rows 0.26s var(--apple-ease), opacity 0.22s ease, margin-top 0.26s var(--apple-ease);
         }
         .catalog-prodi-collapse.is-collapsed {
             grid-template-rows: 0fr;
             opacity: 0;
+            margin-top: 0;
             pointer-events: none;
         }
         .catalog-prodi-collapse.is-collapsed > div {
