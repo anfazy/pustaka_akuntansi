@@ -218,7 +218,7 @@
                     <div class="pearl-card rounded-[16px] p-3.5 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 border border-white/80 dark:border-white/10">
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-slate-500 dark:text-slate-400">Durasi Pinjam</span>
-                            <span class="font-semibold text-slate-900 dark:text-white tabular-nums">{{ $loanDuration }} hari kerja (+3 hari perpanjangan)</span>
+                            <span class="font-semibold text-slate-900 dark:text-white tabular-nums">{{ $loanDuration }} hari kerja (+{{ $loanDuration }} hari perpanjangan)</span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-slate-500 dark:text-slate-400">Estimasi Kembali*</span>

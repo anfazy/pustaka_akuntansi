@@ -96,7 +96,7 @@
                         <h3 class="text-[13.5px] font-semibold text-slate-900">Bisa perpanjang 1 kali</h3>
                     </div>
                     <p class="text-[12.5px] text-slate-600 dark:text-slate-300 leading-relaxed pl-8">
-                        Pinjaman aktif dapat diperpanjang mandiri lewat menu Pinjaman Saya untuk tambahan <strong class="font-semibold text-slate-900">3 hari kerja</strong> sebelum melewati tanggal jatuh tempo.
+                        Pinjaman aktif dapat diperpanjang mandiri lewat menu Pinjaman Saya sesuai durasi pinjam awal (<strong class="font-semibold text-slate-900">+7 hari kerja</strong> untuk Buku Umum/PKL, atau <strong class="font-semibold text-slate-900">+14 hari kerja</strong> untuk TA/Skripsi) sebelum melewati tanggal jatuh tempo.
                     </p>
                 </article>
 
@@ -181,21 +181,21 @@
                         <tr class="hover:bg-emerald-50/40 dark:hover:bg-slate-800/60 transition-colors">
                             <td class="py-2.5 px-4 font-semibold text-slate-900">Tugas Akhir &amp; Skripsi</td>
                             <td class="py-2.5 px-4">14 hari kerja</td>
-                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +3 hari</td>
+                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +14 hari</td>
                             <td class="py-2.5 px-4 font-semibold text-rose-600 dark:text-rose-400">Rp 300 / hari</td>
                             <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300">Rp 200.000</td>
                         </tr>
                         <tr class="hover:bg-emerald-50/40 dark:hover:bg-slate-800/60 transition-colors">
                             <td class="py-2.5 px-4 font-semibold text-slate-900">Buku Umum</td>
                             <td class="py-2.5 px-4">7 hari kerja</td>
-                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +3 hari</td>
+                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +7 hari</td>
                             <td class="py-2.5 px-4 font-semibold text-rose-600 dark:text-rose-400">Rp 200 / hari</td>
                             <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300">Ganti buku sama atau seharga</td>
                         </tr>
                         <tr class="hover:bg-emerald-50/40 dark:hover:bg-slate-800/60 transition-colors">
                             <td class="py-2.5 px-4 font-semibold text-slate-900">Proposal &amp; Laporan PKL</td>
                             <td class="py-2.5 px-4">7 hari kerja</td>
-                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +3 hari</td>
+                            <td class="py-2.5 px-4 text-emerald-700 dark:text-emerald-400">1 kali, +7 hari</td>
                             <td class="py-2.5 px-4 font-semibold text-rose-600 dark:text-rose-400">Rp 200 / hari</td>
                             <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300">Rp 200.000</td>
                         </tr>

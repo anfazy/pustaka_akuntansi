@@ -129,6 +129,7 @@
                 $isOverdue = $loan->isOverdue();
                 $daysDiff = $isOverdue ? $loan->calculateOverdueWeekdays(today()) : ($due ? abs((int) $today->diffInDays($due)) : 0);
                 $lateFine = $loan->calculateLateFine(today());
+                $extensionDays = $loan->getExtensionDurationWeekdays();
             @endphp
             <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                 <!-- Book Cover -->
@@ -184,7 +185,7 @@
                         <form action="{{ route('pinjaman.perpanjang', $loan->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn-glass inline-flex min-h-[34px] items-center rounded-full px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300">
-                                Perpanjang 3 Hari
+                                Perpanjang {{ $extensionDays }} Hari
                             </button>
                         </form>
                     @elseif($loan->is_extended)

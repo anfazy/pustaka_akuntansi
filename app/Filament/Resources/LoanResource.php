@@ -90,6 +90,24 @@ class LoanResource extends Resource
         return filled($categoryName) ? $categoryName : $book->collection_type_label;
     }
 
+    /**
+     * Hitung rincian durasi pinjam & perpanjangan (hari kerja) berdasarkan koleksi buku.
+     *
+     * @return array{base: int, extra: int, total: int}
+     */
+    protected static function resolveDurationBreakdown(?Book $book, bool $isExtended): array
+    {
+        $baseDays = $book?->getLoanDurationWeekdays()
+            ?? (($book?->collection_type === 'ta_skripsi') ? 14 : 7);
+        $extraDays = $isExtended ? $baseDays : 0;
+
+        return [
+            'base' => $baseDays,
+            'extra' => $extraDays,
+            'total' => $baseDays + $extraDays,
+        ];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -300,7 +318,7 @@ class LoanResource extends Resource
                     ->columns(3),
 
                 Forms\Components\Section::make('Detail Buku, Kode Transaksi & Masa Peminjaman')
-                    ->description('Batas waktu otomatis dihitung hari kerja (Senin - Jumat): TA/Skripsi 14 hari kerja, Non-TA & PKL 7 hari kerja.')
+                    ->description('Batas waktu otomatis dihitung hari kerja (Senin - Jumat): TA/Skripsi 14 hari kerja, Non-TA & PKL 7 hari kerja. Perpanjangan 1 kali sesuai durasi awal (+14 / +7 hari kerja).')
                     ->schema([
                         Forms\Components\TextInput::make('booking_code')
                             ->label('Kode Booking / Peminjaman')
@@ -352,10 +370,9 @@ class LoanResource extends Resource
                                 }
 
                                 $bookId = $get('book_id');
-                                $book = $bookId ? Book::find($bookId) : null;
-                                $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
-                                $totalDays = $baseDays + ((bool) $get('is_extended') ? 3 : 0);
-                                $jatuhTempo = Carbon::parse($state)->addWeekdays($totalDays)->startOfDay();
+                                $book = $bookId ? Book::with('category')->find($bookId) : null;
+                                $duration = static::resolveDurationBreakdown($book, (bool) $get('is_extended'));
+                                $jatuhTempo = Carbon::parse($state)->addWeekdays($duration['total'])->startOfDay();
 
                                 if ($get('status') === 'terlambat' && today()->lte($jatuhTempo)) {
                                     $set('status', 'dipinjam');
@@ -375,15 +392,14 @@ class LoanResource extends Resource
                                 }
 
                                 $book = Book::with('category')->find($bookId);
-                                $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
-                                $totalDays = $baseDays + ($isExtended ? 3 : 0);
-                                $jatuhTempo = $tglPinjam->copy()->addWeekdays($totalDays);
+                                $duration = static::resolveDurationBreakdown($book, $isExtended);
+                                $jatuhTempo = $tglPinjam->copy()->addWeekdays($duration['total']);
                                 $kategori = static::getBookCategoryLabel($book);
 
                                 return new HtmlString("
                                     <div class='text-sm text-primary-600 dark:text-primary-400 font-medium'>
                                         Tenggat: <strong>{$jatuhTempo->locale('id')->translatedFormat('l, d F Y')}</strong>
-                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$totalDays} hari kerja ".($isExtended ? '(Termasuk perpanjangan +3 hari)' : '')." &bull; Kategori: {$kategori}</div>
+                                        <div class='text-xs text-gray-500 dark:text-gray-400 font-normal'>Durasi: {$duration['total']} hari kerja ".($isExtended ? "(Termasuk perpanjangan +{$duration['extra']} hari)" : '')." &bull; Kategori: {$kategori}</div>
                                     </div>
                                 ");
                             }),
@@ -449,7 +465,17 @@ class LoanResource extends Resource
                             ->visible(fn (?Loan $record): bool => $record !== null),
 
                         Forms\Components\Toggle::make('is_extended')
-                            ->label('Status Diperpanjang (+3 Hari Kerja)')
+                            ->label(function (Forms\Get $get): string {
+                                $bookId = $get('book_id');
+                                $book = $bookId ? Book::with('category')->find($bookId) : null;
+                                if (! $book) {
+                                    return 'Status Diperpanjang (+7 / +14 Hari Kerja)';
+                                }
+
+                                $days = $book->getLoanDurationWeekdays();
+
+                                return "Status Diperpanjang (+{$days} Hari Kerja)";
+                            })
                             ->live()
                             ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set, bool $state): void {
                                 if (! $state || ! $get('tanggal_pinjam')) {
@@ -457,15 +483,25 @@ class LoanResource extends Resource
                                 }
 
                                 $bookId = $get('book_id');
-                                $book = $bookId ? Book::find($bookId) : null;
-                                $baseDays = ($book?->collection_type === 'ta_skripsi') ? 14 : 7;
-                                $jatuhTempo = Carbon::parse($get('tanggal_pinjam'))->addWeekdays($baseDays + 3)->startOfDay();
+                                $book = $bookId ? Book::with('category')->find($bookId) : null;
+                                $duration = static::resolveDurationBreakdown($book, true);
+                                $jatuhTempo = Carbon::parse($get('tanggal_pinjam'))->addWeekdays($duration['total'])->startOfDay();
 
                                 if ($get('status') === 'terlambat' && today()->lte($jatuhTempo)) {
                                     $set('status', 'dipinjam');
                                 }
                             })
-                            ->helperText('Menambah masa pinjam 3 hari kerja dari tenggat awal.'),
+                            ->helperText(function (Forms\Get $get): string {
+                                $bookId = $get('book_id');
+                                $book = $bookId ? Book::with('category')->find($bookId) : null;
+                                if (! $book) {
+                                    return 'Menambah masa pinjam sesuai durasi awal buku (7 hari kerja untuk Buku Umum/PKL, 14 hari kerja untuk TA/Skripsi).';
+                                }
+
+                                $days = $book->getLoanDurationWeekdays();
+
+                                return "Menambah masa pinjam {$days} hari kerja (sesuai durasi awal) dari tenggat awal.";
+                            }),
 
                         Forms\Components\Toggle::make('is_lost')
                             ->label('Status Buku Hilang')
@@ -551,7 +587,7 @@ class LoanResource extends Resource
                             return null;
                         }
 
-                        $extLabel = $record->is_extended ? ' (Diperpanjang)' : '';
+                        $extLabel = $record->is_extended ? " (Diperpanjang +{$record->getExtensionDurationWeekdays()} hari)" : '';
                         $overdueDays = $record->calculateOverdueWeekdays(today());
                         if ($record->isOverdue()) {
                             return $overdueDays > 0
@@ -796,24 +832,26 @@ class LoanResource extends Resource
                     ->url(fn (Loan $record): string => (string) $record->getWhatsAppReminderUrl())
                     ->openUrlInNewTab(),
 
-                // 4. Tombol Perpanjang (+3 Hari Kerja)
+                // 4. Tombol Perpanjang (+7 atau +14 Hari Kerja sesuai durasi awal)
                 Tables\Actions\Action::make('perpanjangPinjam')
                     ->label('Perpanjang')
                     ->icon('heroicon-o-calendar-days')
                     ->color('warning')
                     ->visible(fn (Loan $record): bool => $record->status === 'dipinjam' && ! $record->isOverdue() && ! $record->is_extended && ! $record->is_lost)
                     ->requiresConfirmation()
-                    ->modalHeading('Perpanjang Masa Peminjaman (+3 Hari Kerja)')
-                    ->modalDescription(fn (Loan $record): string => "Perpanjang peminjaman buku '{$record->book?->judul}' untuk {$record->anggota?->nama} selama 3 hari kerja tambahan?")
+                    ->modalHeading(fn (Loan $record): string => "Perpanjang Masa Peminjaman (+{$record->getExtensionDurationWeekdays()} Hari Kerja)")
+                    ->modalDescription(fn (Loan $record): string => "Perpanjang peminjaman buku '{$record->book?->judul}' untuk {$record->anggota?->nama} selama {$record->getExtensionDurationWeekdays()} hari kerja tambahan (sesuai durasi pinjam awal)?")
                     ->modalSubmitActionLabel('Perpanjang Sekarang')
                     ->action(function (Loan $record): void {
+                        $extensionDays = $record->getExtensionDurationWeekdays();
+
                         $record->update([
                             'is_extended' => true,
                         ]);
 
                         Notification::make()
-                            ->title('Masa Pinjam Diperpanjang')
-                            ->body("Tenggat waktu baru: {$record->fresh()->jatuh_tempo?->locale('id')->translatedFormat('l, d F Y')}.")
+                            ->title("Masa Pinjam Diperpanjang (+{$extensionDays} Hari Kerja)")
+                            ->body("Tenggat waktu baru: {$record->fresh(['book.category'])?->jatuh_tempo?->locale('id')->translatedFormat('l, d F Y')}.")
                             ->success()
                             ->send();
                     }),

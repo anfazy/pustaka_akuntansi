@@ -440,7 +440,7 @@ class UserPortalController extends Controller
     }
 
     /**
-     * Perpanjang Peminjaman Buku (+3 Hari).
+     * Perpanjang Peminjaman Buku (1x sesuai durasi pinjam: +7 atau +14 hari kerja).
      */
     public function extendLoan(int $id): RedirectResponse
     {
@@ -449,8 +449,9 @@ class UserPortalController extends Controller
             return redirect()->route('masuk');
         }
 
-        $loan = Loan::where('id', $id)
-            ->where('status', 'dipinjam')
+        $loan = Loan::with('book.category')
+            ->where('id', $id)
+            ->whereIn('status', ['dipinjam', 'terlambat'])
             ->where(function ($q) use ($student) {
                 $q->where('member_nim', $student->nim_no_anggota)
                     ->orWhere('anggota_id', $student->id);
@@ -465,9 +466,15 @@ class UserPortalController extends Controller
             return back()->with('error', 'Buku yang sudah melewati tanggal jatuh tempo tidak dapat diperpanjang.');
         }
 
+        $extensionDays = $loan->getExtensionDurationWeekdays();
         $loan->update(['is_extended' => true]);
 
-        return back()->with('success', 'Peminjaman berhasil diperpanjang +3 hari kerja!');
+        $newDueDate = $loan->fresh(['book.category'])?->jatuh_tempo?->locale('id')->translatedFormat('d M Y');
+        $message = $newDueDate
+            ? "Peminjaman berhasil diperpanjang +{$extensionDays} hari kerja (jatuh tempo baru: {$newDueDate})."
+            : "Peminjaman berhasil diperpanjang +{$extensionDays} hari kerja!";
+
+        return back()->with('success', $message);
     }
 
     /**

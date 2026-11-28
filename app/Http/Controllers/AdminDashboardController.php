@@ -123,12 +123,14 @@ class AdminDashboardController extends Controller
                 $hp = $anggota?->no_hp ?? '-';
 
                 $tglPinjam = $l->tanggal_pinjam ? $l->tanggal_pinjam->translatedFormat('d M Y') : '-';
-                $dueDate = $l->jatuh_tempo ?? $l->tanggal_kembali ?? ($l->tanggal_pinjam ? $l->tanggal_pinjam->copy()->addDays(7) : null);
+                $dueDate = $l->jatuh_tempo ?? $l->tanggal_kembali ?? ($l->tanggal_pinjam ? $l->tanggal_pinjam->copy()->addWeekdays($l->getTotalDurationWeekdays()) : null);
                 $jatuhTempo = $dueDate ? $dueDate->translatedFormat('d M Y') : '-';
 
                 $isOverdue = $l->isOverdue();
                 $hariTelat = 0;
-                $catatanTempo = 'Masa peminjaman aktif';
+                $catatanTempo = $l->is_extended
+                    ? 'Diperpanjang (+'.$l->getExtensionDurationWeekdays().' hari kerja)'
+                    : 'Masa peminjaman aktif';
                 if ($isOverdue && $dueDate) {
                     $hariTelat = $l->calculateOverdueWeekdays(today());
                     if ($hariTelat === 0) {

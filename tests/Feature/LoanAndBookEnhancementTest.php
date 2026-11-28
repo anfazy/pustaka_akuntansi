@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\BookResource\Pages\EditBook;
+use App\Filament\Resources\LoanResource\Pages\ListLoans;
 use App\Models\Anggota;
 use App\Models\Book;
 use App\Models\BookCover;
@@ -12,6 +13,7 @@ use App\Models\Member;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -170,13 +172,17 @@ class LoanAndBookEnhancementTest extends TestCase
         $this->withSession(['student_id' => $student->id])
             ->get(route('buku.detail', $book->id))
             ->assertOk()
-            ->assertSee('7 hari kerja')
+            ->assertSee('7 hari kerja (+7 hari perpanjangan)')
             ->assertDontSee('name="duration" value="3"', false)
+            ->assertDontSee('+3 hari')
             ->assertDontSee('3 Hari');
 
         $this->get(route('tata-tertib'))
             ->assertOk()
             ->assertSee('7 hari kerja')
+            ->assertSee('1 kali, +14 hari')
+            ->assertSee('1 kali, +7 hari')
+            ->assertDontSee('+3 hari')
             ->assertDontSee('3 atau 7 hari kerja');
     }
 
@@ -304,5 +310,141 @@ class LoanAndBookEnhancementTest extends TestCase
         $this->assertNotNull($freshBook->cover);
         $this->assertNotEquals('covers/missing-legacy-file.png', $freshBook->cover);
         $this->assertTrue(BookCover::where('path', $freshBook->cover)->exists());
+    }
+
+    public function test_user_can_extend_loan_matching_book_duration_once_and_not_when_overdue(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-02 10:00:00'));
+
+        $student = $this->createActiveStudent('4.41.24.0.30', 'mhs-extend@mhs.polines.ac.id');
+        $umumBook = Book::factory()->create([
+            'collection_type' => 'umum',
+            'stok' => 3,
+        ]);
+        $taCategory = Category::factory()->create([
+            'nama' => 'TA / Skripsi',
+            'slug' => 'ta-skripsi',
+        ]);
+        $taBook = Book::factory()->create([
+            'category_id' => $taCategory->id,
+            'collection_type' => 'ta_skripsi',
+            'isbn' => null,
+            'stok' => 2,
+        ]);
+
+        $umumLoan = Loan::create([
+            'book_id' => $umumBook->id,
+            'anggota_id' => $student->id,
+            'member_nim' => $student->nim_no_anggota,
+            'card_type' => 'KTM',
+            'status' => 'dipinjam',
+            'tanggal_pinjam' => today()->toDateString(),
+        ]);
+
+        $taLoan = Loan::create([
+            'book_id' => $taBook->id,
+            'anggota_id' => $student->id,
+            'member_nim' => $student->nim_no_anggota,
+            'card_type' => 'KTM',
+            'status' => 'dipinjam',
+            'tanggal_pinjam' => today()->toDateString(),
+        ]);
+
+        $this->withSession(['student_id' => $student->id])
+            ->get(route('pinjaman', ['tab' => 'dipinjam']))
+            ->assertOk()
+            ->assertSee('Perpanjang 7 Hari')
+            ->assertSee('Perpanjang 14 Hari')
+            ->assertDontSee('Perpanjang 3 Hari');
+
+        // Buku umum diperpanjang +7 hari kerja (total 14 hari kerja)
+        $this->withSession(['student_id' => $student->id])
+            ->post(route('pinjaman.perpanjang', $umumLoan->id))
+            ->assertRedirect()
+            ->assertSessionHas('success', fn (string $msg): bool => str_contains($msg, '+7 hari kerja'));
+
+        $umumLoan->refresh();
+        $this->assertTrue($umumLoan->is_extended);
+        $this->assertEquals(
+            today()->addWeekdays(14)->toDateString(),
+            $umumLoan->jatuh_tempo?->toDateString()
+        );
+
+        // Tidak boleh memperpanjang untuk kedua kalinya
+        $this->withSession(['student_id' => $student->id])
+            ->post(route('pinjaman.perpanjang', $umumLoan->id))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        // Buku TA/Skripsi diperpanjang +14 hari kerja (total 28 hari kerja)
+        $this->withSession(['student_id' => $student->id])
+            ->post(route('pinjaman.perpanjang', $taLoan->id))
+            ->assertRedirect()
+            ->assertSessionHas('success', fn (string $msg): bool => str_contains($msg, '+14 hari kerja'));
+
+        $taLoan->refresh();
+        $this->assertTrue($taLoan->is_extended);
+        $this->assertEquals(
+            today()->addWeekdays(28)->toDateString(),
+            $taLoan->jatuh_tempo?->toDateString()
+        );
+
+        // Pinjaman terlambat tidak bisa diperpanjang
+        $otherStudent = $this->createActiveStudent('4.41.24.0.31', 'mhs-overdue@mhs.polines.ac.id');
+        $overdueLoan = Loan::create([
+            'book_id' => $umumBook->id,
+            'anggota_id' => $otherStudent->id,
+            'member_nim' => $otherStudent->nim_no_anggota,
+            'card_type' => 'KTM',
+            'status' => 'dipinjam',
+            'tanggal_pinjam' => today()->subWeekdays(8)->toDateString(),
+        ]);
+
+        $this->withSession(['student_id' => $otherStudent->id])
+            ->post(route('pinjaman.perpanjang', $overdueLoan->id))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertFalse($overdueLoan->fresh()->is_extended);
+    }
+
+    public function test_admin_filament_can_extend_loan_matching_book_duration(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-02 10:00:00'));
+
+        $admin = User::factory()->create();
+        $student = $this->createActiveStudent('4.41.24.0.32', 'mhs-admin-ext@mhs.polines.ac.id');
+        $taCategory = Category::factory()->create([
+            'nama' => 'TA / Skripsi',
+            'slug' => 'ta-skripsi',
+        ]);
+        $taBook = Book::factory()->create([
+            'category_id' => $taCategory->id,
+            'collection_type' => 'ta_skripsi',
+            'isbn' => null,
+            'stok' => 2,
+        ]);
+
+        $loan = Loan::create([
+            'book_id' => $taBook->id,
+            'anggota_id' => $student->id,
+            'member_nim' => $student->nim_no_anggota,
+            'card_type' => 'KTM',
+            'status' => 'dipinjam',
+            'tanggal_pinjam' => today()->toDateString(),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(ListLoans::class)
+            ->callTableAction('perpanjangPinjam', $loan)
+            ->assertHasNoTableActionErrors();
+
+        $loan->refresh();
+        $this->assertTrue($loan->is_extended);
+        $this->assertEquals(
+            today()->addWeekdays(28)->toDateString(),
+            $loan->jatuh_tempo?->toDateString()
+        );
     }
 }
