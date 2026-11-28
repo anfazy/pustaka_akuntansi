@@ -4,10 +4,10 @@
     $hasActiveStrip = ($currentKategori !== 'semua') || ($currentProdi !== 'semua') || ($currentTahun !== 'semua') || $onlyAvailable || ($currentSearch !== '');
 @endphp
 
-<div class="glass-card rounded-[36px] sm:rounded-[30px] p-3.5 shadow-sm">
+<div class="glass-card overflow-hidden sm:overflow-visible rounded-[36px] sm:rounded-[30px] p-0 sm:p-3.5 shadow-sm">
     <!-- BARIS 1: KATEGORI CHIPS (Horizontal scrollable + edge fade di HP) -->
     <div class="relative">
-        <div class="catalog-chip-strip no-scrollbar flex items-center gap-1.5 overflow-x-auto py-5 -my-5 pl-3.5 -ml-3.5 pr-9 -mr-3.5 sm:p-0 sm:m-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-36px),transparent)] sm:[mask-image:none]">
+        <div class="catalog-chip-strip no-scrollbar flex items-center gap-1.5 overflow-x-auto pl-3.5 pr-9 pt-3.5 {{ $hasActiveStrip ? 'pb-3' : 'pb-3.5' }} sm:p-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-34px),transparent)] sm:[mask-image:none]">
             <a href="{{ $allCategoriesUrl }}"
                aria-pressed="{{ $currentKategori === 'semua' ? 'true' : 'false' }}"
                data-catalog-nav
@@ -168,7 +168,7 @@
 
     <!-- BARIS 3: FILTER AKTIF -->
     @if($hasActiveStrip)
-        <div class="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-white/10 flex flex-wrap items-center justify-between gap-2">
+        <div class="mx-3.5 mb-3.5 pt-2.5 sm:mx-0 sm:mb-0 sm:mt-2.5 sm:pt-2 border-t border-slate-200/60 dark:border-white/10 flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-1.5">
                 <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Filter aktif:</span>
 

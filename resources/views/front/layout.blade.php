@@ -346,15 +346,15 @@
         .catalog-chip-strip .btn-emerald {
             box-shadow: inset 0 1.5px 1.5px 0 rgba(254, 240, 138, 0.7),
                         inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2),
-                        0 4px 10px -2px rgba(16, 185, 129, 0.42),
-                        0 0 6px -1px rgba(52, 211, 153, 0.25) !important;
+                        0 4px 10px -3px rgba(16, 185, 129, 0.45),
+                        0 0 6px -2px rgba(52, 211, 153, 0.28) !important;
         }
 
         .catalog-chip-strip .btn-emerald:hover {
             box-shadow: inset 0 1.5px 1.5px 0 #ffffff,
                         inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2),
-                        0 6px 14px -2px rgba(16, 185, 129, 0.55),
-                        0 0 8px -1px rgba(234, 179, 8, 0.3) !important;
+                        0 5px 12px -3px rgba(16, 185, 129, 0.55),
+                        0 0 8px -2px rgba(234, 179, 8, 0.3) !important;
         }
 
         /* Apple Liquid Glass Neutral Pill Button */
