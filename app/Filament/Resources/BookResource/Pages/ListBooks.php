@@ -31,14 +31,14 @@ class ListBooks extends ListRecords
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
                     ->action(function (): BinaryFileResponse {
-                        $fileName = 'template_koleksi_buku_' . date('Ymd_His') . '.xlsx';
-                        $tempPath = storage_path('app/temp-imports/' . $fileName);
+                        $fileName = 'template_koleksi_buku_'.date('Ymd_His').'.xlsx';
+                        $tempPath = storage_path('app/temp-imports/'.$fileName);
 
                         if (! is_dir(dirname($tempPath))) {
                             mkdir(dirname($tempPath), 0755, true);
                         }
 
-                        $writer = new XlsxWriter();
+                        $writer = new XlsxWriter;
                         $writer->openToFile($tempPath);
 
                         $writer->addRow(Row::fromValues([
@@ -46,6 +46,7 @@ class ListBooks extends ListRecords
                             'jenis_koleksi',
                             'judul',
                             'kategori',
+                            'prodi',
                             'penulis',
                             'penerbit',
                             'tahun_terbit',
@@ -59,6 +60,7 @@ class ListBooks extends ListRecords
                             'umum',
                             'Akuntansi Keuangan Menengah Berbasis PSAK',
                             'Akuntansi Keuangan',
+                            '',
                             'Dwi Martani, dkk.',
                             'Salemba Empat',
                             2023,
@@ -72,6 +74,7 @@ class ListBooks extends ListRecords
                             'ta_skripsi',
                             'Analisis Pengaruh Penerapan Sistem Akuntansi Keuangan Daerah terhadap Kualitas Laporan Keuangan',
                             'Tugas Akhir',
+                            'Komputerisasi Akuntansi (S. Tr)',
                             'Ahmad Fadhil',
                             'Jurusan Akuntansi Politeknik',
                             2024,
@@ -85,6 +88,7 @@ class ListBooks extends ListRecords
                             'proposal_laporan_pkl',
                             'Laporan Praktik Kerja Lapangan pada Kantor Akuntan Publik Drs. Sudirman & Rekan',
                             'Laporan PKL',
+                            'Akuntansi (D3)',
                             'Nareswari Putri',
                             'Jurusan Akuntansi Politeknik',
                             2024,
@@ -144,9 +148,9 @@ class ListBooks extends ListRecords
                         $rowsData = [];
                         try {
                             if (in_array($extension, ['csv', 'txt'])) {
-                                $reader = new CsvReader();
+                                $reader = new CsvReader;
                             } else {
-                                $reader = new XlsxReader();
+                                $reader = new XlsxReader;
                             }
 
                             $reader->open($filePath);
@@ -185,7 +189,7 @@ class ListBooks extends ListRecords
                                 $disk->delete($data['import_file']);
                                 Notification::make()
                                     ->title('Gagal Membaca Berkas')
-                                    ->body('Terjadi kesalahan format: ' . $e->getMessage())
+                                    ->body('Terjadi kesalahan format: '.$e->getMessage())
                                     ->danger()
                                     ->send();
 
@@ -220,6 +224,8 @@ class ListBooks extends ListRecords
                                 $headerMap['judul'] = $index;
                             } elseif (in_array($col, ['kategori', 'category', 'category_id', 'kategori_id', 'kategori_buku'])) {
                                 $headerMap['kategori'] = $index;
+                            } elseif (in_array($col, ['prodi', 'program_studi', 'jurusan', 'study_program'])) {
+                                $headerMap['prodi'] = $index;
                             } elseif (in_array($col, ['penulis', 'author', 'pengarang', 'writer'])) {
                                 $headerMap['penulis'] = $index;
                             } elseif (in_array($col, ['penerbit', 'publisher'])) {
@@ -274,6 +280,7 @@ class ListBooks extends ListRecords
                                 $judul = $getValue('judul');
                                 if (blank($judul)) {
                                     $skippedCount++;
+
                                     continue;
                                 }
 
@@ -335,6 +342,7 @@ class ListBooks extends ListRecords
                                 $isbn = filled($rawIsbn) ? preg_replace('/[^0-9X-]/i', '', $rawIsbn) : null;
                                 $stok = max(0, (int) $getValue('stok', 1));
                                 $sinopsis = $getValue('sinopsis');
+                                $programStudi = Book::normalizeProgramStudi($getValue('prodi'));
 
                                 $existingBook = null;
                                 if (filled($bookCode)) {
@@ -355,6 +363,7 @@ class ListBooks extends ListRecords
                                     $existingBook->update([
                                         'category_id' => $categoryId,
                                         'collection_type' => $collectionType,
+                                        'program_studi' => $programStudi ?: $existingBook->program_studi,
                                         'book_code' => $bookCode ?: $existingBook->book_code,
                                         'judul' => ucwords(strtolower($judul)),
                                         'penulis' => ucwords(strtolower($penulis)),
@@ -369,6 +378,7 @@ class ListBooks extends ListRecords
                                     Book::create([
                                         'category_id' => $categoryId,
                                         'collection_type' => $collectionType,
+                                        'program_studi' => $programStudi,
                                         'book_code' => $bookCode,
                                         'judul' => ucwords(strtolower($judul)),
                                         'penulis' => ucwords(strtolower($penulis)),
@@ -388,7 +398,7 @@ class ListBooks extends ListRecords
 
                             Notification::make()
                                 ->title('Gagal Mengimpor Data')
-                                ->body('Terjadi kesalahan pada baris ' . $rowNumber . ': ' . $e->getMessage())
+                                ->body('Terjadi kesalahan pada baris '.$rowNumber.': '.$e->getMessage())
                                 ->danger()
                                 ->send();
 

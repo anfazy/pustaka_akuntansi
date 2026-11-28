@@ -1273,7 +1273,7 @@
     </aside>
 
     <!-- SCROLL EDGE EFFECT (Top scrim beneath floating topbar) -->
-    <div class="scroll-edge-top sidebar-transition pointer-events-none fixed inset-x-0 top-0 z-10 h-20 sm:h-16 lg:left-[252px]"></div>
+    <div class="scroll-edge-top sidebar-transition pointer-events-none fixed inset-x-0 top-0 z-10 h-36 sm:h-16 lg:left-[252px]"></div>
 
     <!-- FLOATING GLASS TOPBAR -->
     <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2 rounded-[20px] p-2 sm:left-4 sm:right-4 sm:top-4 sm:h-[50px] sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[16px] sm:px-3.5 sm:py-0 lg:left-[264px] lg:right-4 lg:top-4">
@@ -1541,7 +1541,7 @@
     @endif
 
     <!-- MAIN CONTENT WRAPPER -->
-    <main id="appMain" class="sidebar-transition min-h-screen px-4 pb-28 pt-[124px] sm:px-5 sm:pt-[82px] lg:pb-10 lg:pl-[264px] lg:pr-5 lg:pt-[78px]">
+    <main id="appMain" class="sidebar-transition min-h-screen px-4 pb-28 pt-[144px] sm:px-5 sm:pt-[82px] lg:pb-10 lg:pl-[264px] lg:pr-5 lg:pt-[78px]">
         <div id="appMainStage" class="apple-stage-enter mx-auto max-w-[1060px]">
             <!-- FLASH NOTIFICATIONS -->
             @if(session('success'))

@@ -1369,7 +1369,7 @@
                                 <label class="inline-flex items-center gap-3 cursor-pointer select-none">
                                     <input type="checkbox" id="create-extend-toggle" onchange="updateWorkdayDueDatePreview()" class="sr-only peer">
                                     <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-forest-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-forest-700"></div>
-                                    <span class="text-xs font-semibold text-gray-800">Perpanjang (+3 Hari Kerja)</span>
+                                    <span class="text-xs font-semibold text-gray-800">Perpanjang (+1&times; Durasi Pinjam)</span>
                                 </label>
                             </div>
                         </div>
@@ -3169,15 +3169,16 @@
 
             const book = booksData[Number(bookIdxStr)];
             const baseDays = book.isTA ? 14 : 7;
-            const totalDays = baseDays + (isExtended ? 3 : 0);
+            const extraDays = isExtended ? baseDays : 0;
+            const totalDays = baseDays + extraDays;
             const dueDate = addBusinessDays(loanDateStr, totalDays);
 
             placeholder.classList.add("hidden");
             box.classList.remove("hidden");
             document.getElementById("due-date-formatted-text").textContent = formatIndoShortDate(dueDate);
             document.getElementById("due-date-rule-note").textContent = book.isTA
-                ? `Koleksi TA/Skripsi (14 hari kerja${isExtended ? " + 3 hari perpanjangan" : ""})`
-                : `Koleksi Umum / Non-TA (7 hari kerja${isExtended ? " + 3 hari perpanjangan" : ""})`;
+                ? `Koleksi TA/Skripsi (14 hari kerja${isExtended ? " + 14 hari perpanjangan" : ""})`
+                : `Koleksi Umum / Non-TA (7 hari kerja${isExtended ? " + 7 hari perpanjangan" : ""})`;
             document.getElementById("due-workdays-badge").textContent = `${totalDays} Hari Kerja`;
             lucide.createIcons();
         }
@@ -3212,7 +3213,8 @@
             const book = booksData[Number(bookIdxStr)];
             const isExtended = document.getElementById("create-extend-toggle").checked;
             const baseDays = book.isTA ? 14 : 7;
-            const totalDays = baseDays + (isExtended ? 7 : 0);
+            const extraDays = isExtended ? baseDays : 0;
+            const totalDays = baseDays + extraDays;
             const dueDateObj = addBusinessDays(loanDateStr, totalDays);
 
             const parts = loanDateStr.split("-");
@@ -3238,7 +3240,7 @@
                 kategoriBuku: book.kategori,
                 tglPinjam: formatIndoShortDate(loanDateObj),
                 jatuhTempo: formatIndoShortDate(dueDateObj),
-                catatanTempo: statusVal === "Booking" ? "Menunggu pengambilan" : (isExtended ? "Diperpanjang +3 hari kerja" : ""),
+                catatanTempo: statusVal === "Booking" ? "Menunggu pengambilan" : (isExtended ? `Diperpanjang +${extraDays} hari kerja` : ""),
                 hariTelat: 0,
                 status: statusVal,
                 waType: "Ingatkan WA",

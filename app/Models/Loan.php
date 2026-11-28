@@ -60,12 +60,8 @@ class Loan extends Model
 
             // Pastikan status aktif ('dipinjam' / 'terlambat') selalu konsisten dengan tanggal jatuh tempo
             if (in_array($loan->status, ['dipinjam', 'terlambat']) && ! $loan->is_lost && $loan->tanggal_pinjam) {
-                $book = $loan->book ?? ($loan->book_id ? Book::find($loan->book_id) : null);
-                $baseDuration = $book?->getLoanDurationWeekdays()
-                    ?? (($book?->collection_type === 'ta_skripsi') ? 14 : 7);
-                $extraDuration = $loan->is_extended ? 3 : 0;
                 $dueStart = Carbon::parse($loan->tanggal_pinjam)
-                    ->addWeekdays($baseDuration + $extraDuration)
+                    ->addWeekdays($loan->getTotalDurationWeekdays())
                     ->startOfDay();
 
                 if (today()->gt($dueStart)) {
@@ -159,7 +155,7 @@ class Loan extends Model
         $nextNumber = $maxNumber + 1;
 
         do {
-            $candidate = 'AKT-' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+            $candidate = 'AKT-'.str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
             $nextNumber++;
         } while (static::where('booking_code', $candidate)->exists());
 
@@ -177,10 +173,46 @@ class Loan extends Model
     }
 
     /**
-     * Hitung tanggal jatuh tempo otomatis:
+     * Durasi pinjam standar (hari kerja) sesuai jenis koleksi buku:
      * - TA / Skripsi: 14 hari kerja
-     * - Non-TA / Skripsi, Proposal TA/PKL & Laporan PKL: 7 hari kerja
-     * - Ditambah 3 hari kerja jika diperpanjang
+     * - Non-TA / Skripsi, Proposal & Laporan PKL: 7 hari kerja
+     */
+    public function getBaseDurationWeekdays(?Book $book = null): int
+    {
+        if (! $book) {
+            if ($this->relationLoaded('book') && $this->book && (int) $this->book->id === (int) $this->book_id) {
+                $book = $this->book;
+            } elseif ($this->book_id) {
+                $book = Book::with('category')->find($this->book_id);
+            }
+        }
+
+        return $book?->getLoanDurationWeekdays()
+            ?? (($book?->collection_type === 'ta_skripsi') ? 14 : 7);
+    }
+
+    /**
+     * Durasi tambahan perpanjangan (hari kerja): sama dengan durasi pinjam awalnya (7 atau 14 hari kerja).
+     */
+    public function getExtensionDurationWeekdays(?Book $book = null): int
+    {
+        return $this->getBaseDurationWeekdays($book);
+    }
+
+    /**
+     * Total durasi pinjam (hari kerja) termasuk perpanjangan bila aktif.
+     */
+    public function getTotalDurationWeekdays(?Book $book = null): int
+    {
+        $baseDuration = $this->getBaseDurationWeekdays($book);
+
+        return $baseDuration + ($this->is_extended ? $this->getExtensionDurationWeekdays($book) : 0);
+    }
+
+    /**
+     * Hitung tanggal jatuh tempo otomatis:
+     * - TA / Skripsi: 14 hari kerja (+14 hari kerja jika diperpanjang)
+     * - Non-TA / Skripsi, Proposal TA/PKL & Laporan PKL: 7 hari kerja (+7 hari kerja jika diperpanjang)
      */
     public function getJatuhTempoAttribute(): ?Carbon
     {
@@ -188,11 +220,7 @@ class Loan extends Model
             return null;
         }
 
-        $baseDuration = $this->book?->getLoanDurationWeekdays()
-            ?? (($this->book?->collection_type === 'ta_skripsi') ? 14 : 7);
-        $extraDuration = $this->is_extended ? 3 : 0;
-
-        return $this->tanggal_pinjam->copy()->addWeekdays($baseDuration + $extraDuration);
+        return $this->tanggal_pinjam->copy()->addWeekdays($this->getTotalDurationWeekdays());
     }
 
     public function calculateOverdueDays(?Carbon $returnDate = null): int
@@ -331,9 +359,9 @@ class Loan extends Model
 
         $digits = preg_replace('/\D+/', '', (string) $rawPhone);
         if (str_starts_with($digits, '0')) {
-            $digits = '62' . substr($digits, 1);
+            $digits = '62'.substr($digits, 1);
         } elseif (str_starts_with($digits, '8')) {
-            $digits = '62' . $digits;
+            $digits = '62'.$digits;
         }
 
         if (strlen($digits) < 10) {
@@ -357,16 +385,16 @@ class Loan extends Model
         }
 
         $pesan = "Halo *{$nama}*,\n\n"
-            . "Pengingat Sirkulasi *Perpustakaan Jurusan Akuntansi*:\n"
-            . "• Kode Transaksi: *{$kode}*\n"
-            . "• Judul Buku: *{$judulBuku}*\n"
-            . "• Jatuh Tempo: *{$jatuhTempo}*\n\n"
-            . "Status: {$statusPesan}\n"
-            . "Jam Layanan: Senin–Kamis (08.30–15.30 WIB) | Jumat (08.30–14.00 WIB)\n"
-            . "WA Perpustakaan: 0895-3363-84919\n\n"
-            . "Terima kasih.";
+            ."Pengingat Sirkulasi *Perpustakaan Jurusan Akuntansi*:\n"
+            ."• Kode Transaksi: *{$kode}*\n"
+            ."• Judul Buku: *{$judulBuku}*\n"
+            ."• Jatuh Tempo: *{$jatuhTempo}*\n\n"
+            ."Status: {$statusPesan}\n"
+            ."Jam Layanan: Senin–Kamis (08.30–15.30 WIB) | Jumat (08.30–14.00 WIB)\n"
+            ."WA Perpustakaan: 0895-3363-84919\n\n"
+            .'Terima kasih.';
 
-        return 'https://wa.me/' . $digits . '?text=' . rawurlencode($pesan);
+        return 'https://wa.me/'.$digits.'?text='.rawurlencode($pesan);
     }
 
     /**
