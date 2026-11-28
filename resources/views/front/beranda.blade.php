@@ -245,8 +245,9 @@
                             <button type="button"
                                     onclick="goSpotlight({{ $idx }})"
                                     data-spotlight-dot="{{ $idx }}"
+                                    aria-current="{{ $idx === 0 ? 'true' : 'false' }}"
                                     aria-label="Pilih buku sorotan {{ $idx + 1 }}"
-                                    class="spotlight-dot {{ $idx === 0 ? 'is-active bg-emerald-600 dark:bg-emerald-400' : 'bg-slate-300 dark:bg-slate-600 hover:bg-emerald-400' }}">
+                                    class="spotlight-dot">
                             </button>
                         @endforeach
                     </div>
@@ -307,7 +308,7 @@
 
         <div class="lg-shelf-stage">
         @foreach($shelves as $shelfKey => $shelfData)
-            <div data-shelf-panel="{{ $shelfKey }}" @if($shelfKey !== 'populer') aria-hidden="true" @endif class="shelf-panel {{ $shelfKey === 'populer' ? 'is-active' : 'is-parked' }} grid grid-cols-2 gap-x-3.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div data-shelf-panel="{{ $shelfKey }}" data-lg-state="{{ $shelfKey === 'populer' ? 'active' : 'parked' }}" @if($shelfKey !== 'populer') aria-hidden="true" @endif class="shelf-panel {{ $shelfKey === 'populer' ? 'is-active' : 'is-parked' }} grid grid-cols-2 gap-x-3.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
                 @forelse($shelfData['books'] as $book)
                     @include('front.components.book-card', ['book' => $book])
                 @empty

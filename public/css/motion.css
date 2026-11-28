@@ -361,17 +361,37 @@ html.dark #sidebarMorphIndicator {
     -webkit-user-drag: none;
 }
 
-.spotlight-dot {
+#berandaShelfTabs > button[aria-selected="true"],
+#pinjamanTabTrack > button[aria-selected="true"] {
+    color: #065f46 !important;
+}
+
+html.dark #berandaShelfTabs > button[aria-selected="true"],
+html.dark #pinjamanTabTrack > button[aria-selected="true"] {
+    color: #6ee7b7 !important;
+}
+
+#spotlightDots .spotlight-dot {
     width: 18px !important;
     height: 7px !important;
+    background-color: #cbd5e1;
     transform: scaleX(0.42);
     transform-origin: center;
     transition: transform var(--lg-dur-snappy) var(--lg-spring-snappy), background-color 220ms ease !important;
 }
 
-.spotlight-dot.is-active {
+html.dark #spotlightDots .spotlight-dot {
+    background-color: #475569;
+}
+
+#spotlightDots .spotlight-dot[aria-current="true"] {
     width: 18px !important;
+    background-color: #059669;
     transform: scaleX(1.28);
+}
+
+html.dark #spotlightDots .spotlight-dot[aria-current="true"] {
+    background-color: #34d399;
 }
 
 .lg-shelf-stage {
@@ -384,14 +404,16 @@ html.dark #sidebarMorphIndicator {
     contain: layout paint;
 }
 
-.shelf-panel.is-leaving {
+.shelf-panel.is-leaving,
+.shelf-panel[data-lg-state="leaving"] {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 1;
 }
 
-.shelf-panel.is-parked {
+.shelf-panel.is-parked,
+.shelf-panel[data-lg-state="parked"] {
     display: grid !important;
     position: absolute !important;
     inset: 0 !important;
@@ -400,6 +422,15 @@ html.dark #sidebarMorphIndicator {
     opacity: 0 !important;
     pointer-events: none !important;
     z-index: 0 !important;
+}
+
+.shelf-panel[data-lg-state="active"] {
+    display: grid !important;
+    position: relative !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 2 !important;
 }
 
 .lg-momentum-rail {
