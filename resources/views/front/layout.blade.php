@@ -2165,7 +2165,7 @@
                 const u = new URL(url, window.location.origin);
                 let p = u.pathname;
                 if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
-                return u.origin + p + (u.search || '');
+                return p + (u.search || '');
             } catch (_) {
                 return url;
             }
@@ -2175,6 +2175,7 @@
             const stage = document.getElementById('appMainStage');
             if (!stage) return;
             const curUrl = new URL(window.location.href);
+            const key = normalizeCacheKey(curUrl.href);
             const entry = {
                 html: document.documentElement.outerHTML,
                 title: document.title,
@@ -2182,8 +2183,9 @@
                 finalUrl: curUrl.href,
                 ts: Date.now()
             };
+            applePageCache.set(key, entry);
             applePageCache.set(curUrl.href, entry);
-            applePageCache.set(normalizeCacheKey(curUrl.href), entry);
+            if (key === '/') applePageCache.set('', entry);
         }
 
         function isUserLivePath(pathname) {
@@ -2224,6 +2226,9 @@
                 credentials: 'same-origin'
             }).then(function(res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
+                if (res.redirected && (res.url.indexOf('/masuk') !== -1 || res.url.indexOf('/daftar') !== -1)) {
+                    throw new Error('AUTH_REDIRECT');
+                }
                 return res.text().then(function(html) {
                     let parsedTitle = null, parsedStageHtml = null;
                     try {
@@ -2235,9 +2240,9 @@
                         }
                     } catch (_) {}
                     const entry = { html: html, title: parsedTitle, stageHtml: parsedStageHtml, finalUrl: res.url || url, ts: Date.now() };
-                    if (allowCache) {
-                        applePageCache.set(url, entry);
+                    if (allowCache && parsedStageHtml) {
                         applePageCache.set(normKey, entry);
+                        applePageCache.set(url, entry);
                     }
                     applePendingFetches.delete(normKey);
                     return entry;
@@ -2290,12 +2295,14 @@
         }
 
         function warmCoreNavLinks() {
-            const corePaths = ['/', '/katalog', '/tata-tertib', '/favorit', '/pinjaman', '/riwayat'];
-            corePaths.forEach(function(path) {
+            const seen = new Set();
+            document.querySelectorAll('#appSidebar nav a[href], #mobileTabBar a[href]').forEach(function(a) {
                 try {
-                    const u = new URL(path, window.location.origin);
-                    if (u.pathname === window.location.pathname) return;
+                    const u = new URL(a.href, window.location.origin);
+                    if (!isPjaxEligible(u) || u.pathname === window.location.pathname) return;
                     const k = normalizeCacheKey(u.href);
+                    if (seen.has(k)) return;
+                    seen.add(k);
                     const cached = applePageCache.get(k) || applePageCache.get(u.href);
                     const ttl = isUserLivePath(u.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
                     if (!cached || (Date.now() - cached.ts >= ttl)) {
@@ -2346,6 +2353,21 @@
         function applyStageSwap(nextStageHtml, nextTitle, finalUrl, pushState, fromCoverRect, flipBookId, toBookMatch) {
             const stage = document.getElementById('appMainStage');
             if (!stage) return;
+
+            // Cache outgoing stage first so clicking back is 0ms instant
+            try {
+                const curKey = normalizeCacheKey(window.location.href);
+                if (!applePageCache.has(curKey) || !applePageCache.get(curKey).stageHtml) {
+                    applePageCache.set(curKey, {
+                        html: document.documentElement.outerHTML,
+                        title: document.title,
+                        stageHtml: stage.innerHTML,
+                        finalUrl: window.location.href,
+                        ts: Date.now()
+                    });
+                }
+            } catch (_) {}
+
             const parsedUrl = new URL(finalUrl, window.location.origin);
             if (pushState) {
                 history.pushState({ appleUrl: parsedUrl.href }, '', parsedUrl.href);
@@ -2357,6 +2379,18 @@
             });
             stage.innerHTML = nextStageHtml;
             stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
+
+            // Cache incoming stage under normalized key too
+            try {
+                const inKey = normalizeCacheKey(parsedUrl.href);
+                applePageCache.set(inKey, {
+                    html: document.documentElement.outerHTML,
+                    title: nextTitle || document.title,
+                    stageHtml: nextStageHtml,
+                    finalUrl: parsedUrl.href,
+                    ts: Date.now()
+                });
+            } catch (_) {}
 
             const nextQ = parsedUrl.searchParams.get('q') || '';
             document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
@@ -2433,8 +2467,99 @@
             const targetKey = normalizeCacheKey(targetObj.href);
             const useCache = canCachePjaxUrl(targetObj);
             const ttlMs = isUserLivePath(targetObj.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
-            const cached = (applePageCache.get(targetKey) || applePageCache.get(targetObj.href));
+            const cached = (applePageCache.get(targetKey) || applePageCache.get(targetObj.href) || (targetKey === '/' ? applePageCache.get('') : null));
             const hasInstantHit = useCache && cached && (Date.now() - cached.ts < ttlMs) && cached.stageHtml;
+
+            // Capture cover bounds BEFORE swap for smooth GPU FLIP shared-element morph
+            let fromCoverRect = null;
+            let flipBookId = null;
+            const toBookMatch = targetObj.pathname.match(/^\/buku\/(\d+)/);
+            const fromBookMatch = window.location.pathname.match(/^\/buku\/(\d+)/);
+            if (toBookMatch) {
+                flipBookId = toBookMatch[1];
+                const srcEl = (lastClickedBookLink && lastClickedBookLink.querySelector('[data-cover-box]')) ||
+                              document.querySelector('a[href*="/buku/' + flipBookId + '"] [data-cover-box]') ||
+                              document.querySelector('a[href*="/buku/' + flipBookId + '"] div');
+                if (srcEl) {
+                    const r = srcEl.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) fromCoverRect = r;
+                }
+            } else if (fromBookMatch) {
+                flipBookId = fromBookMatch[1];
+                const detailEl = document.querySelector('[data-detail-cover="' + flipBookId + '"]');
+                if (detailEl) {
+                    const r = detailEl.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) fromCoverRect = r;
+                }
+            }
+            lastClickedBookLink = null;
+
+            // Instant 0ms optimistic tab feedback so mobile feels instantaneous
+            updateActiveChromeLinks(targetObj.pathname);
+
+            const lgm = window.LiquidGlassMotion;
+            if (lgm) {
+                const prevVt = lgm.getActiveVt();
+                if (prevVt && typeof prevVt.skipTransition === 'function') {
+                    try { prevVt.skipTransition(); } catch (_) {}
+                }
+            }
+
+            // INSTANT SYNCHRONOUS 0ms CACHE SWAP!
+            if (hasInstantHit) {
+                applyStageSwap(cached.stageHtml, cached.title, cached.finalUrl || targetUrl, pushState, fromCoverRect, flipBookId, toBookMatch);
+
+                // Background revalidation (SWR) for live paths or stale caches
+                if (isUserLivePath(targetObj.pathname) || (Date.now() - cached.ts > 15000)) {
+                    fetchAppleHtml(targetObj.href, false).then(function(fresh) {
+                        if (navToken === activeNavToken && fresh && fresh.stageHtml && fresh.stageHtml !== cached.stageHtml) {
+                            applyStageSwap(fresh.stageHtml, fresh.title, fresh.finalUrl, false, null, null, null);
+                        }
+                    }).catch(function() {});
+                }
+                return;
+            }
+
+            // Cache miss: instant progress bar feedback at 0ms (no 150ms delay!)
+            if (bar) {
+                bar.style.opacity = '1';
+                if (lgm) lgm.setNavProgress(0.45);
+            }
+            stage.classList.add('apple-stage-leaving');
+
+            try {
+                const result = await fetchAppleHtml(targetObj.href, useCache);
+                if (navToken !== activeNavToken) return;
+
+                let nextTitle = result.title;
+                let nextStageHtml = result.stageHtml;
+                if (!nextStageHtml) {
+                    const doc = new DOMParser().parseFromString(result.html, 'text/html');
+                    const nextStage = doc.getElementById('appMainStage');
+                    if (!nextStage) {
+                        window.location.href = result.finalUrl || targetUrl;
+                        return;
+                    }
+                    nextTitle = doc.title || document.title;
+                    nextStageHtml = nextStage.innerHTML;
+                }
+
+                applyStageSwap(nextStageHtml, nextTitle, result.finalUrl || targetUrl, pushState, fromCoverRect, flipBookId, toBookMatch);
+            } catch (_) {
+                if (navToken === activeNavToken) {
+                    window.location.href = targetUrl;
+                }
+                return;
+            } finally {
+                if (navToken === activeNavToken && bar) {
+                    if (lgm) lgm.setNavProgress(1);
+                    setTimeout(function() {
+                        bar.style.opacity = '0';
+                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 100);
+                    }, 40);
+                }
+            }
+        }
 
             // Capture cover bounds BEFORE swap for smooth GPU FLIP shared-element morph
             let fromCoverRect = null;
