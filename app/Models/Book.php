@@ -16,6 +16,7 @@ class Book extends Model
 
     protected $fillable = [
         'category_id',
+        'program_studi',
         'collection_type',
         'book_code',
         'judul',
@@ -56,6 +57,10 @@ class Book extends Model
                         $book->collection_type = 'umum';
                     }
                 }
+            }
+
+            if ($book->collection_type !== 'ta_skripsi') {
+                $book->program_studi = null;
             }
         });
 
