@@ -1765,6 +1765,14 @@
                 document.body.classList.add('sidebar-collapsed');
                 localStorage.setItem('perpus_sidebar_collapsed', '1');
             }
+
+            if (window.LiquidGlassMotion) {
+                window.LiquidGlassMotion.syncSidebarIndicator(false);
+                clearTimeout(window._lgSidebarSyncTimer);
+                window._lgSidebarSyncTimer = setTimeout(function() {
+                    window.LiquidGlassMotion.syncSidebarIndicator(false);
+                }, 360);
+            }
         }
 
         function closeGlassPopover(el) {
@@ -2076,6 +2084,10 @@
                     a.classList.toggle('dark:text-slate-400', !active);
                 } catch (_) {}
             });
+
+            if (window.LiquidGlassMotion) {
+                window.LiquidGlassMotion.syncSidebarIndicator(true);
+            }
         }
 
         function renderQrCode(canvasId, value) {

@@ -25,7 +25,7 @@
     </header>
 
     <!-- INSTANT 0ms SEGMENTED CONTROL WITH GLIDING LIQUID GLASS THUMB -->
-    <div id="pinjamanTabTrack" class="segment-track w-full sm:w-fit max-w-full flex flex-nowrap rounded-full mb-5 overflow-x-auto no-scrollbar">
+    <div id="pinjamanTabTrack" class="segment-track w-full sm:w-fit max-w-full flex flex-nowrap rounded-full p-1 mb-5 overflow-x-auto no-scrollbar">
         <button type="button"
                 onclick="switchPinjamanTab('siap', this)"
                 data-pinjaman-tab="siap"

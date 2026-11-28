@@ -107,16 +107,16 @@ function measureSeg(tr){
 
 function morphSegmentThumb(tr,el,anim){
   if(!tr||!el)return;
-  const map=(tr._lgRects&&tr._lgRects.has(el))?tr._lgRects:measureSeg(tr),rc=map.get(el);
-  if(!rc||rc.width<=0)return;
+  const tw=el.offsetWidth,tx=el.offsetLeft;
+  if(tw<=0)return;
   let th=tr.querySelector('.segment-thumb');
   if(!th){th=d.createElement('span');th.className='segment-thumb';tr.classList.add('has-thumb');tr.prepend(th);}
-  tr._activeSegmentEl=el;const tw=rc.width,tx=rc.left;
+  tr._activeSegmentEl=el;
   if(!tr._lgM){
     const st={tw,cw:tw,xS:null,wS:null};
-    st.xS=createSpring(tx,'base',(x,vx)=>{
-      const str=flags.morphStretch&&!isRed()?Math.min(0.26,Math.abs(vx)*0.00028):0;
-      const sx=(st.cw/Math.max(1,st.tw))*(1+str),sy=1-str*0.18;
+    st.xS=createSpring(tx,'snappy',(x,vx)=>{
+      const str=flags.morphStretch&&!isRed()?Math.min(0.24,Math.abs(vx)*0.00025):0;
+      const sx=(st.cw/Math.max(1,st.tw))*(1+str),sy=1-str*0.16;
       th.style.transform=`translate3d(${x.toFixed(2)}px,0,0) scaleX(${sx.toFixed(4)}) scaleY(${sy.toFixed(4)})`;
     },()=>wc(th,false));
     st.wS=createSpring(tw,'snappy',(v)=>{st.cw=v;});
@@ -125,7 +125,7 @@ function morphSegmentThumb(tr,el,anim){
   const st=tr._lgM;
   if(!anim||isRed()){st.tw=st.cw=tw;th.style.width=tw+'px';st.wS.snap(tw);st.xS.snap(tx);wc(th,false);return;}
   const vw=st.wS.value;st.tw=tw;th.style.width=tw+'px';
-  wc(th,true);st.wS.snap(vw);st.wS.setTarget(tw,'snappy');st.xS.setTarget(tx,'base');
+  wc(th,true);st.wS.snap(vw);st.wS.setTarget(tw,'snappy');st.xS.setTarget(tx,'snappy');
 }
 
 function syncSidebar(anim){
@@ -133,15 +133,20 @@ function syncSidebar(anim){
   if(!nav||!act)return;
   let ind=d.getElementById('sidebarMorphIndicator');
   if(!ind){ind=d.createElement('span');ind.id='sidebarMorphIndicator';nav.classList.add('has-morph-indicator');nav.prepend(ind);}
-  const ty=act.offsetTop,th=act.offsetHeight||40,tw=act.offsetWidth||200;
+  const col=r.classList.contains('sidebar-collapsed')||d.body.classList.contains('sidebar-collapsed');
+  const th=act.offsetHeight||38;
+  const tw=col?38:(act.offsetWidth||nav.clientWidth||200);
+  const tx=col?(nav.clientWidth<80?Math.max(0,Math.round((nav.clientWidth-tw)/2)):5):(act.offsetLeft||0);
+  const ty=act.offsetTop;
+  nav._lgSx=tx;
   if(!nav._lgInd){
-    nav._lgInd=createSpring(ty,'base',(y,vy)=>{
-      const str=flags.morphStretch&&!isRed()?Math.min(0.22,Math.abs(vy)*0.00025):0;
-      ind.style.transform=`translate3d(0,${y.toFixed(2)}px,0) scale(${(1-str*0.08).toFixed(4)},${(1+str).toFixed(4)})`;
+    nav._lgInd=createSpring(ty,'snappy',(y,vy)=>{
+      const str=flags.morphStretch&&!isRed()?Math.min(0.18,Math.abs(vy)*0.00022):0;
+      ind.style.transform=`translate3d(${(nav._lgSx||0).toFixed(1)}px,${y.toFixed(2)}px,0) scale(${(1-str*0.08).toFixed(4)},${(1+str).toFixed(4)})`;
     },()=>wc(ind,false));
   }
   ind.style.opacity='1';ind.style.height=th+'px';ind.style.width=tw+'px';
-  if(!anim||isRed()){nav._lgInd.snap(ty);wc(ind,false);}else{wc(ind,true);nav._lgInd.setTarget(ty,'base');}
+  if(!anim||isRed()){nav._lgInd.snap(ty);wc(ind,false);}else{wc(ind,true);nav._lgInd.setTarget(ty,'snappy');}
 }
 
 function crossfadePanels(all,matchFn,cls){

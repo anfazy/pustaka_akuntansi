@@ -10,35 +10,20 @@
     navigation: auto;
 }
 
-#appHeader {
-    view-transition-name: lg-header;
+#appMainStage {
+    view-transition-name: lg-stage;
 }
 
-#appSidebar {
-    view-transition-name: lg-sidebar;
-}
-
-#mobileTabBar {
-    view-transition-name: lg-tabbar;
-}
-
-::view-transition-group(lg-header),
-::view-transition-group(lg-sidebar),
-::view-transition-group(lg-tabbar) {
-    animation: none;
-    z-index: 40;
-}
-
-::view-transition-old(lg-header),
-::view-transition-new(lg-header),
-::view-transition-old(lg-sidebar),
-::view-transition-new(lg-sidebar),
-::view-transition-old(lg-tabbar),
-::view-transition-new(lg-tabbar) {
+::view-transition-group(root) {
     animation: none;
 }
 
-::view-transition-group(*) {
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+}
+
+::view-transition-group(lg-stage) {
     animation-duration: var(--lg-dur-base);
     animation-timing-function: var(--lg-spring-base);
 }
@@ -65,11 +50,11 @@
     }
 }
 
-::view-transition-old(root) {
+::view-transition-old(lg-stage) {
     animation: lgVtOld var(--lg-dur-exit) var(--lg-ease-exit) both;
 }
 
-::view-transition-new(root) {
+::view-transition-new(lg-stage) {
     animation: lgVtNew var(--lg-dur-materialize) var(--lg-spring-soft) both;
 }
 
@@ -231,7 +216,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
+    width: 0;
     height: 40px;
     border-radius: 9999px;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(240, 253, 244, 0.84) 100%);
@@ -242,6 +227,7 @@
     z-index: 0;
     opacity: 0;
     transform-origin: center top;
+    transition: width 260ms var(--lg-ease-apple), opacity 180ms ease;
 }
 
 html.dark #sidebarMorphIndicator {
@@ -256,14 +242,18 @@ html.dark #sidebarMorphIndicator {
     z-index: 1;
 }
 
-#appSidebar nav.has-morph-indicator > a.bg-white\/95 {
+#appSidebar nav.has-morph-indicator > a.bg-white\/95,
+html.sidebar-collapsed #appSidebar nav.has-morph-indicator > a.bg-white\/95,
+body.sidebar-collapsed #appSidebar nav.has-morph-indicator > a.bg-white\/95 {
     background: transparent !important;
     border-color: transparent !important;
     box-shadow: none !important;
 }
 
-#appSidebar nav.has-morph-indicator > a.bg-white\/95::before {
-    opacity: 0;
+#appSidebar nav.has-morph-indicator > a.bg-white\/95::before,
+html.sidebar-collapsed #appSidebar nav.has-morph-indicator > a.bg-white\/95::before,
+body.sidebar-collapsed #appSidebar nav.has-morph-indicator > a.bg-white\/95::before {
+    opacity: 0 !important;
 }
 
 #sheetStockIndicator {
