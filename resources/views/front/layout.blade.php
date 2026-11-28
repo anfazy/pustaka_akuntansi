@@ -2157,7 +2157,7 @@
 
         const applePageCache = new Map();
         const applePendingFetches = new Map();
-        const CACHE_TTL_MS = 60000;
+        const CACHE_TTL_MS = 300000;
         const USER_CACHE_TTL_MS = 15000;
 
         function normalizeCacheKey(url) {
@@ -2509,11 +2509,11 @@
             if (hasInstantHit) {
                 applyStageSwap(cached.stageHtml, cached.title, cached.finalUrl || targetUrl, pushState, fromCoverRect, flipBookId, toBookMatch);
 
-                // Background revalidation (SWR) for live paths or stale caches
-                if (isUserLivePath(targetObj.pathname) || (Date.now() - cached.ts > 15000)) {
+                // Background cache refresh for future visits (quietly in memory, no DOM flicker)
+                if (isUserLivePath(targetObj.pathname) || (Date.now() - cached.ts > 30000)) {
                     fetchAppleHtml(targetObj.href, false).then(function(fresh) {
-                        if (navToken === activeNavToken && fresh && fresh.stageHtml && fresh.stageHtml !== cached.stageHtml) {
-                            applyStageSwap(fresh.stageHtml, fresh.title, fresh.finalUrl, false, null, null, null);
+                        if (fresh && fresh.stageHtml) {
+                            applePageCache.set(targetKey, fresh);
                         }
                     }).catch(function() {});
                 }

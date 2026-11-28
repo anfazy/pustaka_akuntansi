@@ -373,10 +373,11 @@
                 <iframe
                     title="Peta Lokasi Griya HiMA Polines"
                     src="https://maps.google.com/maps?q=Griya+HiMA+Polines,+Tembalang,+Semarang&ll=-7.0513902,110.4341623&z=17&ie=UTF8&iwloc=&output=embed"
-                    class="w-full h-full border-0 filter contrast-[1.04]"
+                    class="w-full h-full border-0 filter contrast-[1.04] pointer-events-none"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade">
                 </iframe>
+                <a href="https://maps.google.com/?q=Griya+HiMA+Polines,+Tembalang,+Semarang" target="_blank" rel="noopener noreferrer" class="absolute inset-0 z-10" aria-label="Buka peta lokasi di Google Maps"></a>
             </div>
 
             <div class="flex items-center justify-between gap-2.5 px-1">
