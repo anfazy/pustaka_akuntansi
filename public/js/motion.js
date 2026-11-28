@@ -4,7 +4,7 @@
 if(w.LiquidGlassMotion)return;
 const r=d.documentElement,redMQ=w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)'),hovMQ=w.matchMedia&&w.matchMedia('(hover: hover) and (pointer: fine)');
 const SP_E='cubic-bezier(0.22,1.32,0.36,1)',EX_E='cubic-bezier(0.32,0,0.24,1)';
-const PRESETS={snappy:{k:300,c:27.7,m:1},base:{k:213,c:21.9,m:1},soft:{k:146,c:20.3,m:1}};
+const PRESETS={snappy:{k:540,c:37,m:1},base:{k:380,c:31,m:1},soft:{k:260,c:27,m:1}};
 const flags={motion:1,blurMaterialize:1,specular:1,tilt:1,pressLift:1,morphStretch:1,scrollCondense:1,reveal:1,countUp:1,viewTransitions:1,spotlightInertia:1};
 const CSS_V={motion:'--lg-motion-enabled',blurMaterialize:'--lg-blur-scale',specular:'--lg-specular-opacity',tilt:'--lg-tilt-strength',pressLift:'--lg-press-lift',morphStretch:'--lg-morph-stretch',scrollCondense:'--lg-scroll-condense',reveal:'--lg-reveal-enabled',countUp:'--lg-countup-enabled',viewTransitions:'--lg-view-transitions',spotlightInertia:'--lg-spotlight-inertia'};
 
@@ -158,10 +158,11 @@ function crossfadePanels(all,matchFn,cls){
     else{killAnim(p);wc(p,false);if(isGrid)p.dataset.lgState='parked';else{p.classList.remove('is-active','is-leaving',cls);p.classList.add('hidden');}}
   });
   if(outE&&outE!==inE){
+    if(outE.parentElement)outE.parentElement.classList.add('lg-shelf-stage');
     outE.setAttribute('aria-hidden','true');
     if(!isRed()&&outE.animate){
       if(isGrid)outE.dataset.lgState='leaving';else{outE.classList.remove('is-active');outE.classList.add('is-leaving');}
-      waapi(outE,[{opacity:1,transform:'scale(1)'},{opacity:0,transform:isLite()?'scale(1)':'scale(0.97)'}],{duration:130,easing:EX_E,fill:'forwards'},()=>{
+      waapi(outE,[{opacity:1,transform:'scale(1)'},{opacity:0,transform:isLite()?'scale(1)':'scale(0.975)'}],{duration:95,easing:EX_E,fill:'forwards'},()=>{
         if(isGrid)outE.dataset.lgState='parked';else{outE.classList.remove('is-leaving',cls);outE.classList.add('hidden');}
       });
     }else{
@@ -169,14 +170,15 @@ function crossfadePanels(all,matchFn,cls){
     }
   }
   if(inE){
+    if(inE.parentElement)inE.parentElement.classList.add('lg-shelf-stage');
     killAnim(inE);inE.removeAttribute('aria-hidden');
     if(isGrid)inE.dataset.lgState='active';
     else{inE.classList.remove('hidden','is-leaving');inE.classList.add('is-active',cls);}
     if(!isRed()){
       if(isLite()){
-        waapi(inE,[{opacity:0},{opacity:1}],{duration:150,easing:'ease-out',fill:'both'});
+        waapi(inE,[{opacity:0},{opacity:1}],{duration:110,easing:'ease-out',fill:'both'});
       }else{
-        Array.from(inE.children).slice(0,8).forEach((c,i)=>waapi(c,[{opacity:0,transform:'translate3d(0,10px,0) scale(0.95)'},{opacity:1,transform:'translate3d(0,0,0) scale(1)'}],{duration:340,delay:Math.min(i,7)*36,easing:SP_E,fill:'both'}));
+        Array.from(inE.children).slice(0,8).forEach((c,i)=>waapi(c,[{opacity:0,transform:'translate3d(0,8px,0) scale(0.96)'},{opacity:1,transform:'translate3d(0,0,0) scale(1)'}],{duration:230,delay:Math.min(i,7)*24,easing:SP_E,fill:'both'}));
       }
     }
   }

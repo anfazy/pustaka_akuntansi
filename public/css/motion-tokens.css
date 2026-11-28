@@ -27,12 +27,12 @@
     /* ------------------------------------------------------------------------
        2. SPRING TIMING CONSTANTS & CUBIC FALLBACKS
        ------------------------------------------------------------------------ */
-    --lg-dur-snappy: calc(520ms * var(--lg-motion-enabled));
-    --lg-dur-base: calc(620ms * var(--lg-motion-enabled));
-    --lg-dur-soft: calc(750ms * var(--lg-motion-enabled));
-    --lg-dur-materialize: calc(220ms * var(--lg-motion-enabled));
-    --lg-dur-exit: calc(145ms * var(--lg-motion-enabled));
-    --lg-dur-ring: calc(260ms * var(--lg-motion-enabled));
+    --lg-dur-snappy: calc(280ms * var(--lg-motion-enabled));
+    --lg-dur-base: calc(340ms * var(--lg-motion-enabled));
+    --lg-dur-soft: calc(440ms * var(--lg-motion-enabled));
+    --lg-dur-materialize: calc(170ms * var(--lg-motion-enabled));
+    --lg-dur-exit: calc(100ms * var(--lg-motion-enabled));
+    --lg-dur-ring: calc(200ms * var(--lg-motion-enabled));
 
     /* Materialize Blur Budget (<250ms, small elements only, 0 in lite/reduced) */
     --lg-blur-materialize: calc(6px * var(--lg-blur-scale));

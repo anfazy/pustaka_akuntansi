@@ -46,6 +46,7 @@
         </button>
     </div>
 
+    <div class="lg-shelf-stage relative">
     <!-- ================================================================
          TAB 1: SIAP DIAMBIL
          ================================================================ -->
@@ -267,6 +268,7 @@
                 <p class="text-[12.5px] text-slate-500 mt-1 max-w-sm">Terima kasih selalu mengembalikan buku tepat waktu.</p>
             </div>
         @endforelse
+    </div>
     </div>
 
     <!-- MODAL SUKSES BOOKING -->
