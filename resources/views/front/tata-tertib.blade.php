@@ -85,7 +85,7 @@
                         <h3 class="text-[13.5px] font-semibold text-slate-900">Ambil maksimal 1&times;24 jam</h3>
                     </div>
                     <p class="text-[12.5px] text-slate-600 dark:text-slate-300 leading-relaxed pl-8">
-                        Datang ke ruang baca maksimal <strong class="font-semibold text-slate-900">1&times;24 jam</strong> sesuai jam layanan (Senin–Kamis s/d 15.30 WIB, Jumat s/d 14.00 WIB). Tunjukkan kode booking dan titipkan satu kartu jaminan; masa pinjam <strong class="font-semibold text-slate-900">7 hari kerja</strong> (14 hari kerja untuk TA/Skripsi) dihitung sejak buku diambil. <strong class="font-semibold text-rose-600 dark:text-rose-400">Lewat batas waktu, booking hangus otomatis.</strong>
+                        Datang ke ruang baca maksimal <strong class="font-semibold text-slate-900">1&times;24 jam</strong> sesuai jam layanan (Senin–Kamis s/d 15.30 WIB, Jumat s/d 14.00 WIB). Tunjukkan kode booking dan titipkan satu kartu jaminan; masa pinjam dihitung sejak buku diambil. <strong class="font-semibold text-rose-600 dark:text-rose-400">Lewat batas waktu, booking hangus otomatis.</strong>
                     </p>
                 </article>
 
