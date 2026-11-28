@@ -141,7 +141,7 @@
                             <span class="block text-[10.5px] font-medium text-slate-500">Eksemplar Siap</span>
                         </div>
                         <div class="rounded-[12px] bg-white/65 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-2">
-                            <span class="block text-base sm:text-lg font-bold tracking-tight text-slate-900">7 Hari</span>
+                            <span class="block text-base sm:text-lg font-bold tracking-tight text-slate-900">7&ndash;14 Hari</span>
                             <span class="block text-[10.5px] font-medium text-slate-500">Durasi Pinjam</span>
                         </div>
                     </div>
@@ -279,9 +279,9 @@
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
                         Terbaru
                     </button>
-                    <button type="button" onclick="switchBerandaShelf('akuntansi', this)" data-shelf-tab="akuntansi"
+                    <button type="button" onclick="switchBerandaShelf('pelajaran', this)" data-shelf-tab="pelajaran"
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
-                        Akuntansi &amp; Pajak
+                        Pelajaran
                     </button>
                     <button type="button" onclick="switchBerandaShelf('skripsi', this)" data-shelf-tab="skripsi"
                             class="inline-flex min-h-[32px] items-center rounded-full px-3 text-[11.5px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-colors whitespace-nowrap">
@@ -300,7 +300,7 @@
             $shelves = [
                 'populer' => ['books' => $popularBooks->take(4), 'empty' => 'Belum ada data buku populer.'],
                 'terbaru' => ['books' => $newestBooks->take(4), 'empty' => 'Belum ada koleksi terbaru.'],
-                'akuntansi' => ['books' => ($accountingBooks ?? collect())->take(4), 'empty' => 'Belum ada buku Akuntansi & Perpajakan.'],
+                'pelajaran' => ['books' => ($pelajaranBooks ?? collect())->take(4), 'empty' => 'Belum ada koleksi kategori Pelajaran.'],
                 'skripsi' => ['books' => ($thesisBooks ?? collect())->take(4), 'empty' => 'Belum ada koleksi TA / Skripsi atau PKL.'],
             ];
         @endphp
@@ -330,7 +330,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
                 @foreach($categories as $cIdx => $cat)
                     <a href="{{ route('katalog', ['kategori' => $cat->slug]) }}"
                        style="--stagger: {{ $cIdx }}"
@@ -368,8 +368,8 @@
         <div class="lg:col-span-5 glass-card rounded-[20px] p-3 flex flex-col justify-between gap-2.5">
             <div class="relative w-full h-[150px] rounded-[12px] overflow-hidden border border-white/60 dark:border-white/10 shadow-inner bg-slate-100 dark:bg-slate-800">
                 <iframe
-                    title="Peta Lokasi Perpustakaan Polines"
-                    src="https://maps.google.com/maps?q=Perpustakaan+Politeknik+Negeri+Semarang,+Tembalang,+Semarang&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                    title="Peta Lokasi Griya HiMA Polines"
+                    src="https://maps.google.com/maps?q=Griya+HiMA+Polines,+Tembalang,+Semarang&ll=-7.0513902,110.4341623&z=17&ie=UTF8&iwloc=&output=embed"
                     class="w-full h-full border-0 filter contrast-[1.04]"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade">
@@ -378,10 +378,10 @@
 
             <div class="flex items-center justify-between gap-2.5 px-1">
                 <div class="min-w-0">
-                    <span class="block text-[11.5px] font-bold text-slate-900 truncate">Gedung Jurusan Akuntansi Polines</span>
+                    <span class="block text-[11.5px] font-bold text-slate-900 truncate">Gedung Jurusan Akuntansi Polines (Griya HiMA)</span>
                     <span class="block text-[10.5px] text-slate-500 truncate">Tembalang, Kota Semarang 50275</span>
                 </div>
-                <a href="https://maps.google.com/?q=Perpustakaan+Politeknik+Negeri+Semarang" target="_blank"
+                <a href="https://maps.app.goo.gl/65DaCK38rPP5mJ459" target="_blank" rel="noopener noreferrer"
                    class="btn-glass inline-flex min-h-[32px] shrink-0 items-center gap-1 rounded-full px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400">
                     <span>Maps</span>
                     <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
@@ -428,7 +428,7 @@
             </div>
 
             <div class="space-y-1.5">
-                <a href="https://wa.me/628895627873?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
+                <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank"
                    class="btn-glass flex min-h-[34px] w-full items-center justify-center gap-2 rounded-[10px] px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400">
                     <span>Chat WhatsApp Admin</span>
                 </a>
