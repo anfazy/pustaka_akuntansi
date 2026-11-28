@@ -392,16 +392,31 @@ class LoanResource extends Resource
                             ->label('Status Transaksi Peminjaman')
                             ->columnSpanFull()
                             ->inline()
-                            ->options(fn (?Loan $record): array => $record === null
-                                ? [
-                                    'dipinjam' => 'Sudah Diambil (Dipinjam)',
-                                ]
-                                : [
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, ?string $state, ?Loan $record): void {
+                                if ($state === 'dipinjam' && $record?->status === 'booked') {
+                                    $set('tanggal_pinjam', today()->toDateString());
+                                }
+                            })
+                            ->options(function (?Loan $record): array {
+                                if ($record === null) {
+                                    return [
+                                        'dipinjam' => 'Sudah Diambil (Dipinjam)',
+                                    ];
+                                }
+
+                                $options = [];
+                                if ($record->status === 'booked') {
+                                    $options['booked'] = 'Booking Masuk (Menunggu Diambil)';
+                                }
+
+                                return array_merge($options, [
                                     'dipinjam' => 'Sudah Diambil (Dipinjam)',
                                     'dikembalikan' => 'Dikembalikan',
                                     'terlambat' => 'Terlambat',
                                     'dibatalkan' => 'Dibatalkan',
-                                ])
+                                ]);
+                            })
                             ->colors([
                                 'booked' => 'info',
                                 'dipinjam' => 'warning',
@@ -694,11 +709,21 @@ class LoanResource extends Resource
                     ->icon('heroicon-o-check-badge')
                     ->color('info')
                     ->visible(fn (Loan $record): bool => $record->status === 'booked' && ! $record->isBookingExpired())
-                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Select::make('card_type')
+                            ->label('Jenis Kartu Identitas yang Dijaminkan')
+                            ->options([
+                                'KTM' => 'KTM (Kartu Tanda Mahasiswa)',
+                                'Kartu Perpustakaan' => 'Kartu Perpustakaan',
+                                'Kartu Asuransi' => 'Kartu Asuransi',
+                            ])
+                            ->default(fn (Loan $record): string => $record->card_type ?: 'KTM')
+                            ->required(),
+                    ])
                     ->modalHeading(fn (Loan $record): string => "Konfirmasi Buku Diambil ({$record->booking_code})")
-                    ->modalDescription(fn (Loan $record): string => "Pastikan kartu identitas ({$record->card_type}) milik {$record->anggota?->nama} (NIM: {$record->member_nim} • Kelas: ".($record->anggota?->kelas ?? '-').') sudah diserahkan. Stok buku akan otomatis berkurang 1.')
+                    ->modalDescription(fn (Loan $record): string => "Pilih kartu identitas yang dijaminkan oleh {$record->anggota?->nama} (NIM: {$record->member_nim} • Kelas: ".($record->anggota?->kelas ?? '-').'). Stok buku akan otomatis berkurang 1 dan status langsung berubah menjadi Dipinjam.')
                     ->modalSubmitActionLabel('Ya, Buku Diambil')
-                    ->action(function (Loan $record): void {
+                    ->action(function (Loan $record, array $data): void {
                         if (($record->book?->stok ?? 0) <= 0) {
                             Notification::make()
                                 ->title('Stok Buku Habis')
@@ -710,13 +735,14 @@ class LoanResource extends Resource
                         }
 
                         $record->update([
+                            'card_type' => $data['card_type'] ?? $record->card_type ?? 'KTM',
                             'status' => 'dipinjam',
                             'tanggal_pinjam' => today()->toDateString(),
                         ]);
 
                         Notification::make()
                             ->title('Buku Berhasil Diserahkan')
-                            ->body("Kode {$record->booking_code} statusnya berubah menjadi Dipinjam. Jatuh tempo: {$record->jatuh_tempo?->locale('id')->translatedFormat('d M Y')}.")
+                            ->body("Kode {$record->booking_code} statusnya berubah menjadi Dipinjam (Jaminan: {$record->card_type}). Jatuh tempo: {$record->jatuh_tempo?->locale('id')->translatedFormat('d M Y')}.")
                             ->success()
                             ->send();
                     }),
