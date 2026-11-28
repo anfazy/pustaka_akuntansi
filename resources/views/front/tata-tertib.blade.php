@@ -96,7 +96,7 @@
                         <h3 class="text-[13.5px] font-semibold text-slate-900">Bisa perpanjang 1 kali</h3>
                     </div>
                     <p class="text-[12.5px] text-slate-600 dark:text-slate-300 leading-relaxed pl-8">
-                        Pinjaman aktif dapat diperpanjang mandiri lewat menu Pinjaman Saya sesuai durasi pinjam awal (<strong class="font-semibold text-slate-900">+7 hari kerja</strong> untuk Buku Umum/PKL, atau <strong class="font-semibold text-slate-900">+14 hari kerja</strong> untuk TA/Skripsi) sebelum melewati tanggal jatuh tempo.
+                        Pinjaman aktif dapat diperpanjang mandiri lewat menu Pinjaman Saya sesuai durasi pinjam awal sebelum melewati tanggal jatuh tempo.
                     </p>
                 </article>
 
