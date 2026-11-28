@@ -10,12 +10,25 @@
     navigation: auto;
 }
 
+#appHeader {
+    view-transition-name: lg-header;
+}
+
+#appSidebar {
+    view-transition-name: lg-sidebar;
+}
+
+#mobileTabBar {
+    view-transition-name: lg-tabbar;
+}
+
 #appMainStage {
     view-transition-name: lg-stage;
 }
 
 ::view-transition-group(root) {
     animation: none;
+    z-index: 0;
 }
 
 ::view-transition-old(root),
@@ -23,9 +36,30 @@
     animation: none;
 }
 
+::view-transition-group(lg-header),
+::view-transition-group(lg-sidebar),
+::view-transition-group(lg-tabbar) {
+    animation: none;
+    z-index: 50;
+}
+
+::view-transition-old(lg-header),
+::view-transition-new(lg-header),
+::view-transition-old(lg-sidebar),
+::view-transition-new(lg-sidebar),
+::view-transition-old(lg-tabbar),
+::view-transition-new(lg-tabbar) {
+    animation: none;
+}
+
 ::view-transition-group(lg-stage) {
     animation-duration: var(--lg-dur-base);
     animation-timing-function: var(--lg-spring-base);
+    z-index: 10;
+}
+
+::view-transition-group(*) {
+    z-index: 60;
 }
 
 @keyframes lgVtOld {

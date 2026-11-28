@@ -285,6 +285,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        if (window.invalidateAppleCache) window.invalidateAppleCache();
                         if (data.is_favorited) {
                             btn.className = 'btn-amber-gold mt-3.5 flex min-h-[44px] sm:min-h-[38px] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
                             icon.setAttribute('fill', 'currentColor');

@@ -8,7 +8,7 @@
             grid-template-rows: 1fr;
             opacity: 1;
             transform: translate3d(0, 0, 0);
-            transition: grid-template-rows 200ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), opacity 170ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), transform 230ms var(--lg-spring-base, cubic-bezier(0.22, 1.36, 0.36, 1));
+            transition: grid-template-rows 140ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), opacity 120ms var(--lg-ease-apple, cubic-bezier(0.32, 0.72, 0, 1)), transform 160ms var(--lg-spring-base, cubic-bezier(0.22, 1.36, 0.36, 1));
         }
         .catalog-prodi-collapse.is-collapsed {
             grid-template-rows: 0fr;
@@ -25,8 +25,8 @@
         }
         .catalog-card-stagger {
             contain: layout paint;
-            animation: catalogCardFadeIn var(--lg-dur-snappy, 280ms) var(--lg-spring-snappy, cubic-bezier(0.22, 1.32, 0.36, 1)) both;
-            animation-delay: calc(min(var(--card-idx, 0), 7) * 24ms);
+            animation: catalogCardFadeIn var(--lg-dur-snappy, 170ms) var(--lg-spring-snappy, cubic-bezier(0.22, 1.32, 0.36, 1)) both;
+            animation-delay: calc(min(var(--card-idx, 0), 7) * 16ms);
         }
         @keyframes catalogSkeletonPulse {
             0%, 100% { opacity: 0.55; }
