@@ -7,13 +7,13 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-        <!-- Mobile: Satu tombol Filter (N) membuka Bottom Sheet -->
+        <!-- Mobile: Satu tombol Filter (N) membuka Bottom Sheet (>= 44pt tap target) -->
         <button type="button"
                 id="catalogMobileFilterBtn"
                 aria-haspopup="dialog"
                 aria-controls="catalogMobileSheet"
                 aria-expanded="false"
-                class="sm:hidden inline-flex min-h-[36px] items-center gap-2 rounded-full px-3.5 text-[12px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 {{ $activeFilterCount > 0 ? 'btn-emerald shadow-sm' : 'liquid-chip' }}">
+                class="sm:hidden inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-[12px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 {{ $activeFilterCount > 0 ? 'btn-emerald shadow-sm' : 'liquid-chip' }}">
             <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
             </svg>
@@ -41,7 +41,7 @@
                 aria-label="Urutkan koleksi"
                 tabindex="-1"
                 data-listbox-menu="sort"
-                class="glass-popover-sheet hidden absolute right-0 z-50 mt-1.5 min-w-[185px] rounded-[16px] p-1.5 space-y-0.5 focus:outline-none">
+                class="glass-popover-sheet hidden absolute right-0 z-50 mt-1.5 min-w-[185px] rounded-[18px] p-1.5 space-y-0.5 focus:outline-none">
                 @foreach($sortOptions as $sortKey => $sortLabel)
                     @php
                         $isSortActive = ($currentSort === $sortKey);
@@ -54,7 +54,7 @@
                            data-catalog-nav
                            data-no-pjax
                            tabindex="-1"
-                           class="flex w-full items-center justify-between gap-2 rounded-[11px] px-3 py-1.5 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 {{ $isSortActive ? 'bg-emerald-500/15 text-emerald-900 dark:text-emerald-300 font-semibold' : 'font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-500/10' }}">
+                           class="flex w-full items-center justify-between gap-2 rounded-[12px] px-3 py-1.5 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 {{ $isSortActive ? 'bg-emerald-500/15 text-emerald-900 dark:text-emerald-300 font-semibold' : 'font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-500/10' }}">
                             <span>{{ $sortLabel }}</span>
                             @if($isSortActive)
                                 <svg class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

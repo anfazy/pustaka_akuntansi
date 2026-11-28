@@ -501,12 +501,15 @@ class LoanAndBookEnhancementTest extends TestCase
             ->assertSee('role="listbox"', false)
             ->assertSee('data-visible="0"', false);
 
-        // Saat memilih TA/Skripsi, sub-filter prodi muncul kontekstual dengan singkatan & kelompok jenjang
+        // Saat memilih TA/Skripsi, sub-filter prodi muncul kontekstual dengan singkatan & tanpa label jenjang teks
         $this->get(route('katalog', ['kategori' => 'ta-skripsi']))
             ->assertOk()
             ->assertSee('data-visible="1"', false)
-            ->assertSee('Sarjana Terapan')
-            ->assertSee('Diploma 3')
+            ->assertSee('KA')
+            ->assertSee('D3 AK')
+            ->assertSee('D3 KP')
+            ->assertDontSee('Sarjana Terapan')
+            ->assertDontSee('Diploma 3')
             ->assertSee('Komputerisasi Akuntansi (S. Tr)')
             ->assertSee('aria-pressed=', false)
             ->assertSee('disabled', false);

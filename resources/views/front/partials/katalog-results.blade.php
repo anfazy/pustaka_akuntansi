@@ -39,14 +39,14 @@
                     <a href="{{ $clearProdiKeepCategoryUrl }}"
                        data-catalog-nav
                        data-no-pjax
-                       class="btn-emerald inline-flex min-h-[40px] items-center rounded-full px-4 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                       class="btn-emerald inline-flex min-h-[44px] sm:min-h-[40px] items-center rounded-full px-5 sm:px-4 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
                         Lihat semua {{ $contextLabel }}
                     </a>
                 @endif
                 <a href="{{ route('katalog') }}"
                    data-catalog-nav
                    data-no-pjax
-                   class="btn-glass inline-flex min-h-[40px] items-center rounded-full px-4 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                   class="btn-glass inline-flex min-h-[44px] sm:min-h-[40px] items-center rounded-full px-5 sm:px-4 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
                     Reset filter
                 </a>
             </div>
@@ -58,7 +58,7 @@
             <a href="{{ route('katalog') }}"
                data-catalog-nav
                data-no-pjax
-               class="btn-glass mt-5 inline-flex min-h-[40px] items-center rounded-full px-5 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+               class="btn-glass mt-5 inline-flex min-h-[44px] sm:min-h-[40px] items-center rounded-full px-5 text-[12.5px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
                 Reset filter
             </a>
         @endif

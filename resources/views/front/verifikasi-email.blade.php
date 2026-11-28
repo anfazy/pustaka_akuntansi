@@ -3,7 +3,7 @@
 @section('title', 'Verifikasi Email Anda — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[390px] rounded-[22px] p-5 shadow-2xl animate-rise text-center">
+    <div class="glass-card w-full max-w-[390px] rounded-[26px] p-4 sm:p-5 shadow-2xl animate-rise text-center">
         <!-- Brand Header -->
         <div class="flex items-center justify-center gap-2.5 mb-4">
             <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Mail Icon Badge -->
-        <div class="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-inner">
+        <div class="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-[14px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-inner">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
             </svg>

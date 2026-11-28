@@ -3,17 +3,17 @@
 @section('title', 'Masuk — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[370px] rounded-[22px] p-4 sm:p-5 shadow-2xl animate-rise">
+    <div class="glass-card w-full max-w-[370px] rounded-[26px] p-3.5 sm:p-4 shadow-2xl animate-rise">
         <!-- Back to Beranda Link -->
         <div class="flex items-center justify-between mb-3.5">
-            <a href="{{ route('beranda') }}" class="inline-flex min-h-[34px] items-center gap-1.5 text-[11.5px] font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
+            <a href="{{ route('beranda') }}" class="inline-flex min-h-[44px] sm:min-h-[34px] items-center gap-1.5 text-[11.5px] font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
                 <span>Kembali ke Beranda</span>
             </a>
 
-            <span class="inline-flex items-center gap-1.5 rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[10px] font-semibold">
+            <span class="inline-flex items-center gap-1.5 rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[11px] font-semibold">
                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
                 Mahasiswa
             </span>
@@ -56,22 +56,22 @@
             @csrf
 
             <div>
-                <label for="nimInput" class="block text-[10.5px] font-semibold text-slate-700 uppercase tracking-wider mb-1">NIM Mahasiswa <span class="text-rose-500">*</span></label>
-                <div class="glass-field rounded-[12px] px-3 py-2">
+                <label for="nimInput" class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">NIM Mahasiswa <span class="text-rose-500">*</span></label>
+                <div class="glass-field rounded-[12px] px-3 py-2.5 sm:py-2">
                     <input type="text" name="nim" id="nimInput" value="{{ old('nim') }}" required placeholder="Contoh: 4.41.24.0.12" class="w-full bg-transparent text-[13px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
                 </div>
             </div>
 
             <div>
                 <div class="flex items-center justify-between mb-1">
-                    <label for="passwordInput" class="block text-[10.5px] font-semibold text-slate-700 uppercase tracking-wider">Kata Sandi <span class="text-rose-500">*</span></label>
-                    <button type="button" onclick="document.getElementById('modalForgotPw').classList.remove('hidden')" class="inline-flex min-h-[28px] items-center text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
+                    <label for="passwordInput" class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Kata Sandi <span class="text-rose-500">*</span></label>
+                    <button type="button" onclick="document.getElementById('modalForgotPw').classList.remove('hidden')" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
                         Lupa kata sandi?
                     </button>
                 </div>
-                <div class="glass-field relative flex items-center rounded-[12px] px-3 py-2">
-                    <input type="password" name="password" id="passwordInput" required placeholder="Masukkan kata sandi" class="w-full bg-transparent pr-8 text-[13px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
-                    <button type="button" onclick="togglePasswordVisibility('passwordInput', this)" aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-1 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition">
+                <div class="glass-field relative flex items-center rounded-[12px] px-3 py-2.5 sm:py-2">
+                    <input type="password" name="password" id="passwordInput" required placeholder="Masukkan kata sandi" class="w-full bg-transparent pr-10 text-[13px] font-medium text-slate-800 outline-none placeholder:text-slate-400">
+                    <button type="button" onclick="togglePasswordVisibility('passwordInput', this)" aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-0.5 grid h-11 w-11 sm:h-8 sm:w-8 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition">
                         <svg class="eye-open h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -90,7 +90,7 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn-emerald w-full h-10 rounded-full text-[13.5px] font-semibold mt-1">
+            <button type="submit" class="btn-emerald w-full min-h-[44px] rounded-full text-[13.5px] font-semibold mt-1">
                 Masuk
             </button>
         </form>
@@ -98,7 +98,7 @@
         <!-- REGISTER LINK (Golden Action Pill) -->
         <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/10 text-center">
             <p class="text-[11.5px] text-slate-500 mb-2.5 font-medium">Belum terdaftar sebagai anggota perpustakaan?</p>
-            <a href="{{ route('daftar') }}" class="btn-amber-gold inline-flex h-9.5 min-h-[38px] w-full items-center justify-center rounded-full text-[13px] font-semibold shadow-md">
+            <a href="{{ route('daftar') }}" class="btn-amber-gold inline-flex min-h-[44px] sm:min-h-[40px] w-full items-center justify-center rounded-full text-[13px] font-semibold shadow-md">
                 Daftar Anggota Baru
             </a>
         </div>

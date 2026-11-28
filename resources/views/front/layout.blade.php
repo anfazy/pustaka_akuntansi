@@ -1136,15 +1136,19 @@
             scrollbar-width: none;
         }
 
-        /* Apple HIG Scroll Edge Effect (Soft transition beneath floating Liquid Glass bars) */
+        /* Apple HIG Scroll Edge Effect (Top: blur + fade; Bottom: fade-only per iOS 26 guidelines) */
         .scroll-edge-top {
-            background: linear-gradient(180deg, rgba(240, 253, 244, 0.85) 0%, rgba(240, 253, 244, 0.35) 55%, transparent 100%);
+            background: linear-gradient(180deg, rgba(240, 253, 244, 0.86) 0%, rgba(240, 253, 244, 0.38) 58%, transparent 100%);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
         }
         .scroll-edge-bottom {
             background: linear-gradient(0deg, rgba(240, 253, 244, 0.88) 0%, rgba(240, 253, 244, 0.35) 55%, transparent 100%);
         }
         html.dark .scroll-edge-top {
-            background: linear-gradient(180deg, rgba(6, 17, 12, 0.88) 0%, rgba(6, 17, 12, 0.35) 55%, transparent 100%);
+            background: linear-gradient(180deg, rgba(6, 17, 12, 0.88) 0%, rgba(6, 17, 12, 0.38) 58%, transparent 100%);
         }
         html.dark .scroll-edge-bottom {
             background: linear-gradient(0deg, rgba(5, 15, 10, 0.90) 0%, rgba(5, 15, 10, 0.35) 55%, transparent 100%);
@@ -1173,9 +1177,9 @@
                     <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </div>
                 <div class="sidebar-text min-w-0">
-                    <span class="block text-[9px] font-bold leading-tight tracking-[0.12em] uppercase text-emerald-700 dark:text-emerald-400">Perpustakaan</span>
+                    <span class="block text-[11px] font-bold leading-tight tracking-[0.08em] uppercase text-emerald-700 dark:text-emerald-400">Perpustakaan</span>
                     <span class="block text-[13px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white mt-0.5">Jurusan Akuntansi</span>
-                    <span class="block text-[9.5px] font-medium leading-tight text-slate-500 dark:text-slate-400 mt-0.5 truncate">Politeknik Negeri Semarang</span>
+                    <span class="block text-[11px] font-medium leading-tight text-slate-500 dark:text-slate-400 mt-0.5 truncate">Politeknik Negeri Semarang</span>
                 </div>
             </a>
         </div>
@@ -1275,8 +1279,8 @@
     <!-- SCROLL EDGE EFFECT (Top scrim beneath floating topbar) -->
     <div class="scroll-edge-top sidebar-transition pointer-events-none fixed inset-x-0 top-0 z-10 h-36 sm:h-16 lg:left-[252px]"></div>
 
-    <!-- FLOATING GLASS TOPBAR -->
-    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2 rounded-[20px] p-2 sm:left-4 sm:right-4 sm:top-4 sm:h-[50px] sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[16px] sm:px-3.5 sm:py-0 lg:left-[264px] lg:right-4 lg:top-4">
+    <!-- FLOATING GLASS TOPBAR (Concentric 22px = 14px + p-2 8px on mobile; >=44pt touch controls) -->
+    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2 rounded-[22px] p-2 sm:left-4 sm:right-4 sm:top-4 sm:h-[50px] sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[16px] sm:px-3.5 sm:py-0 lg:left-[264px] lg:right-4 lg:top-4">
         <!-- Mobile Top Row (Logo + Action Controls) / Desktop Leading Sidebar Toggle + Search + Actions -->
         <div class="flex w-full items-center justify-between gap-2 sm:contents">
             <!-- Desktop Apple sidebar.left Toolbar Button -->
@@ -1295,7 +1299,7 @@
 
             <!-- Mobile Logo + Title -->
             <a href="{{ route('beranda') }}" class="flex min-h-[44px] items-center gap-2.5 min-w-0 lg:hidden active:scale-95 transition-transform">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-0.5 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] bg-white p-0.5 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
                     <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </span>
                 <span class="hidden min-[460px]:inline sm:hidden text-xs font-bold leading-tight text-slate-900 dark:text-white truncate">
@@ -1321,10 +1325,10 @@
 
             <!-- Right Side: Dark Mode Toggle + Notification + User Avatar / Login Pills -->
             <div class="flex items-center gap-1.5 shrink-0">
-                <!-- DARK MODE LIQUID GLASS TOGGLE BUTTON -->
+                <!-- DARK MODE LIQUID GLASS TOGGLE BUTTON (>= 44pt tap target on mobile) -->
                 <button type="button"
                         onclick="toggleDarkMode()"
-                        class="liquid-icon-btn grid h-10 w-10 lg:h-8 lg:w-8 shrink-0 place-items-center rounded-full text-slate-600 dark:text-amber-300"
+                        class="liquid-icon-btn grid h-11 w-11 sm:h-9 sm:w-9 lg:h-8 lg:w-8 shrink-0 place-items-center rounded-full text-slate-600 dark:text-amber-300"
                         title="Ganti Mode Gelap / Terang"
                         aria-label="Ganti Mode Gelap atau Terang">
                     <!-- Sun icon (shown when dark) -->
@@ -1396,14 +1400,14 @@
                 <div class="relative" id="notifMenuWrapper">
                     <button type="button"
                             onclick="toggleGlassDropdown('notifDropdown', 'userMenuDropdown', this)"
-                            class="liquid-icon-btn relative grid h-10 w-10 lg:h-8 lg:w-8 place-items-center rounded-full text-slate-600 dark:text-slate-300"
+                            class="liquid-icon-btn relative grid h-11 w-11 sm:h-9 sm:w-9 lg:h-8 lg:w-8 place-items-center rounded-full text-slate-600 dark:text-slate-300"
                             title="Notifikasi Sirkulasi"
                             aria-label="Buka Notifikasi">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                         </svg>
                         @if($unreadAlertCount > 0)
-                            <span class="absolute top-0.5 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8.5px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-900 animate-pulse">
+                            <span class="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-900 animate-pulse">
                                 {{ $unreadAlertCount }}
                             </span>
                         @endif
@@ -1414,8 +1418,8 @@
             @if(session('student_id'))
                 <!-- User Profile Liquid Glass Capsule -->
                 <div class="relative" id="userMenuWrapper">
-                    <button type="button" onclick="toggleGlassDropdown('userMenuDropdown', 'notifDropdown', this)" class="btn-glass flex h-10 lg:h-8 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] font-semibold">
-                        <span class="grid h-6 w-6 lg:h-5.5 lg:w-5.5 place-items-center rounded-full bg-emerald-700 text-[10px] font-bold text-white shadow-sm border border-white/20">
+                    <button type="button" onclick="toggleGlassDropdown('userMenuDropdown', 'notifDropdown', this)" class="btn-glass flex h-11 sm:h-9 lg:h-8 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] font-semibold">
+                        <span class="grid h-6 w-6 lg:h-5.5 lg:w-5.5 place-items-center rounded-full bg-emerald-700 text-[11px] font-bold text-white shadow-sm border border-white/20">
                             {{ $loggedStudent ? $loggedStudent->initials : 'M' }}
                         </span>
                         <span class="hidden max-w-[100px] truncate md:inline">{{ $loggedStudent ? $loggedStudent->nama : 'Mahasiswa' }}</span>
@@ -1427,10 +1431,10 @@
             @else
                 <!-- Guest View: Apple HIG Action Prominence -->
                 <div class="flex items-center gap-1.5">
-                    <a href="{{ route('daftar') }}" class="btn-glass flex h-10 lg:h-8 items-center rounded-full px-3 sm:px-3.5 text-[12.5px] font-semibold whitespace-nowrap">
+                    <a href="{{ route('daftar') }}" class="btn-glass flex h-11 sm:h-9 lg:h-8 items-center rounded-full px-3.5 text-[12.5px] font-semibold whitespace-nowrap">
                         <span>Daftar</span>
                     </a>
-                    <a href="{{ route('masuk') }}" class="btn-emerald flex h-10 lg:h-8 items-center gap-1.5 rounded-full px-3.5 sm:px-4 text-[12.5px] font-semibold whitespace-nowrap">
+                    <a href="{{ route('masuk') }}" class="btn-emerald flex h-11 sm:h-9 lg:h-8 items-center gap-1.5 rounded-full px-4 text-[12.5px] font-semibold whitespace-nowrap">
                         <span>Masuk</span>
                     </a>
                 </div>
@@ -1457,12 +1461,12 @@
 
     @if($loggedStudent)
         <!-- FLOATING POPOVERS OUTSIDE <header> (Top-level DOM nodes so backdrop-filter genuinely blurs underlying content without bleed-through!) -->
-        <div id="notifDropdown" class="glass-popover glass-popover-sheet fixed z-50 hidden rounded-[28px] p-4 sm:w-[390px]">
-            <div class="flex items-center justify-between pb-3 mb-3 px-1.5 border-b border-slate-300/40 dark:border-white/10">
+        <div id="notifDropdown" class="glass-popover glass-popover-sheet fixed z-50 hidden rounded-[28px] p-3 sm:w-[390px]">
+            <div class="flex items-center justify-between pb-3 mb-3 px-2 border-b border-slate-300/40 dark:border-white/10">
                 <div class="flex items-center gap-2">
                     <span class="text-sm font-bold text-slate-900 dark:text-white">Notifikasi Anda</span>
                     @if($unreadAlertCount > 0)
-                        <span class="rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-300">
+                        <span class="rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 dark:text-rose-300">
                             {{ $unreadAlertCount }} aktif
                         </span>
                     @endif
@@ -1472,9 +1476,9 @@
 
             <div class="max-h-[340px] overflow-y-auto space-y-2.5 pr-0.5">
                 @forelse($headerNotifs as $notif)
-                    <a href="{{ $notif['url'] }}" class="apple-press group block rounded-[18px] p-3.5 bg-white/85 dark:bg-slate-800/85 hover:bg-white dark:hover:bg-slate-800 transition-all border border-white/90 dark:border-white/15 shadow-xs">
+                    <a href="{{ $notif['url'] }}" class="apple-press group block rounded-[16px] p-3.5 bg-white/85 dark:bg-slate-800/85 hover:bg-white dark:hover:bg-slate-800 transition-all border border-white/90 dark:border-white/15 shadow-xs">
                         <div class="flex items-start justify-between gap-2 mb-1.5">
-                            <span class="text-[10px] font-bold uppercase tracking-wider rounded-full px-2.5 py-0.5 {{ $notif['badge_class'] }}">
+                            <span class="text-[11px] font-bold uppercase tracking-wider rounded-full px-2.5 py-0.5 {{ $notif['badge_class'] }}">
                                 {{ $notif['badge'] }}
                             </span>
                             <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ $notif['time'] }}</span>
@@ -1487,7 +1491,7 @@
                         </p>
                     </a>
                 @empty
-                    <div class="rounded-[18px] p-5 bg-white/80 dark:bg-slate-800/75 border border-white/90 dark:border-white/12 text-center space-y-1.5">
+                    <div class="rounded-[16px] p-5 bg-white/80 dark:bg-slate-800/75 border border-white/90 dark:border-white/12 text-center space-y-1.5">
                         <span class="mx-auto grid h-10 w-10 place-items-center rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                         </span>
@@ -1500,7 +1504,7 @@
             </div>
 
             <div class="pt-3 mt-3 border-t border-slate-300/40 dark:border-white/10 text-center">
-                <a href="{{ route('pinjaman') }}" class="inline-flex min-h-[36px] items-center text-xs font-bold text-emerald-800 dark:text-emerald-400 hover:underline">
+                <a href="{{ route('pinjaman') }}" class="inline-flex min-h-[44px] sm:min-h-[36px] items-center text-xs font-bold text-emerald-800 dark:text-emerald-400 hover:underline">
                     Kelola Pinjaman Saya &rarr;
                 </a>
             </div>
@@ -1580,14 +1584,14 @@
                 $footerBorrowedCopies = (int) \App\Models\Loan::whereIn('status', ['dipinjam', 'terlambat'])->count();
                 $footerTotalCopies = $footerAvailableCopies + $footerBorrowedCopies;
             @endphp
-            <footer class="apple-reveal mt-10 sm:mt-12 glass-card relative overflow-hidden rounded-[20px] p-4 sm:p-5 shadow-xl border border-white/85 dark:border-white/10">
+            <footer class="apple-reveal mt-10 sm:mt-12 glass-card relative overflow-hidden rounded-[26px] p-3.5 sm:p-4 shadow-xl border border-white/85 dark:border-white/10">
                 <!-- Subtle Ambient Glow -->
                 <div class="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/10"></div>
 
                 <!-- Top Brand & Quick Actions Bar -->
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200/60 dark:border-white/10">
                     <div class="flex items-center gap-2.5">
-                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden">
+                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden">
                             <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                         </div>
                         <div>
@@ -1597,8 +1601,8 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <a href="/admin" class="btn-glass inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-3 text-[11.5px] font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-800">
-                            <svg class="h-3 w-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <a href="/admin" class="btn-glass inline-flex min-h-[44px] sm:min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-[11.5px] font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-800">
+                            <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                             </svg>
                             <span>Portal Admin</span>
@@ -1606,17 +1610,17 @@
                     </div>
                 </div>
 
-                <!-- Middle Concentric Bento Columns -->
-                <div class="relative z-10 mt-4 grid grid-cols-1 md:grid-cols-12 gap-3.5">
+                <!-- Middle Concentric Bento Columns (Outer 26px = 14px + 12px padding; Inner 8px) -->
+                <div class="relative z-10 mt-3.5 grid grid-cols-1 md:grid-cols-12 gap-3">
                     <!-- Bento Card 1: Tentang Kami & Lokasi (5 Cols) -->
-                    <div class="md:col-span-6 lg:col-span-5 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3.5 flex flex-col justify-between gap-2.5">
+                    <div class="md:col-span-6 lg:col-span-5 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3 flex flex-col justify-between gap-2.5">
                         <div>
-                            <h4 class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Tentang Ruang Baca</h4>
-                            <p class="mt-1 text-[11.5px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                            <h4 class="text-[11px] font-bold uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400">Tentang Ruang Baca</h4>
+                            <p class="mt-1 text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed">
                                 Menyediakan koleksi buku akuntansi, perpajakan, audit, manajemen keuangan, serta literatur Tugas Akhir, Skripsi, dan Laporan PKL.
                             </p>
                         </div>
-                        <div class="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                        <div class="space-y-1 text-[11.5px] text-slate-600 dark:text-slate-300">
                             <div class="flex items-start gap-2">
                                 <svg class="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1634,7 +1638,7 @@
                                 <svg class="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                                 </svg>
-                                <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank" class="font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
+                                <a href="https://wa.me/62895336384919?text=Halo%20Admin%20Perpustakaan%20Akuntansi%20Polines" target="_blank" class="inline-flex min-h-[32px] items-center font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">
                                     WA Pustakawan: 0895-3363-84919
                                 </a>
                             </div>
@@ -1642,26 +1646,26 @@
                     </div>
 
                     <!-- Bento Card 2: Navigasi Portal (3 Cols) -->
-                    <div class="md:col-span-6 lg:col-span-3 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3.5 flex flex-col justify-between">
+                    <div class="md:col-span-6 lg:col-span-3 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3 flex flex-col justify-between">
                         <div>
-                            <h4 class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Akses Cepat</h4>
-                            <ul class="mt-1.5 grid grid-cols-2 lg:grid-cols-1 gap-0.5 text-[11.5px] font-medium">
+                            <h4 class="text-[11px] font-bold uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400">Akses Cepat</h4>
+                            <ul class="mt-1.5 grid grid-cols-2 lg:grid-cols-1 gap-0.5 text-[12px] font-medium">
                                 <li>
-                                    <a href="{{ route('beranda') }}" class="inline-flex min-h-[26px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Beranda</a>
+                                    <a href="{{ route('beranda') }}" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Beranda</a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('katalog') }}" class="inline-flex min-h-[26px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Katalog Koleksi</a>
+                                    <a href="{{ route('katalog') }}" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Katalog Koleksi</a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('tata-tertib') }}" class="inline-flex min-h-[26px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Tata Tertib &amp; Denda</a>
+                                    <a href="{{ route('tata-tertib') }}" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Tata Tertib &amp; Denda</a>
                                 </li>
                                 @if(session('student_id'))
                                     <li>
-                                        <a href="{{ route('pinjaman') }}" class="inline-flex min-h-[26px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Pinjaman Saya</a>
+                                        <a href="{{ route('pinjaman') }}" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Pinjaman Saya</a>
                                     </li>
                                 @else
                                     <li>
-                                        <a href="{{ route('masuk') }}" class="inline-flex min-h-[26px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Masuk Mahasiswa</a>
+                                        <a href="{{ route('masuk') }}" class="inline-flex min-h-[36px] sm:min-h-[28px] items-center text-slate-600 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Masuk Mahasiswa</a>
                                     </li>
                                 @endif
                             </ul>
@@ -1669,24 +1673,24 @@
                     </div>
 
                     <!-- Bento Card 3: Statistik Koleksi Live (4 Cols) -->
-                    <div class="md:col-span-12 lg:col-span-4 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3.5 flex flex-col justify-between gap-2">
+                    <div class="md:col-span-12 lg:col-span-4 rounded-[14px] bg-white/55 dark:bg-white/5 border border-white/80 dark:border-white/10 p-3 flex flex-col justify-between gap-2">
                         <div class="flex items-center justify-between">
-                            <h4 class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Statistik Koleksi</h4>
-                            <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                            <h4 class="text-[11px] font-bold uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400">Statistik Koleksi</h4>
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Langsung
                             </span>
                         </div>
                         <div class="grid grid-cols-3 lg:grid-cols-1 gap-1.5 text-[11.5px]">
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[10px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[8px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
                                 <span class="text-slate-500">Total Judul</span>
                                 <span class="font-bold text-slate-900 tabular-nums">{{ $footerTotalTitles }} Judul</span>
                             </div>
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[10px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[8px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
                                 <span class="text-slate-500">Total Koleksi</span>
                                 <span class="font-bold text-slate-900 tabular-nums">{{ $footerTotalCopies }} Eksemplar</span>
                             </div>
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[10px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between rounded-[8px] bg-white/75 dark:bg-white/5 border border-white/80 dark:border-white/10 px-3 py-1.5">
                                 <span class="text-slate-500">Siap Dipinjam</span>
                                 <span class="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{{ $footerAvailableCopies }} Eksemplar</span>
                             </div>

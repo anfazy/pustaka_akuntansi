@@ -3,17 +3,17 @@
 @section('title', 'Daftar Anggota Baru — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[540px] rounded-[22px] p-4 sm:p-5 shadow-2xl animate-rise">
+    <div class="glass-card w-full max-w-[540px] rounded-[26px] p-3.5 sm:p-4 shadow-2xl animate-rise">
         <!-- Back to Beranda Link & Login Shortcut -->
         <div class="flex items-center justify-between gap-3 mb-3">
-            <a href="{{ route('beranda') }}" class="inline-flex min-h-[34px] items-center gap-1.5 text-[11.5px] font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
+            <a href="{{ route('beranda') }}" class="inline-flex min-h-[44px] sm:min-h-[34px] items-center gap-1.5 text-[11.5px] font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
                 <span>Kembali ke Beranda</span>
             </a>
 
-            <a href="{{ route('masuk') }}" class="inline-flex min-h-[32px] items-center gap-1.5 rounded-full liquid-badge-emerald px-3 text-[11.5px] font-semibold hover:opacity-90 transition">
+            <a href="{{ route('masuk') }}" class="inline-flex min-h-[44px] sm:min-h-[32px] items-center gap-1.5 rounded-full liquid-badge-emerald px-3.5 sm:px-3 text-[11.5px] font-semibold hover:opacity-90 transition">
                 <span>Sudah punya akun? Masuk</span>
             </a>
         </div>
@@ -78,7 +78,7 @@
                         <button type="button"
                                 id="prodiToggleBtn"
                                 aria-label="Buka pilihan program studi"
-                                class="absolute right-1 grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition"
+                                class="absolute right-0.5 grid h-11 w-11 sm:h-8 sm:w-8 place-items-center rounded-full text-slate-400 hover:text-emerald-700 active:scale-95 transition"
                                 title="Buka Pilihan Prodi">
                             <svg id="prodiChevron" class="h-3.5 w-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -87,33 +87,33 @@
                     </div>
                     @error('program_studi') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
 
-                    <!-- Floating Apple Liquid Glass Dropdown Options -->
-                    <div id="prodiDropdown" class="glass-popover-sheet hidden absolute left-0 right-0 sm:right-auto sm:min-w-[315px] z-50 mt-1.5 max-h-72 overflow-y-auto rounded-[18px] p-1.5 transition-all">
-                        <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pilihan Jurusan Akuntansi Polines</div>
+                    <!-- Floating Apple Liquid Glass Dropdown Options (Concentric 20px = 14px + 6px pad) -->
+                    <div id="prodiDropdown" class="glass-popover-sheet hidden absolute left-0 right-0 sm:right-auto sm:min-w-[315px] z-50 mt-1.5 max-h-72 overflow-y-auto rounded-[20px] p-1.5 transition-all">
+                        <div class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pilihan Jurusan Akuntansi Polines</div>
                         <div id="prodiOptionsList" class="space-y-0.5 mt-0.5">
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Komputerisasi Akuntansi (S. Tr)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Komputerisasi Akuntansi (S. Tr)">
                                 <span class="leading-snug sm:whitespace-nowrap">Komputerisasi Akuntansi (S. Tr)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-bold">S. Tr</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[11px] font-bold">S. Tr</span>
                             </button>
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Perbankan Syariah (S. Tr)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Perbankan Syariah (S. Tr)">
                                 <span class="leading-snug sm:whitespace-nowrap">Perbankan Syariah (S. Tr)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-bold">S. Tr</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[11px] font-bold">S. Tr</span>
                             </button>
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Analis Keuangan (S. Tr)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Analis Keuangan (S. Tr)">
                                 <span class="leading-snug sm:whitespace-nowrap">Analis Keuangan (S. Tr)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-bold">S. Tr</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[11px] font-bold">S. Tr</span>
                             </button>
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Akuntansi Manajerial (S. Tr)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Akuntansi Manajerial (S. Tr)">
                                 <span class="leading-snug sm:whitespace-nowrap">Akuntansi Manajerial (S. Tr)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-bold">S. Tr</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-emerald px-2 py-0.5 text-[11px] font-bold">S. Tr</span>
                             </button>
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Akuntansi (D3)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Akuntansi (D3)">
                                 <span class="leading-snug sm:whitespace-nowrap">Akuntansi (D3)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-amber px-2 py-0.5 text-[9.5px] font-bold">D3</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-amber px-2 py-0.5 text-[11px] font-bold">D3</span>
                             </button>
-                            <button type="button" class="prodi-item group flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Keuangan dan Perbankan (D3)">
+                            <button type="button" class="prodi-item group flex w-full min-h-[44px] sm:min-h-0 items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left text-[12.5px] font-medium text-slate-800 dark:text-slate-100 hover:bg-emerald-500/12 dark:hover:bg-emerald-400/18 hover:text-emerald-900 dark:hover:text-emerald-300 transition-colors" data-label="Keuangan dan Perbankan (D3)">
                                 <span class="leading-snug sm:whitespace-nowrap">Keuangan dan Perbankan (D3)</span>
-                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-amber px-2 py-0.5 text-[9.5px] font-bold">D3</span>
+                                <span class="shrink-0 whitespace-nowrap rounded-full liquid-badge-amber px-2 py-0.5 text-[11px] font-bold">D3</span>
                             </button>
                         </div>
                     </div>
@@ -215,7 +215,7 @@
 
             <!-- Submit Button -->
             <div class="mt-4">
-                <button type="submit" class="btn-amber-gold w-full h-10 rounded-full text-[13.5px] font-semibold shadow-md">
+                <button type="submit" class="btn-amber-gold w-full min-h-[44px] rounded-full text-[13.5px] font-semibold shadow-md">
                     Ajukan Pendaftaran Anggota
                 </button>
             </div>

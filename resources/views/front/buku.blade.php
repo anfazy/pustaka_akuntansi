@@ -49,7 +49,7 @@
             <button type="button"
                     id="btnToggleFav"
                     onclick="toggleFavoriteBook({{ $book->id }})"
-                    class="{{ $isFavorited ? 'btn-amber-gold' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-3.5 flex h-9 w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold">
+                    class="{{ $isFavorited ? 'btn-amber-gold' : 'btn-glass text-slate-700 dark:text-slate-200' }} mt-3.5 flex min-h-[44px] sm:min-h-[38px] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold">
                 <svg id="favStarIcon" class="h-3.5 w-3.5 shrink-0 {{ $isFavorited ? 'text-amber-700 fill-amber-600' : 'text-amber-500' }}" fill="{{ $isFavorited ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                 </svg>
@@ -63,12 +63,12 @@
             <div>
                 <!-- Category & Prodi Tags (Liquid Glass Badges) -->
                 <div class="flex flex-wrap items-center gap-1.5 mb-2">
-                    <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[10.5px] font-semibold">
+                    <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[11px] font-semibold">
                         {{ $book->category?->nama ?? 'Buku Akuntansi' }}
                     </span>
                     @if(filled($book->program_studi))
                         <a href="{{ route('katalog', ['prodi' => $book->program_studi]) }}"
-                           class="inline-flex items-center rounded-full {{ $book->program_studi_level === 'D3' ? 'liquid-badge-amber' : 'liquid-chip' }} px-2.5 py-0.5 text-[10.5px] font-semibold hover:opacity-90 transition">
+                           class="inline-flex items-center rounded-full {{ $book->program_studi_level === 'D3' ? 'liquid-badge-amber' : 'liquid-chip' }} px-2.5 py-0.5 text-[11px] font-semibold hover:opacity-90 transition">
                             {{ $book->program_studi }}
                         </a>
                     @endif
@@ -85,31 +85,31 @@
                 <!-- Metadata Grid -->
                 <div class="mt-4 grid grid-cols-2 gap-y-2.5 gap-x-5 text-[12.5px] border-t border-b border-slate-200/70 dark:border-white/10 py-3.5">
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">Penerbit</span>
+                        <span class="block text-slate-500 text-[11px]">Penerbit</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->penerbit ?? 'Pustaka Jurusan' }}</span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">Tahun &amp; Edisi</span>
+                        <span class="block text-slate-500 text-[11px]">Tahun &amp; Edisi</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->tahun_terbit ?? '2024' }}</span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">ISBN / Kode Buku</span>
+                        <span class="block text-slate-500 text-[11px]">ISBN / Kode Buku</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->isbn ?? $book->book_code ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">Jenis Koleksi</span>
+                        <span class="block text-slate-500 text-[11px]">Jenis Koleksi</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->collection_type_label }}</span>
                     </div>
                     @if(filled($book->program_studi))
                         <div>
-                            <span class="block text-slate-500 text-[10.5px]">Program Studi</span>
+                            <span class="block text-slate-500 text-[11px]">Program Studi</span>
                             <a href="{{ route('katalog', ['prodi' => $book->program_studi]) }}" class="font-medium text-emerald-700 dark:text-emerald-400 hover:underline">
                                 {{ $book->program_studi }}
                             </a>
                         </div>
                     @endif
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">Ketersediaan Stok</span>
+                        <span class="block text-slate-500 text-[11px]">Ketersediaan Stok</span>
                         <span class="font-medium {{ $availableToBook > 0 ? 'text-emerald-800 dark:text-emerald-400' : ($book->stok > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') }}">
                             @if($availableToBook > 0)
                                 Tersedia {{ $availableToBook }} Eksemplar
@@ -121,7 +121,7 @@
                         </span>
                     </div>
                     <div>
-                        <span class="block text-slate-500 text-[10.5px]">Aturan Peminjaman</span>
+                        <span class="block text-slate-500 text-[11px]">Aturan Peminjaman</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $loanDuration }} Hari Kerja • Denda Rp {{ $book->collection_type === 'ta_skripsi' ? '300' : '200' }}/hari</span>
                     </div>
                 </div>
@@ -147,22 +147,22 @@
                     @if(session('student_id'))
                         @if($availableToBook > 0)
                             <button type="button" onclick="openAppleModal('bookingModal')"
-                                    class="btn-emerald h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto">
+                                    class="btn-emerald min-h-[44px] sm:min-h-[38px] rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto">
                                 Ajukan Pinjam Buku
                             </button>
                             <span class="text-[11.5px] text-slate-500 font-medium">Durasi {{ $loanDuration }} hari kerja • Ambil maks. 1&times;24 jam</span>
                         @elseif($book->stok > 0)
-                            <button type="button" disabled class="h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-amber-100/80 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 cursor-not-allowed">
+                            <button type="button" disabled class="min-h-[44px] sm:min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-amber-100/80 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 cursor-not-allowed">
                                 Sedang Di-booking Mahasiswa Lain
                             </button>
                         @else
-                            <button type="button" disabled class="h-9.5 min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed">
+                            <button type="button" disabled class="min-h-[44px] sm:min-h-[38px] rounded-full px-5 text-[13px] font-semibold bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed">
                                 Stok Buku Sedang Habis
                             </button>
                         @endif
                     @else
                         <!-- Guest User CTA -->
-                        <a href="{{ route('masuk') }}" class="btn-amber-gold flex h-9.5 min-h-[38px] items-center justify-center rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto shadow-md">
+                        <a href="{{ route('masuk') }}" class="btn-amber-gold flex min-h-[44px] sm:min-h-[38px] items-center justify-center rounded-full px-5 text-[13px] font-semibold w-full sm:w-auto shadow-md">
                             Masuk untuk Meminjam Buku
                         </a>
                         <span class="text-[11.5px] text-slate-500 font-medium">Durasi {{ $loanDuration }} hari kerja • Ambil fisik di ruang baca</span>
@@ -196,20 +196,20 @@
             <!-- Scrim Backdrop -->
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeAppleModal('bookingModal')"></div>
 
-            <!-- Dialog Window -->
-            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[22px] p-4 sm:p-5 shadow-2xl border border-white/95 dark:border-white/10">
+            <!-- Dialog Window (Concentric 26px outer = 12px inner + 14px pad) -->
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[26px] p-3.5 sm:p-4 shadow-2xl border border-white/95 dark:border-white/10">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <span class="block text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Booking Fisik</span>
+                        <span class="block text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Booking Fisik</span>
                         <h3 class="text-[17px] font-bold tracking-tight text-slate-900 leading-snug mt-0.5">Konfirmasi Peminjaman</h3>
                     </div>
-                    <button type="button" onclick="closeAppleModal('bookingModal')" aria-label="Tutup" class="liquid-icon-btn grid h-7 w-7 shrink-0 place-items-center rounded-full text-slate-500">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button type="button" onclick="closeAppleModal('bookingModal')" aria-label="Tutup" class="liquid-icon-btn grid h-11 w-11 sm:h-8 sm:w-8 shrink-0 place-items-center rounded-full text-slate-500">
+                        <svg class="h-4 w-4 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
                 <!-- Mini Book Info -->
-                <div class="mt-3.5 flex items-center gap-3 rounded-[14px] bg-white/60 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5">
+                <div class="mt-3.5 flex items-center gap-3 rounded-[12px] bg-white/60 dark:bg-white/5 border border-white/80 dark:border-white/10 p-2.5">
                     <div class="relative aspect-[5/7] w-11 shrink-0 overflow-hidden rounded-[6px] book-shadow">
                         @if($coverUrl)
                             <img src="{{ $coverUrl }}" alt="{{ $book->judul }}" class="h-full w-full object-cover">
@@ -220,7 +220,7 @@
                         @endif
                     </div>
                     <div class="min-w-0 flex-1">
-                        <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2 py-0.5 text-[9.5px] font-semibold mb-1">{{ $book->collection_type_label }}</span>
+                        <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2 py-0.5 text-[11px] font-semibold mb-1">{{ $book->collection_type_label }}</span>
                         <h4 class="text-[13.5px] font-bold text-slate-900 leading-snug line-clamp-2">{{ $book->judul }}</h4>
                         <p class="text-[11.5px] text-slate-500 truncate mt-0.5">{{ $book->penulis }}</p>
                     </div>
@@ -231,7 +231,7 @@
                     @csrf
 
                     <!-- Ketentuan Pinjam Summary -->
-                    <div class="pearl-card rounded-[16px] p-3.5 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 border border-white/80 dark:border-white/10">
+                    <div class="pearl-card rounded-[12px] p-3.5 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 border border-white/80 dark:border-white/10">
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-slate-500 dark:text-slate-400">Durasi Pinjam</span>
                             <span class="font-semibold text-slate-900 dark:text-white tabular-nums">{{ $loanDuration }} hari kerja (+{{ $loanDuration }} hari perpanjangan)</span>
@@ -256,11 +256,11 @@
                     <!-- Modal Actions -->
                     <div class="mt-4 flex gap-2.5">
                         <button type="button" onclick="closeAppleModal('bookingModal')"
-                                class="btn-glass w-28 h-10 rounded-full text-[13px] font-semibold">
+                                class="btn-glass w-28 min-h-[44px] sm:min-h-[40px] rounded-full text-[13px] font-semibold">
                             Batal
                         </button>
                         <button type="submit"
-                                class="btn-emerald flex-1 h-10 rounded-full text-[13px] font-semibold">
+                                class="btn-emerald flex-1 min-h-[44px] sm:min-h-[40px] rounded-full text-[13px] font-semibold">
                             Konfirmasi Pinjam
                         </button>
                     </div>
@@ -286,12 +286,12 @@
                 .then(data => {
                     if (data.success) {
                         if (data.is_favorited) {
-                            btn.className = 'btn-amber-gold mt-3.5 flex h-9 w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
+                            btn.className = 'btn-amber-gold mt-3.5 flex min-h-[44px] sm:min-h-[38px] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
                             icon.setAttribute('fill', 'currentColor');
                             icon.className = 'h-3.5 w-3.5 shrink-0 text-amber-700 fill-amber-600';
                             label.textContent = 'Tersimpan di Favorit';
                         } else {
-                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-3.5 flex h-9 w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
+                            btn.className = 'btn-glass text-slate-700 dark:text-slate-200 mt-3.5 flex min-h-[44px] sm:min-h-[38px] w-full max-w-[165px] sm:max-w-[185px] md:max-w-[205px] items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-semibold';
                             icon.setAttribute('fill', 'none');
                             icon.className = 'h-3.5 w-3.5 shrink-0 text-amber-500';
                             label.textContent = 'Simpan ke Favorit';

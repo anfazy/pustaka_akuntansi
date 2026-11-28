@@ -29,19 +29,19 @@
         <button type="button"
                 onclick="switchPinjamanTab('siap', this)"
                 data-pinjaman-tab="siap"
-                class="{{ $activeTab === 'siap' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'siap' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[44px] sm:min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Siap Diambil &middot; {{ $siapDiambil->count() }}
         </button>
         <button type="button"
                 onclick="switchPinjamanTab('dipinjam', this)"
                 data-pinjaman-tab="dipinjam"
-                class="{{ $activeTab === 'dipinjam' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'dipinjam' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[44px] sm:min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Sedang Dipinjam &middot; {{ $sedangDipinjam->count() }}
         </button>
         <button type="button"
                 onclick="switchPinjamanTab('denda', this)"
                 data-pinjaman-tab="denda"
-                class="{{ $activeTab === 'denda' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
+                class="{{ $activeTab === 'denda' ? 'is-active text-emerald-800 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900' }} shrink-0 inline-flex min-h-[44px] sm:min-h-[34px] items-center justify-center px-3.5 sm:px-4 text-[11.5px] sm:text-xs font-semibold rounded-full transition-colors whitespace-nowrap tabular-nums">
             Terlambat &amp; Denda &middot; {{ $terlambat->count() }}
         </button>
     </div>
@@ -56,20 +56,20 @@
                     ? $loan->booking_expires_at->locale('id')->translatedFormat('d M Y, H:i') . ' WIB'
                     : 'maks. 1×24 jam';
             @endphp
-            <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                <!-- QR Code Box -->
-                <div class="grid h-20 w-20 shrink-0 place-items-center rounded-[12px] p-1.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
+            <article class="glass-card rounded-[24px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                <!-- QR Code Box (Concentric 24px - 16px pad = 8px, inner pad keeps QR crisp) -->
+                <div class="grid h-20 w-20 shrink-0 place-items-center rounded-[10px] p-1.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
                     <canvas id="qr_{{ $loan->id }}" class="h-full w-full"></canvas>
                 </div>
 
                 <!-- Booking Details -->
                 <div class="flex-1 min-w-0 space-y-0.5">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="liquid-badge-emerald inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold">
+                        <span class="liquid-badge-emerald inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
                             <span class="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
                             Siap Diambil
                         </span>
-                        <span class="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wider">Kode Booking</span>
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Kode Booking</span>
                     </div>
 
                     <h2 class="text-[18px] sm:text-[20px] font-bold tracking-tight text-slate-900 tabular-nums leading-tight">
@@ -89,7 +89,7 @@
                 <div class="shrink-0 sm:pl-4 sm:border-l sm:border-slate-200/60 dark:sm:border-white/10">
                     <form action="{{ route('pinjaman.batal', $loan->id) }}" method="POST" onsubmit="return confirm('Batalkan pesanan booking ini?')">
                         @csrf
-                        <button type="submit" class="btn-glass inline-flex min-h-[34px] w-full sm:w-auto items-center justify-center rounded-full px-3.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:border-rose-300">
+                        <button type="submit" class="btn-glass inline-flex min-h-[44px] sm:min-h-[34px] w-full sm:w-auto items-center justify-center rounded-full px-4 sm:px-3.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:border-rose-300">
                             Batalkan Booking
                         </button>
                     </form>
@@ -109,7 +109,7 @@
                 </div>
                 <h2 class="text-[15px] font-bold text-slate-900">Belum ada booking aktif</h2>
                 <p class="text-[12.5px] text-slate-500 mt-1 max-w-sm">Pilih buku di katalog untuk memesan sebelum datang ke ruang baca.</p>
-                <a href="{{ route('katalog') }}" class="btn-emerald mt-3.5 inline-flex min-h-[36px] items-center rounded-full px-4 text-xs font-semibold">
+                <a href="{{ route('katalog') }}" class="btn-emerald mt-3.5 inline-flex min-h-[44px] sm:min-h-[36px] items-center rounded-full px-5 sm:px-4 text-xs font-semibold">
                     Jelajahi Katalog
                 </a>
             </div>
@@ -131,9 +131,9 @@
                 $lateFine = $loan->calculateLateFine(today());
                 $extensionDays = $loan->getExtensionDurationWeekdays();
             @endphp
-            <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+            <article class="glass-card rounded-[24px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                 <!-- Book Cover -->
-                <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[7px] book-shadow">
+                <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[8px] book-shadow">
                     @if($coverUrl)
                         <img src="{{ $coverUrl }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
                     @else
@@ -146,12 +146,12 @@
                 <!-- Main Book Meta -->
                 <div class="flex-1 min-w-0 space-y-0.5">
                     @if($isOverdue)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 text-[10px] font-semibold">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 text-[11px] font-semibold">
                             <span class="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse"></span>
                             Terlambat {{ $daysDiff }} hari kerja
                         </span>
                     @else
-                        <span class="liquid-badge-amber inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold">
+                        <span class="liquid-badge-amber inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
                             <span class="h-1.5 w-1.5 rounded-full bg-amber-600"></span>
                             Sisa {{ $daysDiff }} hari
                         </span>
@@ -175,7 +175,7 @@
                 <!-- Unified Right Status & Action Block -->
                 <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 sm:min-w-[155px] pt-2.5 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-200/60 dark:border-white/10 sm:pl-4">
                     <div class="sm:text-right tabular-nums">
-                        <span class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Denda berjalan</span>
+                        <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Denda berjalan</span>
                         <span class="text-[16px] font-bold {{ $lateFine > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900' }}">
                             Rp {{ number_format($lateFine, 0, ',', '.') }}
                         </span>
@@ -184,12 +184,12 @@
                     @if(! $loan->is_extended && ! $isOverdue)
                         <form action="{{ route('pinjaman.perpanjang', $loan->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="btn-glass inline-flex min-h-[34px] items-center rounded-full px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300">
+                            <button type="submit" class="btn-glass inline-flex min-h-[44px] sm:min-h-[34px] items-center rounded-full px-4 sm:px-3 text-[11.5px] font-semibold text-emerald-800 dark:text-emerald-300">
                                 Perpanjang {{ $extensionDays }} Hari
                             </button>
                         </form>
                     @elseif($loan->is_extended)
-                        <span class="inline-flex min-h-[28px] items-center rounded-full bg-slate-100 dark:bg-white/10 px-2.5 text-[10.5px] font-semibold text-slate-500">
+                        <span class="inline-flex min-h-[28px] items-center rounded-full bg-slate-100 dark:bg-white/10 px-2.5 text-[11px] font-semibold text-slate-500">
                             Sudah diperpanjang
                         </span>
                     @else
@@ -221,9 +221,9 @@
                 $lateFine = $loan->calculateLateFine(today());
                 $daysDiff = $loan->calculateOverdueWeekdays(today());
             @endphp
-            <article class="glass-card rounded-[18px] p-4 flex flex-col sm:flex-row sm:items-center gap-4 border-rose-200/80 dark:border-rose-500/25">
+            <article class="glass-card rounded-[24px] p-4 flex flex-col sm:flex-row sm:items-center gap-4 border-rose-200/80 dark:border-rose-500/25">
                 <!-- Consistent Book Cover -->
-                <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[7px] book-shadow">
+                <div class="relative aspect-[5/7] w-12 sm:w-14 shrink-0 overflow-hidden rounded-[8px] book-shadow">
                     @if($coverUrl)
                         <img src="{{ $coverUrl }}" alt="{{ $loan->book?->judul }}" class="h-full w-full object-cover">
                     @else
@@ -235,7 +235,7 @@
 
                 <!-- Details -->
                 <div class="flex-1 min-w-0 space-y-0.5">
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-300">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300">
                         <span class="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse"></span>
                         Terlambat {{ $daysDiff }} hari kerja
                     </span>
@@ -251,7 +251,7 @@
 
                 <!-- Unified Right Fine Block -->
                 <div class="sm:text-right shrink-0 pt-2.5 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-200/60 dark:border-white/10 sm:pl-4 tabular-nums">
-                    <span class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Estimasi denda</span>
+                    <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Estimasi denda</span>
                     <span class="block text-[18px] font-bold tracking-tight text-rose-600 dark:text-rose-400 leading-tight mt-0.5">
                         Rp {{ number_format($lateFine, 0, ',', '.') }}
                     </span>

@@ -33,7 +33,7 @@
             {{ $book->penulis }}
         </p>
         @if(filled($book->program_studi))
-            <p class="text-[10.5px] font-medium text-emerald-700 dark:text-emerald-400 line-clamp-1">
+            <p class="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 line-clamp-1">
                 {{ $book->program_studi }}
             </p>
         @endif
@@ -41,7 +41,7 @@
 
     <!-- Liquid Glass Stock Pill -->
     <div class="mt-auto pt-0.5 self-start">
-        <span class="liquid-chip inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium whitespace-nowrap">
+        <span class="liquid-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap">
             <span class="h-1.5 w-1.5 rounded-full {{ $book->stok > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
             <span>{{ $book->stok > 0 ? "Tersedia {$book->stok} Eksemplar" : 'Sedang Habis' }}</span>
         </span>
