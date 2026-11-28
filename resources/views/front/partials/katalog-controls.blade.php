@@ -4,10 +4,10 @@
     $hasActiveStrip = ($currentKategori !== 'semua') || ($currentProdi !== 'semua') || ($currentTahun !== 'semua') || $onlyAvailable || ($currentSearch !== '');
 @endphp
 
-<div class="glass-card rounded-[24px] p-3 sm:p-3.5 shadow-sm space-y-2.5">
+<div class="glass-card rounded-[36px] sm:rounded-[30px] p-3.5 shadow-sm space-y-2.5">
     <!-- BARIS 1: KATEGORI CHIPS (Horizontal scrollable + edge fade di HP) -->
     <div class="relative">
-        <div class="no-scrollbar flex items-center gap-1.5 overflow-x-auto py-0.5 pr-6 sm:pr-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-26px),transparent)] sm:[mask-image:none]">
+        <div class="catalog-chip-strip no-scrollbar flex items-center gap-1.5 overflow-x-auto py-5 -my-5 pl-3.5 -ml-3.5 pr-9 -mr-3.5 sm:p-0 sm:m-0 sm:flex-wrap sm:overflow-visible [mask-image:linear-gradient(to_right,black_calc(100%-36px),transparent)] sm:[mask-image:none]">
             <a href="{{ $allCategoriesUrl }}"
                aria-pressed="{{ $currentKategori === 'semua' ? 'true' : 'false' }}"
                data-catalog-nav

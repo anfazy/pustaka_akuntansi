@@ -37,7 +37,7 @@
 
     <!-- TABLE CARD -->
     @if($historyLoans->count() > 0)
-        <div class="glass-card overflow-hidden rounded-[22px] p-2.5 sm:p-4 shadow-sm border border-white/90 dark:border-white/10">
+        <div class="glass-card overflow-hidden rounded-[22px] p-3 sm:p-4 shadow-sm border border-white/90 dark:border-white/10">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[680px] text-left text-[12.5px]">
                     <thead class="text-[11px] font-semibold text-slate-400 dark:text-slate-400 border-b border-slate-200/60 dark:border-white/10 uppercase tracking-wider">

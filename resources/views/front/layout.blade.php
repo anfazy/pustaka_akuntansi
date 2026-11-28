@@ -342,6 +342,21 @@
                         0 6px 16px -4px rgba(5, 150, 105, 0.4) !important;
         }
 
+        /* Compact glow spread inside horizontally scrolling chip strips so overflow-x clip never slices glow boxes */
+        .catalog-chip-strip .btn-emerald {
+            box-shadow: inset 0 1.5px 1.5px 0 rgba(254, 240, 138, 0.7),
+                        inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2),
+                        0 4px 10px -2px rgba(16, 185, 129, 0.42),
+                        0 0 6px -1px rgba(52, 211, 153, 0.25) !important;
+        }
+
+        .catalog-chip-strip .btn-emerald:hover {
+            box-shadow: inset 0 1.5px 1.5px 0 #ffffff,
+                        inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2),
+                        0 6px 14px -2px rgba(16, 185, 129, 0.55),
+                        0 0 8px -1px rgba(234, 179, 8, 0.3) !important;
+        }
+
         /* Apple Liquid Glass Neutral Pill Button */
         .btn-glass {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(240, 253, 244, 0.45) 100%);
@@ -1168,12 +1183,12 @@
 <body class="min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-400 relative">
     <div id="appleNavProgress"></div>
 
-    <!-- FLOATING GLASS SIDEBAR (Desktop Apple NavigationSplitView proportions) -->
-    <aside id="appSidebar" class="glass-panel sidebar-transition fixed bottom-4 left-4 top-4 z-30 hidden w-[236px] flex-col rounded-[22px] px-3 py-4 lg:flex">
+    <!-- FLOATING GLASS SIDEBAR (Desktop Apple NavigationSplitView proportions; 28px = 16px + 12px pad) -->
+    <aside id="appSidebar" class="glass-panel sidebar-transition fixed bottom-4 left-4 top-4 z-30 hidden w-[236px] flex-col rounded-[28px] p-3 lg:flex">
         <!-- Sidebar Brand Header -->
         <div class="sidebar-header flex items-center px-1">
             <a href="{{ route('beranda') }}" class="sidebar-brand-link group flex items-center gap-2.5 min-w-0 w-full transition-all duration-300 hover:opacity-90 active:scale-[0.98]">
-                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white p-0.5 shadow-md shadow-emerald-950/15 ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[16px] bg-white p-0.5 shadow-md shadow-emerald-950/15 ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                     <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </div>
                 <div class="sidebar-text min-w-0">
@@ -1279,8 +1294,8 @@
     <!-- SCROLL EDGE EFFECT (Top scrim beneath floating topbar) -->
     <div class="scroll-edge-top sidebar-transition pointer-events-none fixed inset-x-0 top-0 z-10 h-36 sm:h-16 lg:left-[252px]"></div>
 
-    <!-- FLOATING GLASS TOPBAR (Concentric 22px = 14px + p-2 8px on mobile; >=44pt touch controls) -->
-    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2 rounded-[22px] p-2 sm:left-4 sm:right-4 sm:top-4 sm:h-[50px] sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[16px] sm:px-3.5 sm:py-0 lg:left-[264px] lg:right-4 lg:top-4">
+    <!-- FLOATING GLASS TOPBAR (Concentric 30px mobile / 25px pill desktop = inner radius + pad) -->
+    <header id="appHeader" class="glass-topbar sidebar-transition fixed left-3 right-3 top-3 z-20 flex flex-col gap-2 rounded-[30px] p-2 sm:left-4 sm:right-4 sm:top-4 sm:h-[50px] sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[25px] sm:px-3.5 sm:py-0 lg:left-[264px] lg:right-4 lg:top-4">
         <!-- Mobile Top Row (Logo + Action Controls) / Desktop Leading Sidebar Toggle + Search + Actions -->
         <div class="flex w-full items-center justify-between gap-2 sm:contents">
             <!-- Desktop Apple sidebar.left Toolbar Button -->
@@ -1299,7 +1314,7 @@
 
             <!-- Mobile Logo + Title -->
             <a href="{{ route('beranda') }}" class="flex min-h-[44px] items-center gap-2.5 min-w-0 lg:hidden active:scale-95 transition-transform">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] bg-white p-0.5 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[18px] bg-white p-0.5 shadow-sm border border-slate-200/60 dark:border-white/20 overflow-hidden">
                     <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                 </span>
                 <span class="hidden min-[460px]:inline sm:hidden text-xs font-bold leading-tight text-slate-900 dark:text-white truncate">
@@ -1584,14 +1599,14 @@
                 $footerBorrowedCopies = (int) \App\Models\Loan::whereIn('status', ['dipinjam', 'terlambat'])->count();
                 $footerTotalCopies = $footerAvailableCopies + $footerBorrowedCopies;
             @endphp
-            <footer class="apple-reveal mt-10 sm:mt-12 glass-card relative overflow-hidden rounded-[26px] p-3.5 sm:p-4 shadow-xl border border-white/85 dark:border-white/10">
+            <footer class="apple-reveal mt-10 sm:mt-12 glass-card relative overflow-hidden rounded-[30px] p-4 shadow-xl border border-white/85 dark:border-white/10">
                 <!-- Subtle Ambient Glow -->
                 <div class="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/10"></div>
 
                 <!-- Top Brand & Quick Actions Bar -->
                 <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200/60 dark:border-white/10">
                     <div class="flex items-center gap-2.5">
-                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden">
+                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[14px] bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/15 border border-white/80 dark:border-white/20 overflow-hidden">
                             <img src="{{ asset('images/logo-perpustakaan-akuntansi.jpg') }}" alt="Logo Perpustakaan Jurusan Akuntansi" class="h-full w-full object-contain">
                         </div>
                         <div>

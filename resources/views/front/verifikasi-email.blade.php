@@ -3,7 +3,7 @@
 @section('title', 'Verifikasi Email Anda — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[390px] rounded-[26px] p-4 sm:p-5 shadow-2xl animate-rise text-center">
+    <div class="glass-card w-full max-w-[390px] rounded-[28px] p-4 sm:p-5 shadow-2xl animate-rise text-center">
         <!-- Brand Header -->
         <div class="flex items-center justify-center gap-2.5 mb-4">
             <div class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white p-0.5 shadow-sm shadow-emerald-950/15 border border-white/80 dark:border-white/20 overflow-hidden">

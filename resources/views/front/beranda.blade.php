@@ -40,8 +40,8 @@
          STAGE 1: ASYMMETRIC APPLE BENTO EDITORIAL SHOWCASE (12 COLS)
          ================================================================ -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 mb-7">
-        <!-- LEFT / PRIMARY BENTO STAGE (7 COLS; Concentric 26px outer = 12px inner + 14/16px pad) -->
-        <div class="lg:col-span-7 glass-card relative overflow-hidden rounded-[26px] p-3.5 sm:p-4 flex flex-col justify-between">
+        <!-- LEFT / PRIMARY BENTO STAGE (7 COLS; Concentric 28px outer = 12px inner + 16px pad) -->
+        <div class="lg:col-span-7 glass-card relative overflow-hidden rounded-[28px] p-4 flex flex-col justify-between">
             <!-- Subtle Ambient Liquid Glow Orbs -->
             <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-400/20 blur-3xl dark:bg-emerald-500/15"></div>
             <div class="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-amber-300/20 blur-3xl dark:bg-amber-400/10"></div>
@@ -160,8 +160,8 @@
             @endif
         </div>
 
-        <!-- RIGHT / APPLE BOOKS 3D SPOTLIGHT STAGE (5 COLS; Concentric 26px outer) -->
-        <div class="lg:col-span-5 glass-card spotlight-card relative overflow-hidden rounded-[26px] p-4 sm:p-5 flex flex-col justify-between">
+        <!-- RIGHT / APPLE BOOKS 3D SPOTLIGHT STAGE (5 COLS; Concentric 28px outer = 11px/12px inner + 16px pad) -->
+        <div class="lg:col-span-5 glass-card spotlight-card relative overflow-hidden rounded-[28px] p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between gap-2 mb-3">
                 <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Sorotan Pilihan</span>
@@ -189,7 +189,7 @@
                     <div data-spotlight-slide="{{ $idx }}" class="spotlight-slide {{ $idx === 0 ? 'is-active flex' : 'hidden' }} w-full items-center gap-4">
                         <!-- Angled 3D Book Cover -->
                         <a href="{{ route('buku.detail', $sBook->id) }}" class="apple-press shrink-0 w-[82px] sm:w-[94px]">
-                            <div class="spotlight-cover-3d aspect-[5/7] w-full overflow-hidden rounded-[9px] book-shadow border border-white/40 dark:border-white/10">
+                            <div class="spotlight-cover-3d aspect-[5/7] w-full overflow-hidden rounded-[11px] book-shadow border border-white/40 dark:border-white/10">
                                 @if($sCoverUrl)
                                     <img src="{{ $sCoverUrl }}" alt="{{ $sBook->judul }}" class="h-full w-full object-cover">
                                 @else
@@ -336,7 +336,7 @@
                        style="--stagger: {{ $cIdx }}"
                        class="apple-reveal glass-card glass-card-hover apple-press group rounded-[20px] p-3 flex flex-col justify-between min-h-[82px]">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="grid h-7 w-7 place-items-center rounded-[10px] bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-transform duration-300 group-hover:scale-110">
+                            <span class="grid h-7 w-7 place-items-center rounded-[8px] bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 transition-transform duration-300 group-hover:scale-110">
                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                                 </svg>
@@ -389,8 +389,8 @@
             </div>
         </div>
 
-        <!-- Bento Card B: Jam Pelayanan & Sirkulasi (4 cols) -->
-        <div class="lg:col-span-4 glass-card rounded-[24px] p-3.5 sm:p-4 flex flex-col justify-between gap-3">
+        <!-- Bento Card B: Jam Pelayanan & Sirkulasi (4 cols; Concentric 26px = 10px inner + 16px pad) -->
+        <div class="lg:col-span-4 glass-card rounded-[26px] p-4 flex flex-col justify-between gap-3">
             <div>
                 <div class="flex items-center justify-between gap-2 mb-2">
                     <span class="liquid-badge-emerald inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold">
@@ -415,8 +415,8 @@
             </div>
         </div>
 
-        <!-- Bento Card C: Concierge Admin & Tata Tertib (3 cols) -->
-        <div class="md:col-span-2 lg:col-span-3 glass-card rounded-[24px] p-3.5 sm:p-4 flex flex-col justify-between gap-3">
+        <!-- Bento Card C: Concierge Admin & Tata Tertib (3 cols; Concentric 26px = 10px inner + 16px pad) -->
+        <div class="md:col-span-2 lg:col-span-3 glass-card rounded-[26px] p-4 flex flex-col justify-between gap-3">
             <div>
                 <span class="inline-flex h-8 w-8 items-center justify-center rounded-[10px] bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 mb-2">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">

@@ -49,7 +49,7 @@
 
     <div class="space-y-4">
         <!-- SECTION 1: ALUR BOOKING, PERPANJANGAN & DENDA (Concentric 26px outer = 12px inner + 14px pad) -->
-        <section id="alur-booking" class="scroll-mt-20 glass-card rounded-[26px] p-3.5 sm:p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
+        <section id="alur-booking" class="scroll-mt-20 glass-card rounded-[28px] p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
             <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/60 dark:border-white/10">
                 <div>
                     <h2 class="text-[15.5px] sm:text-[17px] font-bold tracking-tight text-slate-900 leading-snug">
@@ -114,7 +114,7 @@
         </section>
 
         <!-- SECTION 2: JAMINAN KARTU FISIK & KUOTA -->
-        <section id="jaminan-kartu" class="scroll-mt-20 glass-card rounded-[26px] p-3.5 sm:p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
+        <section id="jaminan-kartu" class="scroll-mt-20 glass-card rounded-[28px] p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
             <h2 class="text-[15.5px] sm:text-[17px] font-bold tracking-tight text-slate-900 leading-snug">
                 Jaminan Kartu &amp; Kuota Pinjam
             </h2>
@@ -158,7 +158,7 @@
         </section>
 
         <!-- SECTION 3: DURASI PINJAM, TARIF DENDA & SANKSI -->
-        <section id="tarif-denda" class="scroll-mt-20 glass-card rounded-[26px] p-3.5 sm:p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
+        <section id="tarif-denda" class="scroll-mt-20 glass-card rounded-[28px] p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
             <h2 class="text-[15.5px] sm:text-[17px] font-bold tracking-tight text-slate-900 leading-snug">
                 Durasi Pinjam, Denda &amp; Sanksi
             </h2>
@@ -205,7 +205,7 @@
         </section>
 
         <!-- SECTION 4: JAM LAYANAN & KONTAK PUSTAKAWAN -->
-        <section id="jam-layanan" class="scroll-mt-20 glass-card rounded-[26px] p-3.5 sm:p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
+        <section id="jam-layanan" class="scroll-mt-20 glass-card rounded-[28px] p-4 shadow-lg border border-white/85 dark:border-white/10 apple-reveal">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <h2 class="text-[15.5px] sm:text-[17px] font-bold tracking-tight text-slate-900 leading-snug">
                     Jam Layanan &amp; Kontak

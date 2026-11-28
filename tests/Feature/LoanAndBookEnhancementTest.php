@@ -558,7 +558,10 @@ class LoanAndBookEnhancementTest extends TestCase
         $this->get(route('buku.detail', $taBook->id))
             ->assertOk()
             ->assertSee('Program Studi')
-            ->assertSee('Komputerisasi Akuntansi (S. Tr)');
+            ->assertSee('Komputerisasi Akuntansi (S. Tr)')
+            ->assertSee('line-clamp-4', false)
+            ->assertSee($taBook->penulis)
+            ->assertSee('Perpustakaan Jurusan Akuntansi');
     }
 
     public function test_admin_book_resource_can_save_and_filter_program_studi(): void

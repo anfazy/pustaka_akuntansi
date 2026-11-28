@@ -30,13 +30,13 @@
                 @if($coverUrl)
                     <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" class="h-full w-full object-cover">
                 @else
-                    <div class="cover-art-{{ $artIndex }} flex h-full w-full flex-col justify-between p-4">
-                        <div class="font-serif text-[17px] sm:text-[19px] font-semibold leading-[1.12] tracking-tight">
+                    <div class="cover-art-{{ $artIndex }} flex h-full w-full flex-col justify-between p-3.5 sm:p-4">
+                        <div class="font-serif text-[13.5px] sm:text-[14.5px] font-semibold leading-[1.18] tracking-tight line-clamp-4 min-h-0">
                             {{ $book->judul }}
                         </div>
-                        <div class="space-y-1">
-                            <p class="text-[11.5px] font-medium opacity-90">{{ $book->penulis }}</p>
-                            <p class="text-[8.5px] uppercase tracking-widest opacity-60">Perpustakaan Jurusan Akuntansi</p>
+                        <div class="space-y-0.5 pt-2 shrink-0">
+                            <p class="text-[11px] font-medium opacity-90 line-clamp-1">{{ $book->penulis }}</p>
+                            <p class="text-[7.5px] sm:text-[8px] uppercase tracking-widest opacity-75 leading-tight">Perpustakaan Jurusan Akuntansi</p>
                         </div>
                     </div>
                 @endif
@@ -197,7 +197,7 @@
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeAppleModal('bookingModal')"></div>
 
             <!-- Dialog Window (Concentric 26px outer = 12px inner + 14px pad) -->
-            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[26px] p-3.5 sm:p-4 shadow-2xl border border-white/95 dark:border-white/10">
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[400px] max-h-[90vh] overflow-y-auto rounded-[28px] p-4 shadow-2xl border border-white/95 dark:border-white/10">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <span class="block text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">Booking Fisik</span>

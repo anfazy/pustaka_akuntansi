@@ -3,7 +3,7 @@
 @section('title', 'Daftar Anggota Baru — Perpustakaan Jurusan Akuntansi')
 
 @section('content')
-    <div class="glass-card w-full max-w-[540px] rounded-[26px] p-3.5 sm:p-4 shadow-2xl animate-rise">
+    <div class="glass-card w-full max-w-[540px] rounded-[28px] p-4 shadow-2xl animate-rise">
         <!-- Back to Beranda Link & Login Shortcut -->
         <div class="flex items-center justify-between gap-3 mb-3">
             <a href="{{ route('beranda') }}" class="inline-flex min-h-[44px] sm:min-h-[34px] items-center gap-1.5 text-[11.5px] font-semibold text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">

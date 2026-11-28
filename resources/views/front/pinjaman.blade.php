@@ -57,8 +57,8 @@
                     : 'maks. 1×24 jam';
             @endphp
             <article class="glass-card rounded-[24px] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                <!-- QR Code Box (Concentric 24px - 16px pad = 8px, inner pad keeps QR crisp) -->
-                <div class="grid h-20 w-20 shrink-0 place-items-center rounded-[10px] p-1.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
+                <!-- QR Code Box (Concentric 24px - 16px pad = 8px) -->
+                <div class="grid h-20 w-20 shrink-0 place-items-center rounded-[8px] p-1.5 shadow-sm bg-white border border-slate-200 dark:border-white/20">
                     <canvas id="qr_{{ $loan->id }}" class="h-full w-full"></canvas>
                 </div>
 
@@ -280,7 +280,7 @@
         <div id="bookingSuccessModal" class="apple-modal-root fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="glass-modal-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeAppleModal('bookingSuccessModal')"></div>
 
-            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[390px] max-h-[90vh] overflow-y-auto rounded-[22px] p-4 sm:p-5 text-center shadow-2xl border border-white/95 dark:border-white/10">
+            <div class="glass-card glass-popover-sheet glass-modal-panel relative z-10 w-full max-w-[390px] max-h-[90vh] overflow-y-auto rounded-[32px] p-4 text-center shadow-2xl border border-white/95 dark:border-white/10">
                 <div class="mx-auto grid h-11 w-11 place-items-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-2.5">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </div>
@@ -290,8 +290,8 @@
                     {{ $successLoan?->book?->judul ?? 'Buku Pilihan' }}
                 </p>
 
-                <div class="pearl-card mt-4 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-white/10">
-                    <div class="mx-auto grid h-32 w-32 place-items-center rounded-[12px] bg-white p-2">
+                <div class="pearl-card mt-4 rounded-[16px] p-2.5 shadow-sm border border-slate-200 dark:border-white/10">
+                    <div class="mx-auto grid h-32 w-32 place-items-center rounded-[6px] bg-white p-2">
                         <canvas id="successQrCanvas" class="h-full w-full"></canvas>
                     </div>
                     <div class="mt-3 text-[18px] font-bold tracking-tight text-slate-900 tabular-nums">
