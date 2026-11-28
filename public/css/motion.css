@@ -124,6 +124,10 @@
     transition: transform var(--lg-dur-snappy) var(--lg-spring-snappy) !important;
 }
 
+.lg-book-card[data-lg-tilt-active="1"] {
+    transition: none !important;
+}
+
 .lg-book-card[data-lg-tilt-active="1"]:hover,
 .lg-book-card[data-lg-tilt-active="1"]:active {
     transform: none;
@@ -414,14 +418,8 @@ html.dark #spotlightDots .spotlight-dot[aria-current="true"] {
 
 .shelf-panel.is-parked,
 .shelf-panel[data-lg-state="parked"] {
-    display: grid !important;
-    position: absolute !important;
-    inset: 0 !important;
-    overflow: hidden !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+    display: none !important;
     pointer-events: none !important;
-    z-index: 0 !important;
 }
 
 .shelf-panel[data-lg-state="active"] {
@@ -470,9 +468,20 @@ html.dark #spotlightDots .spotlight-dot[aria-current="true"] {
     animation-delay: calc(min(var(--stagger, 0), 7) * 50ms);
 }
 
+@keyframes lgViewRevealSlide {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 12px, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
 @supports (animation-timeline: view()) {
     .lg-view-timeline-reveal:not(.is-visible) {
-        animation: lgRevealMaterialize linear both;
+        animation: lgViewRevealSlide linear both;
         animation-timeline: view();
         animation-range: entry 4% entry 24%;
     }

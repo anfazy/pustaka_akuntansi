@@ -89,7 +89,7 @@ function initScroll(){
     scWait=false;
     const p=flags.scrollCondense&&!isRed()?Math.min(1,Math.max(0,y/130)):0;
     w._lgSpP=p;
-    if(hdr){hdr.style.transform=p>0.005?`translate3d(0,${(-2*p).toFixed(2)}px,0) scale(${(1-0.014*p).toFixed(4)},${(1-0.03*p).toFixed(4)})`:'';}
+    if(hdr){hdr.style.transform=p>0.005?`translate3d(0,${(-3*p).toFixed(2)}px,0)`:'';}
     const edgeOp=(0.45+0.55*p).toFixed(2);
     if(topE)topE.style.opacity=edgeOp;if(botE)botE.style.opacity=edgeOp;
   };
@@ -146,11 +146,12 @@ function syncSidebar(anim){
 
 function crossfadePanels(all,matchFn,cls){
   let outE=null,inE=null;
+  const isGrid=cls==='grid';
   all.forEach((p)=>{
     if(matchFn(p))inE=p;
     else if(p.dataset.lgState==='active'||(!p.dataset.lgState&&!p.classList.contains('hidden')&&!p.classList.contains('is-parked')))outE=p;
+    else{killAnim(p);wc(p,false);if(isGrid)p.dataset.lgState='parked';else{p.classList.remove('is-active','is-leaving',cls);p.classList.add('hidden');}}
   });
-  const isGrid=cls==='grid';
   if(outE&&outE!==inE){
     outE.setAttribute('aria-hidden','true');
     if(!isRed()&&outE.animate){
@@ -170,8 +171,7 @@ function crossfadePanels(all,matchFn,cls){
       if(isLite()){
         waapi(inE,[{opacity:0},{opacity:1}],{duration:150,easing:'ease-out',fill:'both'});
       }else{
-        const bl=flags.blurMaterialize?'blur(5px)':'none';
-        Array.from(inE.children).slice(0,8).forEach((c,i)=>waapi(c,[{opacity:0,transform:'translate3d(0,10px,0) scale(0.94)',filter:bl},{opacity:1,transform:'translate3d(0,0,0) scale(1)',filter:'blur(0px)'}],{duration:360,delay:Math.min(i,7)*42,easing:SP_E,fill:'both'}));
+        Array.from(inE.children).slice(0,8).forEach((c,i)=>waapi(c,[{opacity:0,transform:'translate3d(0,10px,0) scale(0.95)'},{opacity:1,transform:'translate3d(0,0,0) scale(1)'}],{duration:340,delay:Math.min(i,7)*36,easing:SP_E,fill:'both'}));
       }
     }
   }
