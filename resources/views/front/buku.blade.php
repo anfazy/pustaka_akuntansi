@@ -61,10 +61,18 @@
         <!-- RIGHT: BOOK SPECS & BORROW ACTION -->
         <div class="md:col-span-8 lg:col-span-9 flex flex-col justify-between">
             <div>
-                <!-- Category Tag (Liquid Glass Badge) -->
-                <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[10.5px] font-semibold mb-2">
-                    {{ $book->category?->nama ?? 'Buku Akuntansi' }}
-                </span>
+                <!-- Category & Prodi Tags (Liquid Glass Badges) -->
+                <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                    <span class="inline-flex items-center rounded-full liquid-badge-emerald px-2.5 py-0.5 text-[10.5px] font-semibold">
+                        {{ $book->category?->nama ?? 'Buku Akuntansi' }}
+                    </span>
+                    @if(filled($book->program_studi))
+                        <a href="{{ route('katalog', ['prodi' => $book->program_studi]) }}"
+                           class="inline-flex items-center rounded-full {{ $book->program_studi_level === 'D3' ? 'liquid-badge-amber' : 'liquid-chip' }} px-2.5 py-0.5 text-[10.5px] font-semibold hover:opacity-90 transition">
+                            {{ $book->program_studi }}
+                        </a>
+                    @endif
+                </div>
 
                 <!-- Title & Author -->
                 <h1 class="text-[21px] sm:text-[25px] font-bold tracking-tight text-slate-900 leading-tight">
@@ -92,6 +100,14 @@
                         <span class="block text-slate-500 text-[10.5px]">Jenis Koleksi</span>
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ $book->collection_type_label }}</span>
                     </div>
+                    @if(filled($book->program_studi))
+                        <div>
+                            <span class="block text-slate-500 text-[10.5px]">Program Studi</span>
+                            <a href="{{ route('katalog', ['prodi' => $book->program_studi]) }}" class="font-medium text-emerald-700 dark:text-emerald-400 hover:underline">
+                                {{ $book->program_studi }}
+                            </a>
+                        </div>
+                    @endif
                     <div>
                         <span class="block text-slate-500 text-[10.5px]">Ketersediaan Stok</span>
                         <span class="font-medium {{ $availableToBook > 0 ? 'text-emerald-800 dark:text-emerald-400' : ($book->stok > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') }}">

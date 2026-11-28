@@ -213,7 +213,8 @@ class UserPortalController extends Controller
                 $q->where('judul', 'like', "%{$search}%")
                     ->orWhere('penulis', 'like', "%{$search}%")
                     ->orWhere('isbn', 'like', "%{$search}%")
-                    ->orWhere('book_code', 'like', "%{$search}%");
+                    ->orWhere('book_code', 'like', "%{$search}%")
+                    ->orWhere('program_studi', 'like', "%{$search}%");
             });
         }
 
@@ -222,6 +223,14 @@ class UserPortalController extends Controller
             $query->whereHas('category', function ($q) use ($kategoriSlug) {
                 $q->where('slug', $kategoriSlug)->orWhere('nama', $kategoriSlug);
             });
+        }
+
+        $rawProdi = trim((string) $request->get('prodi', ''));
+        $prodiFilter = ($rawProdi !== '' && strtolower($rawProdi) !== 'semua')
+            ? (Book::normalizeProgramStudi($rawProdi) ?? $rawProdi)
+            : null;
+        if ($prodiFilter !== null) {
+            $query->where('program_studi', $prodiFilter);
         }
 
         $tipe = $request->get('tipe');
@@ -241,8 +250,10 @@ class UserPortalController extends Controller
             'student' => $student,
             'books' => $books,
             'categories' => $categories,
+            'prodiOptions' => Book::PROGRAM_STUDI_OPTIONS,
             'currentSearch' => $search,
             'currentKategori' => $kategoriSlug ?? 'semua',
+            'currentProdi' => $prodiFilter ?? 'semua',
             'currentTipe' => $tipe ?? 'semua',
         ]);
     }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\BookResource\Pages\EditBook;
+use App\Filament\Resources\BookResource\Pages\ListBooks;
 use App\Filament\Resources\LoanResource\Pages\ListLoans;
 use App\Models\Anggota;
 use App\Models\Book;
@@ -446,5 +447,115 @@ class LoanAndBookEnhancementTest extends TestCase
             today()->addWeekdays(28)->toDateString(),
             $loan->jatuh_tempo?->toDateString()
         );
+    }
+
+    public function test_katalog_and_book_detail_support_program_studi_filter_and_badge(): void
+    {
+        $this->assertEquals('Komputerisasi Akuntansi (S. Tr)', Book::normalizeProgramStudi('D4 KA'));
+        $this->assertEquals('Perbankan Syariah (S. Tr)', Book::normalizeProgramStudi('D4 PS'));
+        $this->assertEquals('Analis Keuangan (S. Tr)', Book::normalizeProgramStudi('D4 KU'));
+        $this->assertEquals('Akuntansi Manajerial (S. Tr)', Book::normalizeProgramStudi('D4 AM'));
+        $this->assertEquals('Akuntansi (D3)', Book::normalizeProgramStudi('D3 AK'));
+        $this->assertEquals('Keuangan dan Perbankan (D3)', Book::normalizeProgramStudi('D3 KP'));
+
+        $taCategory = Category::factory()->create([
+            'nama' => 'TA / Skripsi',
+            'slug' => 'ta-skripsi',
+        ]);
+        $pklCategory = Category::factory()->create([
+            'nama' => 'Laporan PKL',
+            'slug' => 'laporan-pkl',
+        ]);
+        $umumCategory = Category::factory()->create([
+            'nama' => 'Akuntansi Keuangan',
+            'slug' => 'akuntansi-keuangan',
+        ]);
+
+        $taBook = Book::factory()->create([
+            'category_id' => $taCategory->id,
+            'judul' => 'Rancang Bangun Sistem Informasi Akuntansi Web',
+            'program_studi' => 'Komputerisasi Akuntansi (S. Tr)',
+            'isbn' => null,
+            'book_code' => 'KA260001',
+        ]);
+        $pklBook = Book::factory()->create([
+            'category_id' => $pklCategory->id,
+            'judul' => 'Laporan Magang Prosedur Audit Persediaan',
+            'program_studi' => 'Akuntansi (D3)',
+            'isbn' => null,
+            'book_code' => 'AK260002',
+        ]);
+        $umumBook = Book::factory()->create([
+            'category_id' => $umumCategory->id,
+            'judul' => 'Pengantar Akuntansi Berbasis PSAK',
+            'program_studi' => null,
+        ]);
+
+        $this->get(route('katalog'))
+            ->assertOk()
+            ->assertSee('Semua Prodi')
+            ->assertSee('Komputerisasi Akuntansi (S. Tr)')
+            ->assertSee('Perbankan Syariah (S. Tr)')
+            ->assertSee('Analis Keuangan (S. Tr)')
+            ->assertSee('Akuntansi Manajerial (S. Tr)')
+            ->assertSee('Akuntansi (D3)')
+            ->assertSee('Keuangan dan Perbankan (D3)');
+
+        $this->get(route('katalog', ['prodi' => 'Komputerisasi Akuntansi (S. Tr)']))
+            ->assertOk()
+            ->assertSee($taBook->judul)
+            ->assertDontSee($pklBook->judul)
+            ->assertDontSee($umumBook->judul);
+
+        $this->get(route('katalog', ['prodi' => 'D3 AK']))
+            ->assertOk()
+            ->assertSee($pklBook->judul)
+            ->assertDontSee($taBook->judul)
+            ->assertDontSee($umumBook->judul);
+
+        $this->get(route('buku.detail', $taBook->id))
+            ->assertOk()
+            ->assertSee('Program Studi')
+            ->assertSee('Komputerisasi Akuntansi (S. Tr)');
+    }
+
+    public function test_admin_book_resource_can_save_and_filter_program_studi(): void
+    {
+        $admin = User::factory()->create();
+        $taCategory = Category::factory()->create([
+            'nama' => 'TA / Skripsi',
+            'slug' => 'ta-skripsi',
+        ]);
+
+        $bookA = Book::factory()->create([
+            'category_id' => $taCategory->id,
+            'judul' => 'Analisis Pembiayaan Syariah',
+            'book_code' => 'PS260001',
+            'program_studi' => 'Komputerisasi Akuntansi (S. Tr)',
+            'isbn' => null,
+        ]);
+        $bookB = Book::factory()->create([
+            'category_id' => $taCategory->id,
+            'judul' => 'Evaluasi Kinerja Bank Umum',
+            'book_code' => 'KP260001',
+            'program_studi' => 'Keuangan dan Perbankan (D3)',
+            'isbn' => null,
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(EditBook::class, ['record' => $bookA->getRouteKey()])
+            ->fillForm([
+                'program_studi' => 'Perbankan Syariah (S. Tr)',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertEquals('Perbankan Syariah (S. Tr)', $bookA->fresh()->program_studi);
+
+        Livewire::test(ListBooks::class)
+            ->filterTable('program_studi', 'Perbankan Syariah (S. Tr)')
+            ->assertCanSeeTableRecords([$bookA->fresh()])
+            ->assertCanNotSeeTableRecords([$bookB]);
     }
 }

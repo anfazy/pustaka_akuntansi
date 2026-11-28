@@ -192,6 +192,15 @@ class BookResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? ucwords(strtolower(trim($state))) : null),
+
+                                Forms\Components\Select::make('program_studi')
+                                    ->label('Program Studi (Khusus TA/Skripsi & Laporan PKL)')
+                                    ->options(Book::PROGRAM_STUDI_OPTIONS)
+                                    ->searchable()
+                                    ->nullable()
+                                    ->placeholder('Pilih Prodi asal (opsional, kosongkan untuk buku umum)...')
+                                    ->helperText('Digunakan untuk memfilter referensi TA/Skripsi & Laporan PKL berdasarkan Program Studi di katalog mahasiswa.')
+                                    ->columnSpanFull(),
                             ]),
                     ]),
 
@@ -438,7 +447,7 @@ class BookResource extends Resource
                                                 'name' => basename($cleanFile),
                                                 'size' => Storage::disk('uploads')->size($cleanFile),
                                                 'type' => Storage::disk('uploads')->mimeType($cleanFile),
-                                                'url' => asset('uploads/' . $cleanFile),
+                                                'url' => asset('uploads/'.$cleanFile),
                                             ];
                                         }
 
@@ -496,6 +505,11 @@ class BookResource extends Resource
                                             ->label('Kategori')
                                             ->badge()
                                             ->color('info'),
+                                        Infolists\Components\TextEntry::make('program_studi')
+                                            ->label('Program Studi')
+                                            ->badge()
+                                            ->color('success')
+                                            ->placeholder('-'),
                                         Infolists\Components\TextEntry::make('penulis')
                                             ->label('Penulis'),
                                         Infolists\Components\TextEntry::make('penerbit')
@@ -549,6 +563,14 @@ class BookResource extends Resource
                     ->label('Kategori')
                     ->badge()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('program_studi')
+                    ->label('Prodi')
+                    ->badge()
+                    ->color('success')
+                    ->placeholder('-')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('penulis')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tahun_terbit')
@@ -571,6 +593,9 @@ class BookResource extends Resource
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label('Kategori')
                     ->relationship('category', 'nama'),
+                Tables\Filters\SelectFilter::make('program_studi')
+                    ->label('Program Studi')
+                    ->options(Book::PROGRAM_STUDI_OPTIONS),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

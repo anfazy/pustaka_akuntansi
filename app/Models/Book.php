@@ -14,9 +14,24 @@ class Book extends Model
     /** @use HasFactory<BookFactory> */
     use HasFactory;
 
+    /**
+     * Daftar resmi Program Studi Jurusan Akuntansi Polines (selaras dengan form pendaftaran anggota).
+     *
+     * @var array<string, string>
+     */
+    public const PROGRAM_STUDI_OPTIONS = [
+        'Komputerisasi Akuntansi (S. Tr)' => 'Komputerisasi Akuntansi (S. Tr)',
+        'Perbankan Syariah (S. Tr)' => 'Perbankan Syariah (S. Tr)',
+        'Analis Keuangan (S. Tr)' => 'Analis Keuangan (S. Tr)',
+        'Akuntansi Manajerial (S. Tr)' => 'Akuntansi Manajerial (S. Tr)',
+        'Akuntansi (D3)' => 'Akuntansi (D3)',
+        'Keuangan dan Perbankan (D3)' => 'Keuangan dan Perbankan (D3)',
+    ];
+
     protected $fillable = [
         'category_id',
         'collection_type',
+        'program_studi',
         'book_code',
         'judul',
         'penulis',
@@ -57,6 +72,8 @@ class Book extends Model
                     }
                 }
             }
+
+            $book->program_studi = static::normalizeProgramStudi($book->program_studi);
         });
 
         static::saved(function (Book $book): void {
@@ -116,6 +133,50 @@ class Book extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Normalisasi nama atau singkatan prodi (termasuk kode sheet spreadsheet seperti D4 KA / D3 AK)
+     * menjadi nama Program Studi standar.
+     */
+    public static function normalizeProgramStudi(?string $value): ?string
+    {
+        $raw = trim((string) $value);
+        if ($raw === '' || strtolower($raw) === 'semua') {
+            return null;
+        }
+
+        if (isset(self::PROGRAM_STUDI_OPTIONS[$raw])) {
+            return $raw;
+        }
+
+        $normalized = strtolower(preg_replace('/\s+/', ' ', str_replace(['.', '(', ')'], ['', ' ', ' '], $raw)) ?? $raw);
+        $compact = preg_replace('/[^a-z0-9]/', '', strtolower($raw)) ?? '';
+
+        return match (true) {
+            in_array($compact, ['d4ka', 'ka', 'komputerisasiakuntansi', 'komputerisasiakuntansistr'], true)
+                || str_contains($normalized, 'komputerisasi') => 'Komputerisasi Akuntansi (S. Tr)',
+            in_array($compact, ['d4ps', 'ps', 'perbankansyariah', 'perbankansyariahstr'], true)
+                || str_contains($normalized, 'syariah') => 'Perbankan Syariah (S. Tr)',
+            in_array($compact, ['d4ku', 'ku', 'analiskeuangan', 'analiskeuanganstr', 'analisiskeuangan', 'analisiskeuanganstr'], true)
+                || str_contains($normalized, 'analis keuangan')
+                || str_contains($normalized, 'analisis keuangan') => 'Analis Keuangan (S. Tr)',
+            in_array($compact, ['d4am', 'am', 'akuntansimanajerial', 'akuntansimanajerialstr'], true)
+                || str_contains($normalized, 'manajerial') => 'Akuntansi Manajerial (S. Tr)',
+            in_array($compact, ['d3kp', 'kp', 'keuangandanperbankan', 'keuangandanperbankand3'], true)
+                || str_contains($normalized, 'keuangan dan perbankan') => 'Keuangan dan Perbankan (D3)',
+            in_array($compact, ['d3ak', 'ak', 'akuntansid3', 'akuntansi'], true)
+                || $normalized === 'akuntansi d3' => 'Akuntansi (D3)',
+            default => $raw,
+        };
+    }
+
+    /**
+     * Label jenjang ringkas untuk badge UI (D3 atau S. Tr).
+     */
+    public function getProgramStudiLevelAttribute(): string
+    {
+        return str_contains((string) $this->program_studi, '(D3)') ? 'D3' : 'S. Tr';
     }
 
     /**

@@ -32,6 +32,11 @@
         <p class="text-[11.5px] text-slate-500 line-clamp-1">
             {{ $book->penulis }}
         </p>
+        @if(filled($book->program_studi))
+            <p class="text-[10.5px] font-medium text-emerald-700 dark:text-emerald-400 line-clamp-1">
+                {{ $book->program_studi }}
+            </p>
+        @endif
     </div>
 
     <!-- Liquid Glass Stock Pill -->
