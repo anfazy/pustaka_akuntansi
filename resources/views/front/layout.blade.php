@@ -1163,8 +1163,7 @@
             background-color: rgba(255, 255, 255, 0.04) !important;
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/motion-tokens.css') }}?v={{ filemtime(public_path('css/motion-tokens.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/motion.css') }}?v={{ filemtime(public_path('css/motion.css')) }}">
+    <style>{!! @file_get_contents(public_path('css/motion-tokens.css')) !!}{!! @file_get_contents(public_path('css/motion.css')) !!}</style>
     <script defer src="{{ asset('js/motion.js') }}?v={{ filemtime(public_path('js/motion.js')) }}"></script>
 </head>
 <body class="min-h-screen text-slate-800 dark:text-slate-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-400 relative">

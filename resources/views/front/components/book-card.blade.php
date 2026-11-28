@@ -6,11 +6,11 @@
 @endphp
 
 <a href="{{ route('buku.detail', $book->id) }}" data-book-id="{{ $book->id }}" class="lg-book-card apple-press group relative flex h-full flex-col gap-2 rounded-2xl p-0.5">
-    <span class="lg-specular-sheen" aria-hidden="true"></span>
+    <span class="lg-specular-clip" aria-hidden="true"><span class="lg-specular-sheen"></span></span>
     <!-- Book Cover -->
     <div data-cover-box="{{ $book->id }}" class="relative aspect-[5/7] w-full overflow-hidden rounded-[10px] book-shadow shrink-0 dark:shadow-[0_12px_28px_-10px_rgba(0,0,0,0.7)]">
         @if($coverUrl)
-            <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" loading="lazy" class="h-full w-full object-cover group-hover:scale-[1.035]">
+            <img src="{{ $coverUrl }}" alt="Sampul {{ $book->judul }}" loading="lazy" decoding="async" class="h-full w-full object-cover">
         @else
             <!-- Typographic Fallback Cover Apple Style -->
             <div class="cover-art-{{ $artIndex }} flex h-full w-full flex-col justify-between p-3">

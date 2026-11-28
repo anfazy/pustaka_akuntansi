@@ -20,8 +20,8 @@
             overflow: hidden !important;
         }
         @keyframes catalogCardFadeIn {
-            from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.92); filter: blur(var(--lg-blur-materialize, 0px)); }
-            to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+            from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.93); }
+            to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
         .catalog-card-stagger {
             contain: layout paint;

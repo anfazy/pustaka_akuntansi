@@ -307,7 +307,7 @@
 
         <div class="lg-shelf-stage">
         @foreach($shelves as $shelfKey => $shelfData)
-            <div data-shelf-panel="{{ $shelfKey }}" class="shelf-panel {{ $shelfKey === 'populer' ? 'is-active grid' : 'hidden' }} grid-cols-2 gap-x-3.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div data-shelf-panel="{{ $shelfKey }}" @if($shelfKey !== 'populer') aria-hidden="true" @endif class="shelf-panel {{ $shelfKey === 'populer' ? 'is-active' : 'is-parked' }} grid grid-cols-2 gap-x-3.5 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
                 @forelse($shelfData['books'] as $book)
                     @include('front.components.book-card', ['book' => $book])
                 @empty

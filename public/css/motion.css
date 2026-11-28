@@ -1,6 +1,6 @@
 /* ============================================================================
    APPLE LIQUID GLASS MOTION SYSTEM (iOS 26 / macOS Tahoe Choreography)
-   GPU-composited transforms, opacity & short micro-blur only (0 layout anim)
+   GPU-composited transforms & opacity only (micro-blur strictly on small sheets)
    ============================================================================ */
 
 /* ----------------------------------------------------------------------------
@@ -22,7 +22,6 @@
     view-transition-name: lg-tabbar;
 }
 
-/* Lock persistent floating glass chrome firmly during page transitions */
 ::view-transition-group(lg-header),
 ::view-transition-group(lg-sidebar),
 ::view-transition-group(lg-tabbar) {
@@ -48,25 +47,21 @@
     from {
         opacity: 1;
         transform: scale(1);
-        filter: blur(0);
     }
     to {
         opacity: 0;
-        transform: scale(0.985);
-        filter: blur(var(--lg-blur-vt));
+        transform: scale(0.988);
     }
 }
 
 @keyframes lgVtNew {
     from {
         opacity: 0;
-        transform: scale(0.95);
-        filter: blur(var(--lg-blur-vt));
+        transform: scale(0.96);
     }
     to {
         opacity: 1;
         transform: scale(1);
-        filter: blur(0);
     }
 }
 
@@ -100,7 +95,7 @@
     transition-timing-function: var(--lg-ease-apple);
 }
 
-/* Strip static permanent will-change layers; add dynamically only during active motion */
+/* Strip permanent will-change layers; only apply dynamically during active motion */
 .btn-emerald,
 .btn-glass,
 .liquid-chip,
@@ -119,7 +114,6 @@
     will-change: transform, opacity !important;
 }
 
-/* Strict layout+paint containment on cards prevents layout shock across siblings */
 .lg-book-card,
 .lg-bento-card {
     contain: layout paint;
@@ -130,14 +124,9 @@
     transition: transform var(--lg-dur-snappy) var(--lg-spring-snappy) !important;
 }
 
-/* Disable legacy CSS hover transform jumps on cards handled smoothly by WAAPI/rAF spring */
 .lg-book-card[data-lg-tilt-active="1"]:hover,
 .lg-book-card[data-lg-tilt-active="1"]:active {
     transform: none;
-}
-
-.lg-book-card img {
-    transition: transform var(--lg-dur-soft) var(--lg-spring-soft) !important;
 }
 
 .glass-card-hover {
@@ -149,7 +138,7 @@
 }
 
 /* ----------------------------------------------------------------------------
-   3. PRESS-AND-LIFT + TOUCH-ORIGIN SHIMMER + DYNAMIC SPECULAR RIM
+   3. PRESS-AND-LIFT + TOUCH SHIMMER + STATIC-GRADIENT GPU MOVING SPECULAR
    ---------------------------------------------------------------------------- */
 .lg-press-surface {
     position: relative;
@@ -177,43 +166,47 @@
     transform: scale(1.06);
 }
 
-/* Moving edge specular layer for hover-capable desktop cards (0 opacity in lite mode) */
-.lg-specular-sheen {
+/* Pre-rasterized static specular highlight moved purely with transform: translate3d */
+.lg-book-card > .lg-specular-clip {
     position: absolute;
     inset: 0;
     border-radius: inherit;
+    overflow: hidden;
     pointer-events: none;
-    opacity: calc(var(--spec-active, 0) * var(--lg-specular-opacity));
-    background: radial-gradient(
-        220px circle at var(--lg-specular-x, 50%) var(--lg-specular-y, 20%),
-        rgba(255, 255, 255, 0.34) 0%,
-        rgba(167, 243, 208, 0.12) 38%,
-        transparent 70%
-    );
-    mix-blend-mode: soft-light;
-    transition: opacity 180ms var(--lg-ease-exit);
     z-index: 4;
 }
 
+.lg-specular-sheen {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 180px;
+    height: 180px;
+    margin-left: -90px;
+    margin-top: -90px;
+    border-radius: 9999px;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.28) 0%,
+        rgba(167, 243, 208, 0.10) 45%,
+        transparent 72%
+    );
+    transform: translate3d(0, 0, 0);
+    transition: opacity 180ms var(--lg-ease-exit);
+}
+
 /* ----------------------------------------------------------------------------
-   4. SCROLL-DRIVEN HEADER CONDENSE & SOFT EDGE SCRIMS (Zero layout jump)
+   4. SCROLL-DRIVEN HEADER CONDENSE & SOFT EDGE SCRIMS (Direct element write, 0 root cascade)
    ---------------------------------------------------------------------------- */
 #appHeader {
     transform-origin: center top;
-    transform: translate3d(
-        0,
-        calc(-2px * var(--lg-scroll-p) * var(--lg-scroll-condense)),
-        0
-    ) scale(
-        calc(1 - 0.014 * var(--lg-scroll-p) * var(--lg-scroll-condense)),
-        calc(1 - 0.03 * var(--lg-scroll-p) * var(--lg-scroll-condense))
-    );
     transition: background-color 240ms var(--lg-ease-apple), border-color 240ms var(--lg-ease-apple) !important;
 }
 
 .scroll-edge-top,
 .scroll-edge-bottom {
-    opacity: calc(0.45 + 0.55 * var(--lg-scroll-p));
     transition: opacity 200ms var(--lg-ease-apple);
 }
 
@@ -269,7 +262,6 @@ html.dark #sidebarMorphIndicator {
     opacity: 0;
 }
 
-/* Switch / Toggle liquid stretch thumb */
 #sheetStockIndicator {
     position: relative;
     transition: background-color 220ms var(--lg-spring-snappy) !important;
@@ -284,7 +276,7 @@ html.dark #sidebarMorphIndicator {
 }
 
 /* ----------------------------------------------------------------------------
-   6. ORIGIN-AWARE POPOVERS (Popover API + @starting-style + Fallback)
+   6. ORIGIN-AWARE POPOVERS (Small surfaces only: <220ms materialize blur)
    ---------------------------------------------------------------------------- */
 .glass-popover,
 [data-lg-popover] {
@@ -328,7 +320,6 @@ html.dark #sidebarMorphIndicator {
     transition-timing-function: var(--lg-ease-exit);
 }
 
-/* Notification bell gentle physical ring when alerts exist */
 @keyframes lgBellShake {
     0% { transform: rotate(0deg); }
     16% { transform: rotate(15deg); }
@@ -370,7 +361,6 @@ html.dark #sidebarMorphIndicator {
     -webkit-user-drag: none;
 }
 
-/* Morph spotlight dots strictly with scaleX (no width layout animation) */
 .spotlight-dot {
     width: 18px !important;
     height: 7px !important;
@@ -384,7 +374,6 @@ html.dark #sidebarMorphIndicator {
     transform: scaleX(1.28);
 }
 
-/* Etalase Shelf Stage: interruptible GPU crossfade without display:none layout thrash */
 .lg-shelf-stage {
     position: relative;
     contain: layout;
@@ -406,13 +395,13 @@ html.dark #sidebarMorphIndicator {
     display: grid !important;
     position: absolute !important;
     inset: 0 !important;
+    overflow: hidden !important;
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
     z-index: 0 !important;
 }
 
-/* Smooth momentum scroller utility for mobile category/carousel rails */
 .lg-momentum-rail {
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
@@ -424,37 +413,32 @@ html.dark #sidebarMorphIndicator {
 }
 
 /* ----------------------------------------------------------------------------
-   8. HERO & SCROLL REVEAL (CSS animation-timeline: view() + IO Fallback)
+   8. HERO & SCROLL REVEAL (Pure compositor scale + opacity, ZERO large-surface blur)
    ---------------------------------------------------------------------------- */
 @keyframes lgRevealMaterialize {
     0% {
         opacity: 0;
-        transform: translate3d(0, 14px, 0) scale(0.92);
-        filter: blur(var(--lg-blur-materialize));
+        transform: translate3d(0, 12px, 0) scale(0.95);
     }
     100% {
         opacity: 1;
         transform: translate3d(0, 0, 0) scale(1);
-        filter: blur(0);
     }
 }
 
 .apple-reveal {
     opacity: 0;
-    transform: translate3d(0, 14px, 0) scale(0.92);
-    filter: blur(var(--lg-blur-materialize));
+    transform: translate3d(0, 12px, 0) scale(0.95);
     transition: none;
 }
 
 .apple-reveal.is-visible {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
     animation: lgRevealMaterialize var(--lg-dur-soft) var(--lg-spring-soft) both;
-    animation-delay: calc(min(var(--stagger, 0), 7) * 55ms);
+    animation-delay: calc(min(var(--stagger, 0), 7) * 50ms);
 }
 
-/* Progressive enhancement with native View Timeline for below-fold scroll reveals */
 @supports (animation-timeline: view()) {
     .lg-view-timeline-reveal:not(.is-visible) {
         animation: lgRevealMaterialize linear both;
@@ -554,7 +538,7 @@ html.dark .lg-toast {
 /* ----------------------------------------------------------------------------
    10. LITE MODE & REDUCED MOTION DEGRADATION RULES
    ---------------------------------------------------------------------------- */
-html[data-motion-tier="lite"] .lg-specular-sheen,
+html[data-motion-tier="lite"] .lg-specular-clip,
 html[data-motion-tier="lite"] .lg-press-surface::after {
     display: none !important;
 }
@@ -569,10 +553,9 @@ html[data-motion-tier="lite"] .lg-press-surface::after {
     .lg-view-timeline-reveal {
         opacity: 1 !important;
         transform: none !important;
-        filter: none !important;
         animation: none !important;
     }
-    .lg-specular-sheen,
+    .lg-specular-clip,
     .lg-press-surface::after {
         display: none !important;
     }
