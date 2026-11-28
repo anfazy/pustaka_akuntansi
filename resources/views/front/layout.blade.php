@@ -157,7 +157,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
-            overflow-x: hidden;
+            overflow-x: clip;
             transition: background 0.45s var(--apple-ease), color 0.3s ease;
         }
 
@@ -2358,12 +2358,20 @@
                     e.preventDefault();
                     const params = new URLSearchParams(new FormData(form));
                     actionUrl.search = params.toString();
+                    if (document.getElementById('catalogRoot') && actionUrl.pathname === '/katalog' && typeof window.catalogFetchUrl === 'function') {
+                        window.catalogFetchUrl(actionUrl.href, true);
+                        return;
+                    }
                     appleSoftNavigate(actionUrl.href, true);
                 } catch (_) {}
             });
 
             window.addEventListener('popstate', function() {
                 const cur = new URL(window.location.href);
+                if (document.getElementById('catalogRoot') && cur.pathname === '/katalog' && typeof window.catalogHandlePopState === 'function') {
+                    window.catalogHandlePopState(cur.href);
+                    return;
+                }
                 if (isPjaxEligible(cur)) {
                     appleSoftNavigate(cur.href, false);
                 } else {

@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\Loan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -199,17 +200,103 @@ class UserPortalController extends Controller
     }
 
     /**
+     * Deteksi apakah kategori termasuk koleksi kontekstual Prodi (TA/Skripsi atau Laporan PKL).
+     */
+    protected function resolveCatalogCategoryContext(?Category $category): ?string
+    {
+        if (! $category) {
+            return null;
+        }
+
+        $slug = strtolower((string) $category->slug);
+        $nama = strtolower((string) $category->nama);
+
+        if (
+            $slug === 'ta-skripsi'
+            || str_contains($nama, 'skripsi')
+            || str_contains($nama, 'tugas akhir')
+            || str_starts_with($nama, 'ta/')
+            || str_starts_with($nama, 'ta-')
+            || $nama === 'ta'
+        ) {
+            return 'ta_skripsi';
+        }
+
+        if (
+            str_contains($slug, 'pkl')
+            || str_contains($slug, 'proposal')
+            || str_contains($nama, 'pkl')
+            || str_contains($nama, 'proposal')
+            || str_contains($nama, 'magang')
+        ) {
+            return 'proposal_laporan_pkl';
+        }
+
+        return null;
+    }
+
+    /**
      * Katalog Buku (Browse / Search).
      */
-    public function katalog(Request $request): View
+    public function katalog(Request $request): View|JsonResponse
     {
         $student = $this->getStudent();
-
-        $query = Book::with('category');
+        $categories = Category::withCount('books')->orderBy('nama')->get();
+        $totalCollectionCount = (int) Book::count();
 
         $search = trim((string) $request->get('q', ''));
+        $kategoriSlug = trim((string) $request->get('kategori', 'semua'));
+        if ($kategoriSlug === '') {
+            $kategoriSlug = 'semua';
+        }
+
+        $selectedCategory = null;
+        if ($kategoriSlug !== 'semua') {
+            $selectedCategory = $categories->first(
+                fn (Category $cat): bool => $cat->slug === $kategoriSlug || $cat->nama === $kategoriSlug
+            );
+        }
+
+        $categoryContext = $this->resolveCatalogCategoryContext($selectedCategory);
+
+        $tipe = trim((string) $request->get('tipe', ''));
+        $validTipe = in_array($tipe, ['umum', 'ta_skripsi', 'proposal_laporan_pkl'], true) ? $tipe : null;
+        $effectiveContext = $categoryContext ?? (in_array($validTipe, ['ta_skripsi', 'proposal_laporan_pkl'], true) ? $validTipe : null);
+
+        $rawProdi = trim((string) $request->get('prodi', ''));
+        $normalizedProdi = ($rawProdi !== '' && strtolower($rawProdi) !== 'semua')
+            ? (Book::normalizeProgramStudi($rawProdi) ?? $rawProdi)
+            : null;
+
+        // Bila kategori non-TA/non-PKL dipilih secara eksplisit, reset prodi otomatis
+        if ($kategoriSlug !== 'semua' && $effectiveContext === null) {
+            $normalizedProdi = null;
+        }
+
+        $showProdiSubfilter = ($effectiveContext !== null) || ($kategoriSlug === 'semua' && $normalizedProdi !== null);
+
+        $rawTahun = trim((string) $request->get('tahun', ''));
+        $tahunFilter = (ctype_digit($rawTahun) && (int) $rawTahun >= 1900 && (int) $rawTahun <= ((int) date('Y') + 1))
+            ? (int) $rawTahun
+            : null;
+
+        $onlyAvailable = $request->get('tersedia') === '1';
+
+        $sortOptions = [
+            'terbaru' => 'Terbaru',
+            'terpopuler' => 'Terpopuler',
+            'tahun_terbaru' => 'Tahun Terbaru',
+            'judul_az' => 'Judul A–Z',
+        ];
+        $currentSort = array_key_exists((string) $request->get('sort', 'terbaru'), $sortOptions)
+            ? (string) $request->get('sort', 'terbaru')
+            : 'terbaru';
+
+        // Query dasar (sebelum filter prodi & tahun) untuk menghitung opsi tahun & jumlah tiap prodi
+        $baseScopeQuery = Book::query();
+
         if ($search !== '') {
-            $query->where(function ($q) use ($search) {
+            $baseScopeQuery->where(function ($q) use ($search): void {
                 $q->where('judul', 'like', "%{$search}%")
                     ->orWhere('penulis', 'like', "%{$search}%")
                     ->orWhere('isbn', 'like', "%{$search}%")
@@ -218,44 +305,129 @@ class UserPortalController extends Controller
             });
         }
 
-        $kategoriSlug = $request->get('kategori');
-        if ($kategoriSlug && $kategoriSlug !== 'semua') {
-            $query->whereHas('category', function ($q) use ($kategoriSlug) {
+        if ($kategoriSlug !== 'semua') {
+            $baseScopeQuery->whereHas('category', function ($q) use ($kategoriSlug): void {
                 $q->where('slug', $kategoriSlug)->orWhere('nama', $kategoriSlug);
             });
         }
 
-        $rawProdi = trim((string) $request->get('prodi', ''));
-        $prodiFilter = ($rawProdi !== '' && strtolower($rawProdi) !== 'semua')
-            ? (Book::normalizeProgramStudi($rawProdi) ?? $rawProdi)
-            : null;
-        if ($prodiFilter !== null) {
-            $query->where('program_studi', $prodiFilter);
+        if ($validTipe !== null) {
+            $baseScopeQuery->where('collection_type', $validTipe);
         }
 
-        $tipe = $request->get('tipe');
-        if ($tipe && in_array($tipe, ['umum', 'ta_skripsi', 'proposal_laporan_pkl'])) {
-            $query->where('collection_type', $tipe);
+        if ($onlyAvailable) {
+            $baseScopeQuery->where('stok', '>', 0);
         }
 
-        $tersedia = $request->get('tersedia');
-        if ($tersedia === '1') {
-            $query->where('stok', '>', 0);
+        $availableYears = (clone $baseScopeQuery)
+            ->whereNotNull('tahun_terbit')
+            ->distinct()
+            ->orderByDesc('tahun_terbit')
+            ->pluck('tahun_terbit')
+            ->map(fn ($year): int => (int) $year)
+            ->values();
+
+        $prodiCountsQuery = clone $baseScopeQuery;
+        if ($tahunFilter !== null) {
+            $prodiCountsQuery->where('tahun_terbit', $tahunFilter);
         }
 
-        $books = $query->latest()->paginate(12)->withQueryString();
-        $categories = Category::withCount('books')->orderBy('nama')->get();
+        $prodiCounts = $prodiCountsQuery
+            ->whereNotNull('program_studi')
+            ->selectRaw('program_studi, COUNT(*) as aggregate')
+            ->groupBy('program_studi')
+            ->pluck('aggregate', 'program_studi')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
 
-        return view('front.katalog', [
+        $prodiGroups = [
+            [
+                'key' => 'str',
+                'label' => 'Sarjana Terapan',
+                'badge' => 'S. Tr',
+                'items' => [
+                    ['code' => 'KA', 'name' => 'Komputerisasi Akuntansi (S. Tr)'],
+                    ['code' => 'PS', 'name' => 'Perbankan Syariah (S. Tr)'],
+                    ['code' => 'KU', 'name' => 'Analis Keuangan (S. Tr)'],
+                    ['code' => 'AM', 'name' => 'Akuntansi Manajerial (S. Tr)'],
+                ],
+            ],
+            [
+                'key' => 'd3',
+                'label' => 'Diploma 3',
+                'badge' => 'D3',
+                'items' => [
+                    ['code' => 'D3 AK', 'name' => 'Akuntansi (D3)'],
+                    ['code' => 'D3 KP', 'name' => 'Keuangan dan Perbankan (D3)'],
+                ],
+            ],
+        ];
+
+        $query = (clone $baseScopeQuery)->with('category');
+        if ($normalizedProdi !== null) {
+            $query->where('program_studi', $normalizedProdi);
+        }
+        if ($tahunFilter !== null) {
+            $query->where('tahun_terbit', $tahunFilter);
+        }
+
+        match ($currentSort) {
+            'terpopuler' => $query->withCount('loans')->orderByDesc('loans_count')->latest('id'),
+            'tahun_terbaru' => $query->orderByDesc('tahun_terbit')->latest('id'),
+            'judul_az' => $query->orderBy('judul'),
+            default => $query->latest('id'),
+        };
+
+        $books = $query->paginate(12)->withQueryString();
+
+        $categoryContextualSlugs = $categories
+            ->filter(fn (Category $cat): bool => $this->resolveCatalogCategoryContext($cat) !== null)
+            ->pluck('slug')
+            ->values()
+            ->all();
+
+        $activeFilterCount = ($kategoriSlug !== 'semua' ? 1 : 0)
+            + ($normalizedProdi !== null ? 1 : 0)
+            + ($tahunFilter !== null ? 1 : 0)
+            + ($onlyAvailable ? 1 : 0)
+            + ($search !== '' ? 1 : 0);
+
+        $viewData = [
             'student' => $student,
             'books' => $books,
             'categories' => $categories,
+            'selectedCategory' => $selectedCategory,
+            'categoryContextualSlugs' => $categoryContextualSlugs,
+            'effectiveContext' => $effectiveContext,
+            'showProdiSubfilter' => $showProdiSubfilter,
+            'totalCollectionCount' => $totalCollectionCount,
             'prodiOptions' => Book::PROGRAM_STUDI_OPTIONS,
+            'prodiGroups' => $prodiGroups,
+            'prodiCounts' => $prodiCounts,
+            'availableYears' => $availableYears,
+            'sortOptions' => $sortOptions,
             'currentSearch' => $search,
-            'currentKategori' => $kategoriSlug ?? 'semua',
-            'currentProdi' => $prodiFilter ?? 'semua',
-            'currentTipe' => $tipe ?? 'semua',
-        ]);
+            'currentKategori' => $kategoriSlug,
+            'currentProdi' => $normalizedProdi ?? 'semua',
+            'currentTahun' => $tahunFilter !== null ? (string) $tahunFilter : 'semua',
+            'currentSort' => $currentSort,
+            'onlyAvailable' => $onlyAvailable,
+            'currentTipe' => $validTipe ?? 'semua',
+            'activeFilterCount' => $activeFilterCount,
+        ];
+
+        if ($request->header('X-Catalog-Fragment') === '1') {
+            return response()->json([
+                'headerMetaHtml' => view('front.partials.katalog-header-meta', $viewData)->render(),
+                'controlsHtml' => view('front.partials.katalog-controls', $viewData)->render(),
+                'resultsHtml' => view('front.partials.katalog-results', $viewData)->render(),
+                'sheetHtml' => view('front.partials.katalog-sheet', $viewData)->render(),
+                'showProdiSubfilter' => $showProdiSubfilter,
+                'activeFilterCount' => $activeFilterCount,
+            ]);
+        }
+
+        return view('front.katalog', $viewData);
     }
 
     /**

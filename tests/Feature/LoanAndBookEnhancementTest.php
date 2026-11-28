@@ -475,6 +475,7 @@ class LoanAndBookEnhancementTest extends TestCase
             'category_id' => $taCategory->id,
             'judul' => 'Rancang Bangun Sistem Informasi Akuntansi Web',
             'program_studi' => 'Komputerisasi Akuntansi (S. Tr)',
+            'tahun_terbit' => 2026,
             'isbn' => null,
             'book_code' => 'KA260001',
         ]);
@@ -482,26 +483,43 @@ class LoanAndBookEnhancementTest extends TestCase
             'category_id' => $pklCategory->id,
             'judul' => 'Laporan Magang Prosedur Audit Persediaan',
             'program_studi' => 'Akuntansi (D3)',
+            'tahun_terbit' => 2025,
             'isbn' => null,
-            'book_code' => 'AK260002',
+            'book_code' => 'AK250002',
         ]);
         $umumBook = Book::factory()->create([
             'category_id' => $umumCategory->id,
             'judul' => 'Pengantar Akuntansi Berbasis PSAK',
             'program_studi' => null,
+            'tahun_terbit' => 2024,
         ]);
 
+        // Saat "Semua", sub-filter prodi tertutup (kontekstual) & kategori menampilkan jumlah koleksi
         $this->get(route('katalog'))
             ->assertOk()
-            ->assertSee('Semua Prodi')
-            ->assertSee('Komputerisasi Akuntansi (S. Tr)')
-            ->assertSee('Perbankan Syariah (S. Tr)')
-            ->assertSee('Analis Keuangan (S. Tr)')
-            ->assertSee('Akuntansi Manajerial (S. Tr)')
-            ->assertSee('Akuntansi (D3)')
-            ->assertSee('Keuangan dan Perbankan (D3)');
+            ->assertSee('Menampilkan')
+            ->assertSee('role="listbox"', false)
+            ->assertSee('data-visible="0"', false);
 
-        $this->get(route('katalog', ['prodi' => 'Komputerisasi Akuntansi (S. Tr)']))
+        // Saat memilih TA/Skripsi, sub-filter prodi muncul kontekstual dengan singkatan & kelompok jenjang
+        $this->get(route('katalog', ['kategori' => 'ta-skripsi']))
+            ->assertOk()
+            ->assertSee('data-visible="1"', false)
+            ->assertSee('Sarjana Terapan')
+            ->assertSee('Diploma 3')
+            ->assertSee('Komputerisasi Akuntansi (S. Tr)')
+            ->assertSee('aria-pressed=', false)
+            ->assertSee('disabled', false);
+
+        // Pindah ke kategori non-TA/non-PKL otomatis me-reset prodi & menyembunyikan baris prodi
+        $this->get(route('katalog', ['kategori' => 'akuntansi-keuangan', 'prodi' => 'Komputerisasi Akuntansi (S. Tr)']))
+            ->assertOk()
+            ->assertSee('data-visible="0"', false)
+            ->assertSee($umumBook->judul)
+            ->assertDontSee($taBook->judul);
+
+        // Filter Prodi spesifik (termasuk via singkatan & mode AJAX fragment tanpa reload)
+        $this->get(route('katalog', ['kategori' => 'ta-skripsi', 'prodi' => 'Komputerisasi Akuntansi (S. Tr)']))
             ->assertOk()
             ->assertSee($taBook->judul)
             ->assertDontSee($pklBook->judul)
@@ -512,6 +530,27 @@ class LoanAndBookEnhancementTest extends TestCase
             ->assertSee($pklBook->judul)
             ->assertDontSee($taBook->judul)
             ->assertDontSee($umumBook->judul);
+
+        // Empty state kontekstual untuk prodi yang belum memiliki TA
+        $this->get(route('katalog', ['kategori' => 'ta-skripsi', 'prodi' => 'Perbankan Syariah (S. Tr)']))
+            ->assertOk()
+            ->assertSee('Belum ada TA untuk prodi ini.')
+            ->assertSee('Lihat semua TA/Skripsi')
+            ->assertSee('Reset filter');
+
+        // Endpoint AJAX fragment (fetch + pushState) mengembalikan payload lengkap
+        $this->withHeaders(['X-Catalog-Fragment' => '1'])
+            ->get(route('katalog', ['kategori' => 'ta-skripsi', 'prodi' => 'KA', 'tahun' => '2026', 'sort' => 'judul_az']))
+            ->assertOk()
+            ->assertJsonStructure([
+                'headerMetaHtml',
+                'controlsHtml',
+                'resultsHtml',
+                'sheetHtml',
+                'showProdiSubfilter',
+                'activeFilterCount',
+            ])
+            ->assertJsonPath('showProdiSubfilter', true);
 
         $this->get(route('buku.detail', $taBook->id))
             ->assertOk()
