@@ -1135,22 +1135,22 @@
             scrollbar-width: none;
         }
 
-        /* Apple HIG Scroll Edge Effect (Top: blur + fade; Bottom: fade-only per iOS 26 guidelines) */
+        /* Apple HIG Scroll Edge Effect (Pure GPU gradient, zero backdrop blur recalculation) */
         .scroll-edge-top {
-            background: linear-gradient(180deg, rgba(240, 253, 244, 0.86) 0%, rgba(240, 253, 244, 0.38) 58%, transparent 100%);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-            mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+            background: linear-gradient(180deg, rgba(240, 253, 244, 0.92) 0%, rgba(240, 253, 244, 0.45) 50%, transparent 100%);
+            pointer-events: none;
         }
         .scroll-edge-bottom {
             background: linear-gradient(0deg, rgba(240, 253, 244, 0.88) 0%, rgba(240, 253, 244, 0.35) 55%, transparent 100%);
+            pointer-events: none;
         }
         html.dark .scroll-edge-top {
-            background: linear-gradient(180deg, rgba(6, 17, 12, 0.88) 0%, rgba(6, 17, 12, 0.38) 58%, transparent 100%);
+            background: linear-gradient(180deg, rgba(6, 17, 12, 0.94) 0%, rgba(6, 17, 12, 0.45) 50%, transparent 100%);
+            pointer-events: none;
         }
         html.dark .scroll-edge-bottom {
             background: linear-gradient(0deg, rgba(5, 15, 10, 0.90) 0%, rgba(5, 15, 10, 0.35) 55%, transparent 100%);
+            pointer-events: none;
         }
 
         /* Safe Area support for iOS/iPadOS */
@@ -2147,6 +2147,7 @@
                 if (window.LiquidGlassMotion) {
                     window.LiquidGlassMotion.initPage();
                 }
+                warmCoreNavLinks();
                 scheduleVisibleBookPrefetch(180);
             }
             if (!isSoftSwap && window.LiquidGlassMotion) {
@@ -2156,8 +2157,34 @@
 
         const applePageCache = new Map();
         const applePendingFetches = new Map();
-        const CACHE_TTL_MS = 45000;
-        const USER_CACHE_TTL_MS = 12000;
+        const CACHE_TTL_MS = 60000;
+        const USER_CACHE_TTL_MS = 15000;
+
+        function normalizeCacheKey(url) {
+            try {
+                const u = new URL(url, window.location.origin);
+                let p = u.pathname;
+                if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+                return u.origin + p + (u.search || '');
+            } catch (_) {
+                return url;
+            }
+        }
+
+        function seedCurrentPageCache() {
+            const stage = document.getElementById('appMainStage');
+            if (!stage) return;
+            const curUrl = new URL(window.location.href);
+            const entry = {
+                html: document.documentElement.outerHTML,
+                title: document.title,
+                stageHtml: stage.innerHTML,
+                finalUrl: curUrl.href,
+                ts: Date.now()
+            };
+            applePageCache.set(curUrl.href, entry);
+            applePageCache.set(normalizeCacheKey(curUrl.href), entry);
+        }
 
         function isUserLivePath(pathname) {
             const livePaths = ['/pinjaman', '/riwayat', '/favorit'];
@@ -2177,16 +2204,20 @@
 
         function fetchAppleHtml(url, allowCache) {
             const now = Date.now();
+            const normKey = normalizeCacheKey(url);
             const ttl = isUserLivePath(new URL(url, window.location.origin).pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
-            if (allowCache && applePageCache.has(url)) {
-                const entry = applePageCache.get(url);
-                if (now - entry.ts < ttl) {
-                    return Promise.resolve(entry);
+            if (allowCache) {
+                const entry = applePageCache.get(normKey) || applePageCache.get(url);
+                if (entry) {
+                    if (now - entry.ts < ttl) {
+                        return Promise.resolve(entry);
+                    }
+                    applePageCache.delete(normKey);
+                    applePageCache.delete(url);
                 }
-                applePageCache.delete(url);
             }
-            if (applePendingFetches.has(url)) {
-                return applePendingFetches.get(url);
+            if (applePendingFetches.has(normKey)) {
+                return applePendingFetches.get(normKey);
             }
             const p = fetch(url, {
                 headers: { 'X-Requested-With': 'ApplePJAX', 'Accept': 'text/html' },
@@ -2206,15 +2237,16 @@
                     const entry = { html: html, title: parsedTitle, stageHtml: parsedStageHtml, finalUrl: res.url || url, ts: Date.now() };
                     if (allowCache) {
                         applePageCache.set(url, entry);
+                        applePageCache.set(normKey, entry);
                     }
-                    applePendingFetches.delete(url);
+                    applePendingFetches.delete(normKey);
                     return entry;
                 });
             }).catch(function(err) {
-                applePendingFetches.delete(url);
+                applePendingFetches.delete(normKey);
                 throw err;
             });
-            applePendingFetches.set(url, p);
+            applePendingFetches.set(normKey, p);
             return p;
         }
 
@@ -2238,9 +2270,10 @@
                 try {
                     const urlObj = new URL(href, window.location.origin);
                     if (!isPjaxEligible(urlObj) || urlObj.href === window.location.href) continue;
+                    const normKey = normalizeCacheKey(urlObj.href);
                     const ttl = isUserLivePath(urlObj.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
-                    const cached = applePageCache.get(urlObj.href);
-                    if ((cached && Date.now() - cached.ts < ttl) || applePendingFetches.has(urlObj.href)) continue;
+                    const cached = applePageCache.get(normKey) || applePageCache.get(urlObj.href);
+                    if ((cached && Date.now() - cached.ts < ttl) || applePendingFetches.has(normKey)) continue;
                     warmRunning++;
                     fetchAppleHtml(urlObj.href, true).catch(function() {}).finally(function() {
                         warmRunning--;
@@ -2254,6 +2287,22 @@
             if (!href || warmQueue.includes(href)) return;
             warmQueue.push(href);
             pumpWarmQueue();
+        }
+
+        function warmCoreNavLinks() {
+            const corePaths = ['/', '/katalog', '/tata-tertib', '/favorit', '/pinjaman', '/riwayat'];
+            corePaths.forEach(function(path) {
+                try {
+                    const u = new URL(path, window.location.origin);
+                    if (u.pathname === window.location.pathname) return;
+                    const k = normalizeCacheKey(u.href);
+                    const cached = applePageCache.get(k) || applePageCache.get(u.href);
+                    const ttl = isUserLivePath(u.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
+                    if (!cached || (Date.now() - cached.ts >= ttl)) {
+                        queueWarmUrl(u.href);
+                    }
+                } catch (_) {}
+            });
         }
 
         function scheduleVisibleBookPrefetch(delayMs) {
@@ -2294,6 +2343,78 @@
             }, delayMs || 280);
         }
 
+        function applyStageSwap(nextStageHtml, nextTitle, finalUrl, pushState, fromCoverRect, flipBookId, toBookMatch) {
+            const stage = document.getElementById('appMainStage');
+            if (!stage) return;
+            const parsedUrl = new URL(finalUrl, window.location.origin);
+            if (pushState) {
+                history.pushState({ appleUrl: parsedUrl.href }, '', parsedUrl.href);
+            }
+
+            if (nextTitle) document.title = nextTitle;
+            document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
+                oldModal.remove();
+            });
+            stage.innerHTML = nextStageHtml;
+            stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
+
+            const nextQ = parsedUrl.searchParams.get('q') || '';
+            document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
+                inp.value = nextQ;
+            });
+
+            updateActiveChromeLinks(parsedUrl.pathname);
+
+            if (parsedUrl.hash) {
+                const anchor = document.querySelector(parsedUrl.hash);
+                if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                window.scrollTo(0, 0);
+            }
+
+            initCurrentPage(true);
+
+            const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduced && stage.animate) {
+                if (stage._lgEnterAnim) {
+                    try { stage._lgEnterAnim.cancel(); } catch (_) {}
+                }
+                stage._lgEnterAnim = stage.animate(
+                    [
+                        { opacity: 0.35, transform: 'translate3d(0, 4px, 0) scale(0.995)' },
+                        { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' }
+                    ],
+                    { duration: 110, easing: 'cubic-bezier(0.22, 1.18, 0.36, 1)', fill: 'none' }
+                );
+            }
+
+            // Shared-element GPU FLIP cover morph (60/120fps on Mobile & Desktop, no backdrop snapshot freeze)
+            if (!reduced && fromCoverRect && flipBookId) {
+                const destEl = toBookMatch
+                    ? stage.querySelector('[data-detail-cover="' + flipBookId + '"]')
+                    : (stage.querySelector('a[href*="/buku/' + flipBookId + '"] [data-cover-box]') ||
+                       stage.querySelector('a[href*="/buku/' + flipBookId + '"] div'));
+                if (destEl && destEl.animate) {
+                    const toRect = destEl.getBoundingClientRect();
+                    if (toRect.width > 0 && toRect.height > 0 && toRect.top < window.innerHeight + 160 && toRect.bottom > -160) {
+                        const dx = fromCoverRect.left - toRect.left;
+                        const dy = fromCoverRect.top - toRect.top;
+                        const sx = Math.max(0.35, Math.min(2.4, fromCoverRect.width / toRect.width));
+                        const sy = Math.max(0.35, Math.min(2.4, fromCoverRect.height / toRect.height));
+                        destEl.style.transformOrigin = 'top left';
+                        const flipAnim = destEl.animate(
+                            [
+                                { transform: 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')' },
+                                { transform: 'translate3d(0,0,0) scale(1,1)' }
+                            ],
+                            { duration: 180, easing: 'cubic-bezier(0.22, 1.16, 0.36, 1)', fill: 'none' }
+                        );
+                        flipAnim.onfinish = function() { destEl.style.transformOrigin = ''; };
+                    }
+                }
+            }
+        }
+
         let activeNavToken = 0;
         let lastClickedBookLink = null;
         async function appleSoftNavigate(targetUrl, pushState) {
@@ -2309,11 +2430,13 @@
             closeGlassPopover(document.getElementById('userMenuDropdown'));
 
             const targetObj = new URL(targetUrl, window.location.origin);
+            const targetKey = normalizeCacheKey(targetObj.href);
             const useCache = canCachePjaxUrl(targetObj);
             const ttlMs = isUserLivePath(targetObj.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
-            const hasInstantHit = useCache && applePageCache.has(targetObj.href) && (Date.now() - applePageCache.get(targetObj.href).ts < ttlMs);
+            const cached = (applePageCache.get(targetKey) || applePageCache.get(targetObj.href));
+            const hasInstantHit = useCache && cached && (Date.now() - cached.ts < ttlMs) && cached.stageHtml;
 
-            // Capture cover bounds BEFORE swap for smooth GPU FLIP shared-element morph (zero VT backdrop lag on mobile)
+            // Capture cover bounds BEFORE swap for smooth GPU FLIP shared-element morph
             let fromCoverRect = null;
             let flipBookId = null;
             const toBookMatch = targetObj.pathname.match(/^\/buku\/(\d+)/);
@@ -2348,15 +2471,27 @@
                 }
             }
 
-            let barTimer = null;
-            if (!hasInstantHit) {
-                barTimer = setTimeout(function() {
-                    if (navToken === activeNavToken && bar) {
-                        bar.style.opacity = '1';
-                        if (lgm) lgm.setNavProgress(0.72);
-                    }
-                }, 150);
+            // INSTANT SYNCHRONOUS 0ms CACHE SWAP!
+            if (hasInstantHit) {
+                applyStageSwap(cached.stageHtml, cached.title, cached.finalUrl || targetUrl, pushState, fromCoverRect, flipBookId, toBookMatch);
+
+                // Background revalidation (SWR) for live paths or stale caches
+                if (isUserLivePath(targetObj.pathname) || (Date.now() - cached.ts > 8000)) {
+                    fetchAppleHtml(targetObj.href, false).then(function(fresh) {
+                        if (navToken === activeNavToken && fresh && fresh.stageHtml && fresh.stageHtml !== cached.stageHtml) {
+                            applyStageSwap(fresh.stageHtml, fresh.title, fresh.finalUrl, false, null, null, null);
+                        }
+                    }).catch(function() {});
+                }
+                return;
             }
+
+            // Cache miss: instant progress bar feedback at 0ms (no 150ms delay!)
+            if (bar) {
+                bar.style.opacity = '1';
+                if (lgm) lgm.setNavProgress(0.45);
+            }
+            stage.classList.add('apple-stage-leaving');
 
             try {
                 const result = await fetchAppleHtml(targetObj.href, useCache);
@@ -2364,7 +2499,7 @@
 
                 let nextTitle = result.title;
                 let nextStageHtml = result.stageHtml;
-                if (nextStageHtml === null || nextStageHtml === undefined) {
+                if (!nextStageHtml) {
                     const doc = new DOMParser().parseFromString(result.html, 'text/html');
                     const nextStage = doc.getElementById('appMainStage');
                     if (!nextStage) {
@@ -2375,86 +2510,19 @@
                     nextStageHtml = nextStage.innerHTML;
                 }
 
-                const parsedUrl = new URL(result.finalUrl || targetUrl, window.location.origin);
-                if (pushState) {
-                    history.pushState({ appleUrl: parsedUrl.href }, '', parsedUrl.href);
-                }
-
-                if (nextTitle) document.title = nextTitle;
-                document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
-                    oldModal.remove();
-                });
-                stage.innerHTML = nextStageHtml;
-                stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
-
-                const nextQ = parsedUrl.searchParams.get('q') || '';
-                document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
-                    inp.value = nextQ;
-                });
-
-                updateActiveChromeLinks(parsedUrl.pathname);
-
-                if (parsedUrl.hash) {
-                    const anchor = document.querySelector(parsedUrl.hash);
-                    if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    window.scrollTo(0, 0);
-                }
-
-                initCurrentPage(true);
-
-                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                if (!reduced && stage.animate) {
-                    if (stage._lgEnterAnim) {
-                        try { stage._lgEnterAnim.cancel(); } catch (_) {}
-                    }
-                    stage._lgEnterAnim = stage.animate(
-                        [
-                            { opacity: 0.2, transform: 'translate3d(0, 6px, 0) scale(0.992)' },
-                            { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' }
-                        ],
-                        { duration: 145, easing: 'cubic-bezier(0.22, 1.18, 0.36, 1)', fill: 'none' }
-                    );
-                }
-
-                // Shared-element GPU FLIP cover morph (60/120fps on Mobile & Desktop, no backdrop snapshot freeze)
-                if (!reduced && fromCoverRect && flipBookId) {
-                    const destEl = toBookMatch
-                        ? stage.querySelector('[data-detail-cover="' + flipBookId + '"]')
-                        : (stage.querySelector('a[href*="/buku/' + flipBookId + '"] [data-cover-box]') ||
-                           stage.querySelector('a[href*="/buku/' + flipBookId + '"] div'));
-                    if (destEl && destEl.animate) {
-                        const toRect = destEl.getBoundingClientRect();
-                        if (toRect.width > 0 && toRect.height > 0 && toRect.top < window.innerHeight + 160 && toRect.bottom > -160) {
-                            const dx = fromCoverRect.left - toRect.left;
-                            const dy = fromCoverRect.top - toRect.top;
-                            const sx = Math.max(0.35, Math.min(2.4, fromCoverRect.width / toRect.width));
-                            const sy = Math.max(0.35, Math.min(2.4, fromCoverRect.height / toRect.height));
-                            destEl.style.transformOrigin = 'top left';
-                            const flipAnim = destEl.animate(
-                                [
-                                    { transform: 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')' },
-                                    { transform: 'translate3d(0,0,0) scale(1,1)' }
-                                ],
-                                { duration: 210, easing: 'cubic-bezier(0.22, 1.16, 0.36, 1)', fill: 'none' }
-                            );
-                            flipAnim.onfinish = function() { destEl.style.transformOrigin = ''; };
-                        }
-                    }
-                }
+                applyStageSwap(nextStageHtml, nextTitle, result.finalUrl || targetUrl, pushState, fromCoverRect, flipBookId, toBookMatch);
             } catch (_) {
                 if (navToken === activeNavToken) {
                     window.location.href = targetUrl;
                 }
                 return;
             } finally {
-                if (barTimer) clearTimeout(barTimer);
                 if (navToken === activeNavToken && bar) {
                     if (lgm) lgm.setNavProgress(1);
                     setTimeout(function() {
                         bar.style.opacity = '0';
-                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 120);
-                    }, 50);
+                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 100);
+                    }, 40);
                 }
             }
         }
@@ -2473,10 +2541,12 @@
                 toggleIcon.style.transform = 'scaleX(-1)';
             }
 
+            seedCurrentPageCache();
             initCurrentPage(false);
 
-            // Warm-cache ALL sidebar, bottom tab links, and visible book cards right after paint
+            // Immediate warm-cache of all primary navigation hubs and visible books
             setTimeout(function() {
+                warmCoreNavLinks();
                 document.querySelectorAll('#appSidebar nav a[href], #mobileTabBar a[href]').forEach(function(a) {
                     try {
                         const u = new URL(a.href, window.location.origin);
@@ -2485,8 +2555,24 @@
                         }
                     } catch (_) {}
                 });
-                scheduleVisibleBookPrefetch(150);
-            }, 300);
+                scheduleVisibleBookPrefetch(120);
+            }, 100);
+
+            // Instant 0ms visual indicator feedback + prefetch on mobile touchstart / pointerdown
+            const earlyTouchTab = function(e) {
+                if (!e.target || typeof e.target.closest !== 'function') return;
+                const link = e.target.closest('#mobileTabBar a[href], #appSidebar nav a[href]');
+                if (!link) return;
+                try {
+                    const u = new URL(link.href, window.location.origin);
+                    if (isPjaxEligible(u) && u.pathname !== window.location.pathname) {
+                        updateActiveChromeLinks(u.pathname);
+                        prefetchAppleUrl(u.href);
+                    }
+                } catch (_) {}
+            };
+            document.addEventListener('touchstart', earlyTouchTab, { passive: true });
+            document.addEventListener('pointerdown', earlyTouchTab, { passive: true });
 
             // Early prefetch on touchstart/pointerdown (touchstart gives mobile ~100ms head start) or intentional desktop hover
             let hoverWarmTimer = null;
@@ -2504,7 +2590,7 @@
                 const link = e.target.closest('a[href]');
                 if (!link || link.target === '_blank' || link.hasAttribute('data-no-pjax')) return;
                 clearTimeout(hoverWarmTimer);
-                hoverWarmTimer = setTimeout(function() { prefetchAppleUrl(link.href); }, 55);
+                hoverWarmTimer = setTimeout(function() { prefetchAppleUrl(link.href); }, 45);
             }, { capture: true, passive: true });
 
             window.addEventListener('resize', function() {

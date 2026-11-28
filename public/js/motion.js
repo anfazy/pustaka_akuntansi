@@ -81,22 +81,22 @@ function initSpec(){
   d.head.appendChild(s);
 }
 
-let scWait=false;
+let isScrollActive=false,scrollIdleTimer=null,lastScrolled=null;
 function initScroll(){
-  if(w._lgSc)return;w._lgSc=true;let y=w.scrollY||0;
-  const hdr=d.getElementById('appHeader'),topE=d.querySelector('.scroll-edge-top'),botE=d.querySelector('.scroll-edge-bottom');
-  const writeScroll=()=>{
-    scWait=false;
-    const p=flags.scrollCondense&&!isRed()?Math.min(1,Math.max(0,y/130)):0;
-    w._lgSpP=p;
-    if(hdr){hdr.style.transform=p>0.005?`translate3d(0,${(-3*p).toFixed(2)}px,0)`:'';}
-    const edgeOp=(0.45+0.55*p).toFixed(2);
-    if(topE)topE.style.opacity=edgeOp;if(botE)botE.style.opacity=edgeOp;
+  if(w._lgSc)return;w._lgSc=true;
+  const updateScroll=()=>{
+    isScrollActive=true;
+    clearTimeout(scrollIdleTimer);
+    scrollIdleTimer=setTimeout(()=>{isScrollActive=false;},100);
+    const sc=(w.scrollY||0)>10;
+    if(sc!==lastScrolled){
+      lastScrolled=sc;
+      r.classList.toggle('is-scrolled',sc);
+      d.body.classList.toggle('is-scrolled',sc);
+    }
   };
-  w.addEventListener('scroll',()=>{
-    if(scWait)return;scWait=true;
-    enqueue({read(){y=w.scrollY||0;},step(){return false;},write:writeScroll});
-  },{passive:true});
+  w.addEventListener('scroll',updateScroll,{passive:true});
+  updateScroll();
 }
 
 function measureSeg(tr){
@@ -324,7 +324,7 @@ function initSurfaces(){
   d.addEventListener('pointerup',end,{passive:true});d.addEventListener('pointercancel',end,{passive:true});
   let prev=null,evt=null,wait=false;
   d.addEventListener('pointermove',(e)=>{
-    if(e.pointerType!=='mouse'||isLite())return;
+    if(e.pointerType!=='mouse'||isLite()||isScrollActive)return;
     evt=e;if(wait)return;wait=true;
     enqueue({step(){return false;},write(){
       wait=false;if(!evt||!evt.target||typeof evt.target.closest!=='function')return;
