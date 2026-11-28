@@ -340,6 +340,7 @@
                     if (skeletonEl) skeletonEl.classList.add('hidden');
                     if (resultsEl) resultsEl.classList.remove('hidden');
                     if (window.LiquidGlassMotion) window.LiquidGlassMotion.initPage();
+                    if (typeof window.scheduleVisibleBookPrefetch === 'function') window.scheduleVisibleBookPrefetch(150);
                 }
             }
 

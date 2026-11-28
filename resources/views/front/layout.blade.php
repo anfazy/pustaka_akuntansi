@@ -2139,26 +2139,15 @@
 
             // Execute inline scripts injected inside #appMainStage after PJAX swap
             if (isSoftSwap && stage) {
-                    const inlineScripts = Array.from(stage.querySelectorAll('script'));
-                    const executeScripts = function() {
-                        inlineScripts.forEach(function(oldScript) {
-                            const s = document.createElement('script');
-                            s.textContent = oldScript.textContent;
-                            oldScript.replaceWith(s);
-                        });
-                        if (window.LiquidGlassMotion) {
-                            window.LiquidGlassMotion.initPage();
-                        }
-                    };
-
-                    if (stage.querySelector('canvas[id^="qr_"], #successQrCanvas') && typeof window.QRious === 'undefined') {
-                        const qrLib = document.createElement('script');
-                        qrLib.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-                        qrLib.onload = executeScripts;
-                        document.head.appendChild(qrLib);
-                    } else {
-                        executeScripts();
-                    }
+                Array.from(stage.querySelectorAll('script')).forEach(function(oldScript) {
+                    const s = document.createElement('script');
+                    s.textContent = oldScript.textContent;
+                    oldScript.replaceWith(s);
+                });
+                if (window.LiquidGlassMotion) {
+                    window.LiquidGlassMotion.initPage();
+                }
+                scheduleVisibleBookPrefetch(180);
             }
             if (!isSoftSwap && window.LiquidGlassMotion) {
                 window.LiquidGlassMotion.initPage();
@@ -2205,7 +2194,16 @@
             }).then(function(res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.text().then(function(html) {
-                    const entry = { html: html, finalUrl: res.url || url, ts: Date.now() };
+                    let parsedTitle = null, parsedStageHtml = null;
+                    try {
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const nextStage = doc.getElementById('appMainStage');
+                        if (nextStage) {
+                            parsedTitle = doc.title || '';
+                            parsedStageHtml = nextStage.innerHTML;
+                        }
+                    } catch (_) {}
+                    const entry = { html: html, title: parsedTitle, stageHtml: parsedStageHtml, finalUrl: res.url || url, ts: Date.now() };
                     if (allowCache) {
                         applePageCache.set(url, entry);
                     }
@@ -2229,9 +2227,77 @@
             } catch (_) {}
         }
 
-        let isNavigating = false;
+        let warmBookTimer = null;
+        let activeWarmObserver = null;
+        const warmQueue = [];
+        let warmRunning = 0;
+
+        function pumpWarmQueue() {
+            while (warmRunning < 2 && warmQueue.length > 0) {
+                const href = warmQueue.shift();
+                try {
+                    const urlObj = new URL(href, window.location.origin);
+                    if (!isPjaxEligible(urlObj) || urlObj.href === window.location.href) continue;
+                    const ttl = isUserLivePath(urlObj.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
+                    const cached = applePageCache.get(urlObj.href);
+                    if ((cached && Date.now() - cached.ts < ttl) || applePendingFetches.has(urlObj.href)) continue;
+                    warmRunning++;
+                    fetchAppleHtml(urlObj.href, true).catch(function() {}).finally(function() {
+                        warmRunning--;
+                        pumpWarmQueue();
+                    });
+                } catch (_) {}
+            }
+        }
+
+        function queueWarmUrl(href) {
+            if (!href || warmQueue.includes(href)) return;
+            warmQueue.push(href);
+            pumpWarmQueue();
+        }
+
+        function scheduleVisibleBookPrefetch(delayMs) {
+            clearTimeout(warmBookTimer);
+            if (activeWarmObserver) {
+                activeWarmObserver.disconnect();
+                activeWarmObserver = null;
+            }
+            if (navigator.connection && navigator.connection.saveData) return;
+
+            warmBookTimer = setTimeout(function() {
+                const stage = document.getElementById('appMainStage');
+                if (!stage) return;
+                const bookLinks = Array.from(stage.querySelectorAll('a[href*="/buku/"]'));
+                if (!bookLinks.length) return;
+
+                let initialCount = 0;
+                const vh = window.innerHeight || 800;
+                bookLinks.forEach(function(a) {
+                    if (initialCount >= 8) return;
+                    const r = a.getBoundingClientRect();
+                    if (r.width > 0 && r.bottom >= -120 && r.top <= vh * 1.45) {
+                        queueWarmUrl(a.href);
+                        initialCount++;
+                    }
+                });
+
+                if ('IntersectionObserver' in window) {
+                    activeWarmObserver = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(en) {
+                            if (!en.isIntersecting) return;
+                            activeWarmObserver.unobserve(en.target);
+                            queueWarmUrl(en.target.href);
+                        });
+                    }, { rootMargin: '180px 0px' });
+                    bookLinks.slice(0, 24).forEach(function(a) { activeWarmObserver.observe(a); });
+                }
+            }, delayMs || 280);
+        }
+
+        let activeNavToken = 0;
+        let lastClickedBookLink = null;
         async function appleSoftNavigate(targetUrl, pushState) {
-            if (isNavigating) return;
+            const navToken = ++activeNavToken;
             const stage = document.getElementById('appMainStage');
             const bar = document.getElementById('appleNavProgress');
             if (!stage) {
@@ -2239,7 +2305,6 @@
                 return;
             }
 
-            isNavigating = true;
             closeGlassPopover(document.getElementById('notifDropdown'));
             closeGlassPopover(document.getElementById('userMenuDropdown'));
 
@@ -2248,12 +2313,35 @@
             const ttlMs = isUserLivePath(targetObj.pathname) ? USER_CACHE_TTL_MS : CACHE_TTL_MS;
             const hasInstantHit = useCache && applePageCache.has(targetObj.href) && (Date.now() - applePageCache.get(targetObj.href).ts < ttlMs);
 
+            // Capture cover bounds BEFORE swap for smooth GPU FLIP shared-element morph (zero VT backdrop lag on mobile)
+            let fromCoverRect = null;
+            let flipBookId = null;
+            const toBookMatch = targetObj.pathname.match(/^\/buku\/(\d+)/);
+            const fromBookMatch = window.location.pathname.match(/^\/buku\/(\d+)/);
+            if (toBookMatch) {
+                flipBookId = toBookMatch[1];
+                const srcEl = (lastClickedBookLink && lastClickedBookLink.querySelector('[data-cover-box]')) ||
+                              document.querySelector('a[href*="/buku/' + flipBookId + '"] [data-cover-box]') ||
+                              document.querySelector('a[href*="/buku/' + flipBookId + '"] div');
+                if (srcEl) {
+                    const r = srcEl.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) fromCoverRect = r;
+                }
+            } else if (fromBookMatch) {
+                flipBookId = fromBookMatch[1];
+                const detailEl = document.querySelector('[data-detail-cover="' + flipBookId + '"]');
+                if (detailEl) {
+                    const r = detailEl.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) fromCoverRect = r;
+                }
+            }
+            lastClickedBookLink = null;
+
             // Instant 0ms optimistic tab feedback so mobile feels instantaneous
             updateActiveChromeLinks(targetObj.pathname);
 
             const lgm = window.LiquidGlassMotion;
             if (lgm) {
-                lgm.prepareSharedCoverTransition(targetObj.href);
                 const prevVt = lgm.getActiveVt();
                 if (prevVt && typeof prevVt.skipTransition === 'function') {
                     try { prevVt.skipTransition(); } catch (_) {}
@@ -2263,22 +2351,28 @@
             let barTimer = null;
             if (!hasInstantHit) {
                 barTimer = setTimeout(function() {
-                    if (bar) {
+                    if (navToken === activeNavToken && bar) {
                         bar.style.opacity = '1';
                         if (lgm) lgm.setNavProgress(0.72);
                     }
-                }, 60);
-                stage.classList.add('apple-stage-leaving');
+                }, 150);
             }
 
             try {
                 const result = await fetchAppleHtml(targetObj.href, useCache);
-                const doc = new DOMParser().parseFromString(result.html, 'text/html');
-                const nextStage = doc.getElementById('appMainStage');
+                if (navToken !== activeNavToken) return;
 
-                if (!nextStage) {
-                    window.location.href = result.finalUrl || targetUrl;
-                    return;
+                let nextTitle = result.title;
+                let nextStageHtml = result.stageHtml;
+                if (nextStageHtml === null || nextStageHtml === undefined) {
+                    const doc = new DOMParser().parseFromString(result.html, 'text/html');
+                    const nextStage = doc.getElementById('appMainStage');
+                    if (!nextStage) {
+                        window.location.href = result.finalUrl || targetUrl;
+                        return;
+                    }
+                    nextTitle = doc.title || document.title;
+                    nextStageHtml = nextStage.innerHTML;
                 }
 
                 const parsedUrl = new URL(result.finalUrl || targetUrl, window.location.origin);
@@ -2286,71 +2380,82 @@
                     history.pushState({ appleUrl: parsedUrl.href }, '', parsedUrl.href);
                 }
 
-                const performSwap = function() {
-                    document.title = doc.title || document.title;
-                    document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
-                        oldModal.remove();
-                    });
-                    stage.innerHTML = nextStage.innerHTML;
-                    stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
-                    if (lgm) lgm.applyIncomingCoverName();
+                if (nextTitle) document.title = nextTitle;
+                document.querySelectorAll('body > .apple-modal-root').forEach(function(oldModal) {
+                    oldModal.remove();
+                });
+                stage.innerHTML = nextStageHtml;
+                stage.classList.remove('apple-stage-leaving', 'apple-stage-enter');
 
-                    const nextQ = parsedUrl.searchParams.get('q') || '';
-                    document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
-                        inp.value = nextQ;
-                    });
+                const nextQ = parsedUrl.searchParams.get('q') || '';
+                document.querySelectorAll('#appHeader input[name="q"]').forEach(function(inp) {
+                    inp.value = nextQ;
+                });
 
-                    updateActiveChromeLinks(parsedUrl.pathname);
+                updateActiveChromeLinks(parsedUrl.pathname);
 
-                    if (parsedUrl.hash) {
-                        const anchor = document.querySelector(parsedUrl.hash);
-                        if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        window.scrollTo(0, 0);
-                    }
+                if (parsedUrl.hash) {
+                    const anchor = document.querySelector(parsedUrl.hash);
+                    if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    window.scrollTo(0, 0);
+                }
 
-                    initCurrentPage(true);
-                };
+                initCurrentPage(true);
 
                 const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                const isCoverTransition = /^\/buku\/\d+/.test(parsedUrl.pathname) || Boolean(document.querySelector('[data-detail-cover]'));
-                const canVt = isCoverTransition && lgm && lgm.flags.viewTransitions && typeof document.startViewTransition === 'function' && !reduced;
-                if (canVt) {
-                    stage.classList.remove('apple-stage-leaving');
-                    const vt = document.startViewTransition(performSwap);
-                    lgm.setActiveVt(vt);
-                    vt.finished.catch(function() {}).finally(function() {
-                        if (lgm.getActiveVt() === vt) lgm.setActiveVt(null);
-                        document.querySelectorAll('[data-lg-vt-cover]').forEach(function(el) {
-                            el.style.viewTransitionName = '';
-                            el.removeAttribute('data-lg-vt-cover');
-                        });
-                    });
-                } else {
-                    performSwap();
-                    if (!reduced && stage.animate) {
-                        stage.animate(
-                            [
-                                { opacity: 0.15, transform: 'translate3d(0, 6px, 0) scale(0.992)' },
-                                { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' }
-                            ],
-                            { duration: 155, easing: 'cubic-bezier(0.22, 1.18, 0.36, 1)', fill: 'both' }
-                        );
+                if (!reduced && stage.animate) {
+                    if (stage._lgEnterAnim) {
+                        try { stage._lgEnterAnim.cancel(); } catch (_) {}
+                    }
+                    stage._lgEnterAnim = stage.animate(
+                        [
+                            { opacity: 0.2, transform: 'translate3d(0, 6px, 0) scale(0.992)' },
+                            { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' }
+                        ],
+                        { duration: 145, easing: 'cubic-bezier(0.22, 1.18, 0.36, 1)', fill: 'none' }
+                    );
+                }
+
+                // Shared-element GPU FLIP cover morph (60/120fps on Mobile & Desktop, no backdrop snapshot freeze)
+                if (!reduced && fromCoverRect && flipBookId) {
+                    const destEl = toBookMatch
+                        ? stage.querySelector('[data-detail-cover="' + flipBookId + '"]')
+                        : (stage.querySelector('a[href*="/buku/' + flipBookId + '"] [data-cover-box]') ||
+                           stage.querySelector('a[href*="/buku/' + flipBookId + '"] div'));
+                    if (destEl && destEl.animate) {
+                        const toRect = destEl.getBoundingClientRect();
+                        if (toRect.width > 0 && toRect.height > 0 && toRect.top < window.innerHeight + 160 && toRect.bottom > -160) {
+                            const dx = fromCoverRect.left - toRect.left;
+                            const dy = fromCoverRect.top - toRect.top;
+                            const sx = Math.max(0.35, Math.min(2.4, fromCoverRect.width / toRect.width));
+                            const sy = Math.max(0.35, Math.min(2.4, fromCoverRect.height / toRect.height));
+                            destEl.style.transformOrigin = 'top left';
+                            const flipAnim = destEl.animate(
+                                [
+                                    { transform: 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')' },
+                                    { transform: 'translate3d(0,0,0) scale(1,1)' }
+                                ],
+                                { duration: 210, easing: 'cubic-bezier(0.22, 1.16, 0.36, 1)', fill: 'none' }
+                            );
+                            flipAnim.onfinish = function() { destEl.style.transformOrigin = ''; };
+                        }
                     }
                 }
             } catch (_) {
-                window.location.href = targetUrl;
+                if (navToken === activeNavToken) {
+                    window.location.href = targetUrl;
+                }
                 return;
             } finally {
                 if (barTimer) clearTimeout(barTimer);
-                if (bar) {
+                if (navToken === activeNavToken && bar) {
                     if (lgm) lgm.setNavProgress(1);
                     setTimeout(function() {
                         bar.style.opacity = '0';
-                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 160);
-                    }, 80);
+                        setTimeout(function() { if (lgm) lgm.setNavProgress(0); }, 120);
+                    }, 50);
                 }
-                isNavigating = false;
             }
         }
 
@@ -2370,34 +2475,36 @@
 
             initCurrentPage(false);
 
-            // Warm-cache ALL sidebar & bottom tab links right after paint (including Favorit, Pinjaman, Riwayat)
+            // Warm-cache ALL sidebar, bottom tab links, and visible book cards right after paint
             setTimeout(function() {
                 document.querySelectorAll('#appSidebar nav a[href], #mobileTabBar a[href]').forEach(function(a) {
                     try {
                         const u = new URL(a.href, window.location.origin);
                         if (isPjaxEligible(u)) {
-                            prefetchAppleUrl(u.href);
+                            queueWarmUrl(u.href);
                         }
                     } catch (_) {}
                 });
-            }, 450);
+                scheduleVisibleBookPrefetch(150);
+            }, 300);
 
-            document.addEventListener('submit', invalidateAppleCache, true);
-
-            // Pre-fetch on pointerdown immediately or intentional hover (>75ms) to avoid hover storms
+            // Early prefetch on touchstart/pointerdown (touchstart gives mobile ~100ms head start) or intentional desktop hover
             let hoverWarmTimer = null;
-            document.addEventListener('pointerdown', function(e) {
+            const earlyWarmLink = function(e) {
                 if (!e.target || typeof e.target.closest !== 'function') return;
                 const link = e.target.closest('a[href]');
                 if (!link || link.target === '_blank' || link.hasAttribute('data-no-pjax')) return;
+                if (/\/buku\/\d+/.test(link.pathname || '')) lastClickedBookLink = link;
                 prefetchAppleUrl(link.href);
-            }, { passive: true });
+            };
+            document.addEventListener('touchstart', earlyWarmLink, { passive: true });
+            document.addEventListener('pointerdown', earlyWarmLink, { passive: true });
             document.addEventListener('mouseenter', function(e) {
                 if (!e.target || typeof e.target.closest !== 'function') return;
                 const link = e.target.closest('a[href]');
                 if (!link || link.target === '_blank' || link.hasAttribute('data-no-pjax')) return;
                 clearTimeout(hoverWarmTimer);
-                hoverWarmTimer = setTimeout(function() { prefetchAppleUrl(link.href); }, 75);
+                hoverWarmTimer = setTimeout(function() { prefetchAppleUrl(link.href); }, 55);
             }, { capture: true, passive: true });
 
             window.addEventListener('resize', function() {
@@ -2419,6 +2526,7 @@
                     const url = new URL(link.href, window.location.origin);
                     if (!isPjaxEligible(url)) return;
                     if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
+                    if (/\/buku\/\d+/.test(url.pathname)) lastClickedBookLink = link;
                     e.preventDefault();
                     appleSoftNavigate(url.href, true);
                 } catch (_) {}
